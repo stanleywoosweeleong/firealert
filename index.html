@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#1a1410">
 <title>火警守护 · FireWatch</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700;800&display=swap" rel="stylesheet">
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22FireWatch%22%2C%22short_name%22%3A%22FireWatch%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a1410%22%2C%22theme_color%22%3A%22%231a1410%22%7D">
 <style>
   :root{
@@ -20,7 +22,7 @@
   body{
     background:linear-gradient(180deg,#faf8f4 0%,var(--bg) 30%);
     color:var(--ink);
-    font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    font-family:"Noto Sans SC","Noto Sans Tamil","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
     min-height:100vh; padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
     -webkit-font-smoothing:antialiased;
   }
@@ -35,7 +37,16 @@
   .brand h1{margin:0;font-size:1.18rem;font-weight:800;letter-spacing:.2px}
   .brand p{margin:2px 0 0;font-size:.74rem;color:var(--ink2);font-weight:500}
   .lang{background:var(--card);border:1px solid var(--line);color:var(--ink);
-    border-radius:11px;font-size:.74rem;font-weight:700;padding:8px 12px;cursor:pointer;display:flex;gap:5px;align-items:center}
+    border-radius:11px;font-size:.8rem;font-weight:700;padding:8px 12px;cursor:pointer;display:flex;gap:5px;align-items:center;font-family:inherit}
+  /* first-launch language gate */
+  .lang-gate{position:fixed;inset:0;z-index:200;background:linear-gradient(180deg,#faf8f4,#f0ece3);display:flex;align-items:center;justify-content:center;padding:24px}
+  .lang-gate.hide{display:none}
+  .lang-gate-box{width:100%;max-width:340px;text-align:center}
+  .lang-gate-mark{font-size:3rem;margin-bottom:6px}
+  .lang-gate-title{font-size:1.3rem;font-weight:900;color:var(--ink);margin-bottom:8px}
+  .lang-gate-sub{font-size:.85rem;color:var(--ink2);line-height:1.7;margin-bottom:22px}
+  .lang-gate-btn{display:block;width:100%;background:#fff;border:1.5px solid var(--line);color:var(--ink);border-radius:14px;padding:16px;font-size:1.05rem;font-weight:800;margin-bottom:11px;cursor:pointer;font-family:inherit}
+  .lang-gate-btn:active{background:var(--bg2)}
 
   /* tabs */
   .tabs{display:flex;gap:6px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:5px;margin-bottom:16px}
@@ -175,6 +186,17 @@
 </style>
 </head>
 <body>
+<div class="lang-gate" id="langGate">
+  <div class="lang-gate-box">
+    <div class="lang-gate-mark">🔥</div>
+    <div class="lang-gate-title">FireWatch · 火警守护</div>
+    <div class="lang-gate-sub">Choose your language · 请选择语言<br>Pilih bahasa · மொழியைத் தேர்வுசெய்யவும்</div>
+    <button class="lang-gate-btn" data-l="zh">中文</button>
+    <button class="lang-gate-btn" data-l="en">English</button>
+    <button class="lang-gate-btn" data-l="ms">Bahasa Melayu</button>
+    <button class="lang-gate-btn" data-l="ta">தமிழ்</button>
+  </div>
+</div>
 <div class="wrap">
   <header>
     <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1.5 3 4 4.5 4 8a4 4 0 0 1-8 0c0-1.2.4-2 1-2.8C9 9 9.5 11 11 11c.8 0 1-.7 1-1.5C12 7 10.5 5 12 2z" fill="#fff"/><path d="M12 13c1.5 0 2.5 1.2 2.5 2.7C14.5 17.5 13.4 19 12 19s-2.5-1.5-2.5-3.3C9.5 14.2 10.5 13 12 13z" fill="#ffe0b0"/></svg></div>
@@ -463,10 +485,135 @@ const I = {
   waSafe:(f)=>`✅ ${f}: no satellite hotspots nearby. Source: NASA VIIRS.`,
   foot:"Data: NASA FIRMS (VIIRS) · satellites pass several times daily; hotspots are near-real-time and indicative only. Always confirm on the ground.",
   adv:"⚙️ Advanced · admin setup"
+ },
+ ms:{
+  title:"FireWatch", sub:"Titik panas satelit NASA · langsung", lang:"BM",
+  tabMon:"Pantau", tabFarm:"Ladang saya", tabAlert:"Amaran",
+  riskLbl:"Risiko semasa", checking:"Menyemak…", reading:"Membaca data satelit",
+  s1k:"Titik panas terkini", s2k:"Jejari pantauan", km:"km",
+  hsTitle:"Titik panas berdekatan", noHs:"Tiada titik panas berdekatan", noHsSub:"Tiada kebakaran satelit dalam jejari pantauan anda",
+  windk:"Angin", windFrom:"dari", gustLbl:"tiupan", windToward:"ke arah ladang",
+  intensity:"Keamatan", towardFarm:"Api bertiup ke arah ladang anda",
+  frpLow:"kecil", frpMed:"kuat", frpHigh:"sengit",
+  bombatitle:"🔥 Titik panas serius berdekatan",
+  bombatext:"Satelit mengesan titik panas kuat berhampiran ladang ini. <b>Periksa atau sahkan sendiri dahulu</b> — titik panas tidak semestinya kebakaran sebenar. Hubungi BOMBA hanya setelah anda sahkan ia benar.",
+  bombaverify:"① Saya akan periksa / sahkan dahulu",
+  bombacall:"② Disahkan — hubungi 999",
+  bombaalt:"Atau hubungi BOMBA terus: <a href=\"tel:994\">994</a> · tiada SIM? dail <a href=\"tel:112\">112</a>",
+  bombalaw:"⚠️ Melaporkan kebakaran sebenar dengan niat baik tiada masalah. Tetapi <b>membuat laporan palsu dengan sengaja</b> adalah kesalahan (Akta Komunikasi & Multimedia 1998, s.233) — denda sehingga RM50,000 atau penjara setahun.",
+  wa:"Kongsi ke WhatsApp", tgshare:"Kongsi ke Telegram", refresh:"↻ Muat semula",
+  prof:"Profil petani", profhint:"Isikan nama dan nombor telefon untuk menerima amaran.",
+  uname:"Nama", phone:"Telefon (dengan kod negara)", saveProf:"Simpan profil",
+  ph_uname:"Masukkan nama anda", ph_phone:"cth. +60123456789", ph_fname:"Masukkan nama ladang anda",
+  ph_lat:"cth. 3.2478", ph_lon:"cth. 102.4189", ph_rad:"cth. 30", ph_key:"Tampal kunci NASA anda",
+  addfarm:"Tambah ladang", addhint:"Guna 'Lokasi saya' untuk GPS automatik, atau taip koordinat. Boleh tambah beberapa ladang.",
+  fname:"Nama ladang", loc:"Guna lokasi saya", or:"atau masukkan sendiri",
+  lat:"Lat", lon:"Lon", rad:"Jejari amaran (km)", addFarm:"＋ Tambah ladang",
+  myfarms:"Ladang berdaftar", noFarms:"Tiada ladang lagi",
+  howtitle:"Cara terima amaran automatik",
+  howhint:"Aplikasi telefon tidak boleh menolak amaran di latar belakang. Setelah sambung Telegram, awan akan beritahu anda apabila titik panas muncul — walaupun aplikasi ditutup.",
+  st1:"Isi dahulu nama, telefon dan ladang anda di bawah <b>Ladang saya</b>.",
+  st2:"Tekan butang di bawah untuk buka Telegram dan tekan <b>Start</b>.",
+  st3:"Selesai! Anda akan terima amaran Telegram secara automatik apabila kebakaran muncul.",
+  connect:"Sambung Telegram untuk amaran",
+  tgbadge:"Disyorkan · Auto", wabadge:"Tiada Telegram?",
+  watitle:"Hantar ladang anda kepada penyelaras",
+  wahint:"Tiada akaun Telegram? Hantar nama dan lokasi ladang anda kepada penyelaras melalui WhatsApp. Mereka akan pantau ladang anda dan beritahu apabila titik panas muncul.",
+  waconnect:"Hantar maklumat ladang via WhatsApp",
+  coordLabel:"Penyelaras", coordNote:"Penyelaras terdekat dipilih automatik — anda boleh tukar.", noCoord:"Tiada penyelaras tersedia",
+  sleepNote:"⏳ Penyelaras ialah orang sebenar (kini seorang sahaja) yang perlu tidur, jadi balasan tidak serta-merta — terutama waktu malam. Harap bersabar menunggu pengesahan; ladang anda mungkin hanya mula dipantau kemudian.",
+  waFarmMsg:(name,phone,readable,code)=>`📋 FireWatch · Pendaftaran ladang\n\nNama: ${name}\nTelefon: ${phone}\n\nLadang:\n${readable}\n\n———\nKod penyelaras (jangan ubah):\n${code}`,
+  pastetitle:"Tambah ladang petani", pastehint:"Tampal keseluruhan 'kod penyelaras' yang dihantar petani melalui WhatsApp (atau baris FW1| sahaja) untuk tambah ladang mereka ke senarai pantauan anda.",
+  pasteAdd:"Tambah ladang ini", pasteOk:"{n} ladang ditambah ✓", pasteErr:"Kod tidak sah — tampal kod FW1| penuh", someFarm:"Ladang petani",
+  helptitle:"❓ Bagaimana amaran ini berfungsi?",
+  help1ic:"🛰️", help1:"<b>Ini bukan pemantauan langsung di atas ladang anda.</b> Titik panas dikesan oleh satelit NASA. Satelit hanya melintasi Malaysia beberapa kali sehari, jadi ada <b>jurang masa</b> antara lintasan — kebakaran yang baru bermula mungkin tidak kelihatan sehingga lintasan berikutnya.",
+  help2ic:"📏", help2:"<b>Tetapkan jejari lebih luas untuk dapat masa.</b> Kerana jurang ini, api mungkin sudah hampir sebelum anda diberi amaran. Jejari lebih luas memberi amaran <b>semasa api masih jauh</b>, bukan apabila sudah hampir.",
+  help3ic:"👃", help3:"<b>Percaya mata dan hidung anda sendiri.</b> Aplikasi ini alat amaran awal — ia tidak menggantikan pemerhatian di tempat. Jika nampak asap atau bau terbakar, bertindak segera — jangan tunggu aplikasi.",
+  radhint:"Tetapkan jejari lebih luas (cth. 20–40 km). Satelit ada jurang masa — jejari terlalu kecil mungkin hanya beri amaran apabila api sudah hampir, sukar untuk bertindak.",
+  key:"NASA FIRMS MAP_KEY", saveKey:"Simpan kunci",
+  keytitle:"Kunci NASA", keyhint:"Paparan pantauan perlukan kunci NASA percuma. Tekan di bawah untuk mohon percuma (masukkan emel sahaja), kemudian tampal di sini.", getKey:"→ Dapatkan kunci NASA percuma",
+  saved:"Disimpan ✓", added:"Ditambah ✓", needprof:"Isi nama dan telefon dahulu",
+  needfarm:"Isi nama ladang dan koordinat dahulu", locing:"Mencari lokasi…", locerr:"Gagal dapat lokasi — masukkan sendiri",
+  locok:"Lokasi diperoleh ✓",
+  connOk:"Telegram disambung", connNo:"Telegram belum disambung",
+  updated:(t)=>"Dikemas kini "+t, never:"Belum dikemas kini",
+  safeBig:"Selamat", safeSub:"Tiada kebakaran dalam jejari pantauan",
+  lowBig:"Risiko rendah",medBig:"Risiko sederhana",highBig:"Risiko tinggi",critBig:"AMARAN KEBAKARAN",
+  lowSub:"Titik panas berselerak jauh",medSub:"Titik panas berdekatan — perhati angin",highSub:"Api menghampiri — periksa",critSub:"Sangat hampir — periksa sekarang!",
+  dir:{N:"U",NE:"TL",E:"T",SE:"TG",S:"S",SW:"BD",W:"B",NW:"BL"},
+  rk:{CRITICAL:"KRITIKAL",HIGH:"TINGGI",MEDIUM:"SEDERHANA",LOW:"RENDAH"},
+  err:"Gagal memuat data", errKey:"Masukkan NASA MAP_KEY di bawah Amaran",
+  waAlert:(f,n,d,r)=>`🔥 AMARAN KEBAKARAN · ${f}\n\nNASA kesan ${n} titik panas\nTerdekat: ${d} km (${r})\n\nSumber: NASA VIIRS\nPeriksa kawasan ladang segera.`,
+  waSafe:(f)=>`✅ ${f}: tiada titik panas satelit berdekatan. Sumber: NASA VIIRS.`,
+  foot:"Data: NASA FIRMS (VIIRS) · satelit melintas beberapa kali sehari; titik panas hampir masa nyata dan sebagai panduan sahaja. Sentiasa sahkan di tempat.",
+  adv:"⚙️ Lanjutan · tetapan admin"
+ },
+ ta:{
+  title:"FireWatch", sub:"NASA செயற்கைக்கோள் தீப்புள்ளிகள் · நேரடி", lang:"த",
+  tabMon:"கண்காணி", tabFarm:"என் பண்ணைகள்", tabAlert:"எச்சரிக்கைகள்",
+  riskLbl:"தற்போதைய ஆபத்து", checking:"சரிபார்க்கிறது…", reading:"செயற்கைக்கோள் தரவைப் படிக்கிறது",
+  s1k:"சமீபத்திய தீப்புள்ளிகள்", s2k:"கண்காணிப்பு ஆரம்", km:"கி.மீ",
+  hsTitle:"அருகிலுள்ள தீப்புள்ளிகள்", noHs:"அருகில் தீப்புள்ளிகள் இல்லை", noHsSub:"உங்கள் கண்காணிப்பு ஆரத்தில் செயற்கைக்கோள் தீ இல்லை",
+  windk:"காற்று", windFrom:"இருந்து", gustLbl:"பலத்த காற்று", windToward:"பண்ணையை நோக்கி",
+  intensity:"தீவிரம்", towardFarm:"தீ உங்கள் பண்ணையை நோக்கி வீசுகிறது",
+  frpLow:"சிறிய", frpMed:"வலுவான", frpHigh:"கடுமையான",
+  bombatitle:"🔥 அருகில் தீவிரமான தீப்புள்ளி",
+  bombatext:"இந்தப் பண்ணைக்கு அருகில் வலுவான தீப்புள்ளியை செயற்கைக்கோள் கண்டறிந்தது. <b>முதலில் நீங்களே சரிபார்க்கவும்</b> — தீப்புள்ளி எப்போதும் உண்மையான தீ அல்ல. உண்மை என உறுதிசெய்த பின்னரே BOMBA-வை அழைக்கவும்.",
+  bombaverify:"① நான் முதலில் சரிபார்க்கிறேன்",
+  bombacall:"② உறுதி — 999 அழைக்கவும்",
+  bombaalt:"அல்லது BOMBA-வை நேரடியாக அழைக்கவும்: <a href=\"tel:994\">994</a> · SIM இல்லையா? <a href=\"tel:112\">112</a>",
+  bombalaw:"⚠️ உண்மையான தீயை நல்லெண்ணத்துடன் தெரிவிப்பது சரி. ஆனால் <b>வேண்டுமென்றே பொய்யான அறிக்கை</b> செய்வது குற்றம் (தொடர்பு & பல்லூடக சட்டம் 1998, பிரிவு 233) — RM50,000 வரை அபராதம் அல்லது ஒரு வருடம் சிறை.",
+  wa:"WhatsApp-இல் பகிர்", tgshare:"Telegram-இல் பகிர்", refresh:"↻ புதுப்பி",
+  prof:"விவசாயி விவரம்", profhint:"எச்சரிக்கைகளைப் பெற உங்கள் பெயர் மற்றும் தொலைபேசி எண்ணை நிரப்பவும்.",
+  uname:"பெயர்", phone:"தொலைபேசி (நாட்டுக் குறியீட்டுடன்)", saveProf:"விவரத்தைச் சேமி",
+  ph_uname:"உங்கள் பெயரை உள்ளிடவும்", ph_phone:"எ.கா. +60123456789", ph_fname:"உங்கள் பண்ணையின் பெயரை உள்ளிடவும்",
+  ph_lat:"எ.கா. 3.2478", ph_lon:"எ.கா. 102.4189", ph_rad:"எ.கா. 30", ph_key:"உங்கள் NASA விசையை ஒட்டவும்",
+  addfarm:"பண்ணை சேர்", addhint:"GPS-க்கு 'என் இருப்பிடம்' பயன்படுத்தவும், அல்லது ஆயத்தொலைவை தட்டச்சு செய்யவும். பல பண்ணைகளைச் சேர்க்கலாம்.",
+  fname:"பண்ணை பெயர்", loc:"என் இருப்பிடத்தைப் பயன்படுத்து", or:"அல்லது கைமுறையாக உள்ளிடவும்",
+  lat:"அட்ச.", lon:"தீர்க்.", rad:"எச்சரிக்கை ஆரம் (கி.மீ)", addFarm:"＋ பண்ணை சேர்",
+  myfarms:"பதிவு செய்யப்பட்ட பண்ணைகள்", noFarms:"இன்னும் பண்ணைகள் இல்லை",
+  howtitle:"தானியங்கி எச்சரிக்கைகளைப் பெறுவது எப்படி",
+  howhint:"செயலி பின்னணியில் தானாக அறிவிக்க முடியாது. Telegram இணைத்த பின், தீப்புள்ளி தோன்றும்போது மேகம் உங்களுக்கு அறிவிக்கும் — செயலி மூடியிருந்தாலும்.",
+  st1:"முதலில் <b>என் பண்ணைகள்</b> பகுதியில் உங்கள் பெயர், தொலைபேசி, பண்ணைகளை நிரப்பவும்.",
+  st2:"கீழே உள்ள பொத்தானை அழுத்தி Telegram-ஐ திறந்து <b>Start</b> அழுத்தவும்.",
+  st3:"முடிந்தது! தீ தோன்றும்போது தானாக Telegram எச்சரிக்கை பெறுவீர்கள்.",
+  connect:"எச்சரிக்கைகளுக்கு Telegram இணைக்கவும்",
+  tgbadge:"பரிந்துரை · தானியங்கி", wabadge:"Telegram இல்லையா?",
+  watitle:"உங்கள் பண்ணையை ஒருங்கிணைப்பாளருக்கு அனுப்பவும்",
+  wahint:"Telegram கணக்கு இல்லையா? உங்கள் பெயர் மற்றும் பண்ணை இருப்பிடத்தை WhatsApp மூலம் ஒருங்கிணைப்பாளருக்கு அனுப்பவும். அவர்கள் உங்கள் பண்ணையைக் கண்காணித்து தீப்புள்ளி தோன்றும்போது அறிவிப்பார்கள்.",
+  waconnect:"WhatsApp மூலம் பண்ணை விவரம் அனுப்பு",
+  coordLabel:"ஒருங்கிணைப்பாளர்", coordNote:"அருகிலுள்ள ஒருங்கிணைப்பாளர் தானாக தேர்ந்தெடுக்கப்பட்டார் — மாற்றலாம்.", noCoord:"ஒருங்கிணைப்பாளர் இல்லை",
+  sleepNote:"⏳ ஒருங்கிணைப்பாளர் ஒரு நிஜ நபர் (தற்போது ஒருவர் மட்டுமே), அவருக்கு தூக்கம் தேவை, எனவே பதில் உடனடியாக இராது — குறிப்பாக இரவில். உறுதிப்படுத்தலுக்குப் பொறுமையாகக் காத்திருக்கவும்; உங்கள் பண்ணை சற்று பின்னரே கண்காணிக்கப்படத் தொடங்கலாம்.",
+  waFarmMsg:(name,phone,readable,code)=>`📋 FireWatch · பண்ணை பதிவு\n\nபெயர்: ${name}\nதொலைபேசி: ${phone}\n\nபண்ணைகள்:\n${readable}\n\n———\nஒருங்கிணைப்பாளர் குறியீடு (மாற்ற வேண்டாம்):\n${code}`,
+  pastetitle:"விவசாயியின் பண்ணையைச் சேர்", pastehint:"விவசாயி WhatsApp மூலம் அனுப்பிய முழு 'ஒருங்கிணைப்பாளர் குறியீட்டையும்' (அல்லது FW1| வரியை மட்டும்) இங்கே ஒட்டி அவர்களின் பண்ணையை உங்கள் பட்டியலில் சேர்க்கவும்.",
+  pasteAdd:"இந்தப் பண்ணைகளைச் சேர்", pasteOk:"{n} பண்ணை சேர்க்கப்பட்டது ✓", pasteErr:"செல்லுபடியான குறியீடு இல்லை — முழு FW1| குறியீட்டை ஒட்டவும்", someFarm:"விவசாயியின் பண்ணை",
+  helptitle:"❓ இந்த எச்சரிக்கை எப்படி வேலை செய்கிறது?",
+  help1ic:"🛰️", help1:"<b>இது உங்கள் பண்ணைக்கு மேல் நேரடி கண்காணிப்பு அல்ல.</b> தீப்புள்ளிகளை NASA செயற்கைக்கோள்கள் கண்டறிகின்றன. செயற்கைக்கோள் ஒரு நாளில் சில முறை மட்டுமே மலேசியா மீது செல்கிறது, எனவே இடையில் <b>இடைவெளி</b> உள்ளது — இப்போதுதான் தொடங்கிய தீ அடுத்த கடப்பு வரை தெரியாமல் இருக்கலாம்.",
+  help2ic:"📏", help2:"<b>நேரம் பெற ஆரத்தை அகலமாக அமைக்கவும்.</b> இந்த இடைவெளியால், எச்சரிக்கை வருமுன் தீ அருகில் வந்திருக்கலாம். அகலமான ஆரம் <b>தீ தொலைவில் இருக்கும்போதே</b> எச்சரிக்கிறது.",
+  help3ic:"👃", help3:"<b>உங்கள் கண்களையும் மூக்கையும் நம்பவும்.</b> இந்தச் செயலி முன்கூட்டிய எச்சரிக்கைக் கருவி — நேரடிப் பார்வையை மாற்றாது. புகை கண்டால் அல்லது எரியும் வாசனை வந்தால், உடனே செயல்படவும் — செயலிக்காகக் காத்திருக்க வேண்டாம்.",
+  radhint:"அகலமான ஆரம் அமைக்கவும் (எ.கா. 20–40 கி.மீ). செயற்கைக்கோள்களுக்கு இடைவெளி உள்ளது — மிகச் சிறிய ஆரம் தீ அருகில் வந்த பின்னரே எச்சரிக்கலாம்.",
+  key:"NASA FIRMS MAP_KEY", saveKey:"விசையைச் சேமி",
+  keytitle:"NASA விசை", keyhint:"கண்காணிப்புத் திரைக்கு இலவச NASA விசை தேவை. கீழே அழுத்தி இலவசமாக விண்ணப்பிக்கவும் (மின்னஞ்சல் மட்டும்), பின் இங்கே ஒட்டவும்.", getKey:"→ இலவச NASA விசையைப் பெறு",
+  saved:"சேமிக்கப்பட்டது ✓", added:"சேர்க்கப்பட்டது ✓", needprof:"முதலில் பெயர், தொலைபேசியை நிரப்பவும்",
+  needfarm:"முதலில் பண்ணை பெயர், ஆயத்தொலைவை நிரப்பவும்", locing:"இருப்பிடம் தேடுகிறது…", locerr:"இருப்பிடம் கிடைக்கவில்லை — கைமுறையாக உள்ளிடவும்",
+  locok:"இருப்பிடம் பெறப்பட்டது ✓",
+  connOk:"Telegram இணைக்கப்பட்டது", connNo:"Telegram இணைக்கப்படவில்லை",
+  updated:(t)=>"புதுப்பிக்கப்பட்டது "+t, never:"இன்னும் புதுப்பிக்கப்படவில்லை",
+  safeBig:"பாதுகாப்பானது", safeSub:"கண்காணிப்பு ஆரத்தில் தீ இல்லை",
+  lowBig:"குறைந்த ஆபத்து",medBig:"நடுத்தர ஆபத்து",highBig:"அதிக ஆபத்து",critBig:"தீ எச்சரிக்கை",
+  lowSub:"தொலைவில் சிதறிய தீப்புள்ளிகள்",medSub:"அருகில் தீப்புள்ளிகள் — காற்றைக் கவனி",highSub:"தீ நெருங்குகிறது — சரிபார்",critSub:"மிக அருகில் — இப்போதே சரிபார்!",
+  dir:{N:"வ",NE:"வகி",E:"கி",SE:"தெகி",S:"தெ",SW:"தெமே",W:"மே",NW:"வமே"},
+  rk:{CRITICAL:"மிகுந்த",HIGH:"அதிக",MEDIUM:"நடுத்தர",LOW:"குறைந்த"},
+  err:"தரவை ஏற்ற முடியவில்லை", errKey:"எச்சரிக்கைகள் பகுதியில் NASA MAP_KEY-ஐ உள்ளிடவும்",
+  waAlert:(f,n,d,r)=>`🔥 தீ எச்சரிக்கை · ${f}\n\nNASA ${n} தீப்புள்ளிகளைக் கண்டறிந்தது\nஅருகில்: ${d} கி.மீ (${r})\n\nஆதாரம்: NASA VIIRS\nபண்ணைப் பகுதியை உடனே சரிபார்க்கவும்.`,
+  waSafe:(f)=>`✅ ${f}: அருகில் செயற்கைக்கோள் தீப்புள்ளிகள் இல்லை. ஆதாரம்: NASA VIIRS.`,
+  foot:"தரவு: NASA FIRMS (VIIRS) · செயற்கைக்கோள்கள் ஒரு நாளில் பல முறை செல்கின்றன; தீப்புள்ளிகள் ஏறக்குறைய நேரடி, வழிகாட்டுதலுக்கு மட்டுமே. எப்போதும் நேரில் சரிபார்க்கவும்.",
+  adv:"⚙️ மேம்பட்ட · நிர்வாக அமைப்பு"
  }
 };
 
 let lang = localStorage.getItem("fw_lang")||"zh";
+const langChosen = !!localStorage.getItem("fw_lang");
 const NS="fw_";
 function lget(k,d){ try{return JSON.parse(localStorage.getItem(NS+k))??d}catch(e){return d} }
 function lset(k,v){ localStorage.setItem(NS+k,JSON.stringify(v)); }
@@ -621,7 +768,7 @@ function render(hits){
     return `<div class="hs"><div class="dot" style="color:${RK_COLOR[h.rk]}"></div><div class="info"><div class="t">${h.d.toFixed(1)} ${t.km} · ${t.dir[h.br]} ${frpTxt}</div><div class="d">${h.date} ${fmtTime(h.time)} UTC · ${h.la.toFixed(3)}, ${h.lo.toFixed(3)}</div>${towardTag}</div><div class="rk" style="background:${RK_COLOR[h.rk]}22;color:${RK_COLOR[h.rk]}">${t.rk[h.rk]}</div></div>`;
   }).join("");
   const now=new Date().toLocaleTimeString(lang==="zh"?"zh-CN":"en-GB",{hour:"2-digit",minute:"2-digit"});
-  document.getElementById("updated").textContent=t.updated(now);
+  document.getElementById("updated").textContent=t.updated(now);window._fwUpdated=true;
 }
 
 //=================== farm chips + list ===================
@@ -764,7 +911,11 @@ function applyLang(){
   const PH=(id,v)=>{const e=document.getElementById(id);if(e)e.setAttribute("placeholder",v);};
   PH("i-uname",t.ph_uname);PH("i-phone",t.ph_phone);PH("i-fname",t.ph_fname);
   PH("i-lat",t.ph_lat);PH("i-lon",t.ph_lon);PH("i-rad",t.ph_rad);PH("i-key",t.ph_key);
-  S("t-title",t.title);S("t-sub",t.sub);S("langLbl",t.lang);
+  S("t-title",t.title);S("t-sub",t.sub);
+  const LBL={zh:"中文",en:"EN",ms:"BM",ta:"த"};
+  const order=["zh","en","ms","ta"];
+  const nextL=order[(order.indexOf(lang)+1)%order.length];
+  const ll=document.getElementById("langLbl");if(ll)ll.textContent=LBL[nextL];
   S("tab-mon",t.tabMon);S("tab-farm",t.tabFarm);S("tab-alert",t.tabAlert);
   S("s1k",t.s1k);S("s2k",t.s2k);S("hs-title",t.hsTitle);
   S("t-helptitle",t.helptitle);S("t-radhint",t.radhint);
@@ -792,12 +943,18 @@ function applyLang(){
     ? `给管理员：把农场名单部署到 GitHub。机器人用户名设在代码顶部的 <code>CFG.TG_BOT</code>，协调员名单设在 <code>CFG.COORDINATORS</code>。完整部署步骤见随附的 README 与 bot 程序。`
     : `For the admin: deploy the roster to GitHub. Set the bot username in <code>CFG.TG_BOT</code> and the coordinator list in <code>CFG.COORDINATORS</code> at the top of the code. Full deploy steps are in the bundled README and bot script.`;
   updateConnStatus();
-  if(!document.getElementById("updated").textContent)document.getElementById("updated").textContent=t.never;
+  if(!window._fwUpdated)document.getElementById("updated").textContent=t.never;
 }
 
 //=================== bind ===================
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchView(b.dataset.v));
-document.getElementById("langBtn").onclick=()=>{lang=lang==="zh"?"en":"zh";localStorage.setItem("fw_lang",lang);applyLang();renderChips();renderFarmList();populateCoordinators();loadData();};
+const LANG_CYCLE=["zh","en","ms","ta"];
+document.getElementById("langBtn").onclick=()=>{
+  const i=LANG_CYCLE.indexOf(lang);
+  lang=LANG_CYCLE[(i+1)%LANG_CYCLE.length];
+  localStorage.setItem("fw_lang",lang);
+  applyLang();renderChips();renderFarmList();populateCoordinators();loadData();
+};
 document.getElementById("refreshBtn").onclick=loadData;
 document.getElementById("bombaVerifyBtn").onclick=()=>{
   document.getElementById("bombaCallWrap").style.display="block";
@@ -840,6 +997,20 @@ document.getElementById("i-phone").value=profile.phone;
 document.getElementById("i-key").value=lget("key","");
 
 applyLang();renderChips();renderFarmList();populateCoordinators();loadData();
+
+// first-launch language gate
+(function(){
+  const gate=document.getElementById("langGate");
+  if(langChosen){ gate.classList.add("hide"); return; }
+  gate.querySelectorAll(".lang-gate-btn").forEach(btn=>{
+    btn.onclick=()=>{
+      lang=btn.dataset.l;
+      localStorage.setItem("fw_lang",lang);
+      applyLang();renderChips();renderFarmList();populateCoordinators();loadData();
+      gate.classList.add("hide");
+    };
+  });
+})();
 
 //=================== service worker ===================
 if("serviceWorker" in navigator){
