@@ -28,7 +28,7 @@
   }
   .wrap{max-width:560px;margin:0 auto;padding:16px 16px 90px}
 
-  header{display:flex;align-items:center;gap:12px;padding:6px 2px 16px}
+  header{display:flex;align-items:center;gap:8px;padding:6px 2px 16px}
   .mark{width:46px;height:46px;border-radius:13px;flex:none;position:relative;
     background:linear-gradient(150deg,var(--ember) 0%,var(--flame) 100%);
     display:grid;place-items:center;box-shadow:0 6px 18px rgba(255,107,53,.35)}
@@ -37,7 +37,7 @@
   .brand h1{margin:0;font-size:1.18rem;font-weight:800;letter-spacing:.2px}
   .brand p{margin:2px 0 0;font-size:.74rem;color:var(--ink2);font-weight:500}
   .lang{background:var(--card);border:1px solid var(--line);color:var(--ink);
-    border-radius:11px;font-size:.8rem;font-weight:700;padding:8px 12px;cursor:pointer;display:flex;gap:5px;align-items:center;font-family:inherit}
+    border-radius:11px;font-size:.78rem;font-weight:700;padding:8px 10px;cursor:pointer;display:flex;gap:4px;align-items:center;font-family:inherit;white-space:nowrap;flex:none}
   /* first-launch language gate */
   .lang-gate{position:fixed;inset:0;z-index:200;background:linear-gradient(180deg,#faf8f4,#f0ece3);display:flex;align-items:center;justify-content:center;padding:24px}
   .lang-gate.hide{display:none}
@@ -47,6 +47,21 @@
   .lang-gate-sub{font-size:.85rem;color:var(--ink2);line-height:1.7;margin-bottom:22px}
   .lang-gate-btn{display:block;width:100%;background:#fff;border:1.5px solid var(--line);color:var(--ink);border-radius:14px;padding:16px;font-size:1.05rem;font-weight:800;margin-bottom:11px;cursor:pointer;font-family:inherit}
   .lang-gate-btn:active{background:var(--bg2)}
+  /* help guide overlay */
+  .help-overlay{position:fixed;inset:0;z-index:210;background:rgba(30,24,18,.45);display:flex;align-items:flex-end;justify-content:center}
+  .help-overlay.hide{display:none}
+  .help-sheet{background:var(--bg);width:100%;max-width:560px;max-height:92vh;border-radius:20px 20px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 40px rgba(0,0,0,.3);animation:sheetUp .28s ease}
+  @keyframes sheetUp{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+  .help-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px 12px;border-bottom:1px solid var(--line);flex:none}
+  .help-head-title{font-size:1.1rem;font-weight:900;color:var(--ink)}
+  .help-close{background:var(--bg2);border:none;color:var(--ink2);width:34px;height:34px;border-radius:50%;font-size:1rem;cursor:pointer;font-family:inherit}
+  .help-content{overflow-y:auto;padding:18px;-webkit-overflow-scrolling:touch}
+  .help-sec{margin-bottom:20px}
+  .help-sec:last-child{margin-bottom:4px}
+  .help-sec h4{margin:0 0 7px;font-size:.95rem;font-weight:800;color:var(--ink);display:flex;gap:8px;align-items:center}
+  .help-sec p{margin:0 0 8px;font-size:.88rem;color:var(--ink2);line-height:1.6}
+  .help-sec b{color:var(--ink)}
+  .help-sec .step-n{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--ember);color:#fff;font-size:.75rem;font-weight:800;align-items:center;justify-content:center;flex:none}
 
   /* tabs */
   .tabs{display:flex;gap:6px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:5px;margin-bottom:16px}
@@ -88,6 +103,8 @@
   .wind-info{flex:1;min-width:0}
   .wind-k{font-size:.68rem;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
   .wind-v{font-size:1rem;font-weight:800;margin-top:2px}
+  .wind-v2{font-size:.8rem;color:var(--ink2);font-weight:600;margin-top:3px}
+  .wind-v2 .dry{color:#a8201a;font-weight:800}
   .wind-v small{font-weight:600;color:var(--ink2);font-size:.8rem}
   /* fire blowing-toward flag */
   .toward-tag{display:inline-flex;align-items:center;gap:4px;background:#fdeae8;color:#a8201a;font-size:.66rem;font-weight:800;padding:3px 7px;border-radius:7px;margin-top:4px}
@@ -197,10 +214,22 @@
     <button class="lang-gate-btn" data-l="ta">தமிழ்</button>
   </div>
 </div>
+
+<div class="help-overlay hide" id="helpOverlay">
+  <div class="help-sheet">
+    <div class="help-head">
+      <div class="help-head-title" id="t-guideTitle">User Guide</div>
+      <button class="help-close" id="helpCloseBtn" aria-label="Close">✕</button>
+    </div>
+    <div class="help-content" id="helpContent"></div>
+  </div>
+</div>
+
 <div class="wrap">
   <header>
     <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1.5 3 4 4.5 4 8a4 4 0 0 1-8 0c0-1.2.4-2 1-2.8C9 9 9.5 11 11 11c.8 0 1-.7 1-1.5C12 7 10.5 5 12 2z" fill="#fff"/><path d="M12 13c1.5 0 2.5 1.2 2.5 2.7C14.5 17.5 13.4 19 12 19s-2.5-1.5-2.5-3.3C9.5 14.2 10.5 13 12 13z" fill="#ffe0b0"/></svg></div>
     <div class="brand"><h1 id="t-title">火警守护</h1><p id="t-sub">NASA 卫星热点 · 实时监测</p></div>
+    <button class="lang" id="helpBtn" aria-label="Help">❓ <span id="helpLbl">Help</span></button>
     <button class="lang" id="langBtn">🌐 <span id="langLbl">EN</span></button>
   </header>
 
@@ -232,6 +261,7 @@
       <div class="wind-info">
         <div class="wind-k" id="t-windk">风 Wind</div>
         <div class="wind-v" id="windV">—</div>
+        <div class="wind-v2" id="windV2"></div>
       </div>
     </div>
     <div class="bomba" id="bombaCard" style="display:none">
@@ -363,12 +393,12 @@ const CFG = {
 //=================== i18n ===================
 const I = {
  zh:{
-  title:"火警守护", sub:"NASA 卫星热点 · 实时监测", lang:"EN",
+  title:"火警守护", sub:"NASA 卫星热点", lang:"EN",
   tabMon:"监测", tabFarm:"我的农场", tabAlert:"警报设置",
   riskLbl:"当前风险", checking:"检查中…", reading:"正在读取卫星数据",
   s1k:"最近热点", s2k:"监测半径", km:"公里",
   hsTitle:"附近热点", noHs:"附近暂无热点", noHsSub:"监测半径内未检测到卫星火点",
-  windk:"风向 Wind", windFrom:"来自", gustLbl:"阵风", windToward:"吹向农场",
+  windk:"风向 Wind", windFrom:"来自", gustLbl:"阵风", windToward:"吹向农场", humLbl:"湿度", noRain:"已", dryDays:"天没下雨", dryDays6:"6+ 天没下雨", dryWarn:"天气干燥，火险高",
   intensity:"强度", towardFarm:"火势正吹向你的农场",
   frpLow:"小火", frpMed:"较强", frpHigh:"猛烈",
   bombatitle:"🔥 附近有较严重火点",
@@ -422,15 +452,15 @@ const I = {
   waAlert:(f,n,d,r)=>`🔥 火警通报 · ${f}\n\nNASA 卫星检测到 ${n} 个火点\n最近距离: ${d} 公里 (${r})\n\n来源: NASA VIIRS\n请尽快巡查农场周边。`,
   waSafe:(f)=>`✅ ${f} 周边目前无卫星火点。来源: NASA VIIRS。`,
   foot:"数据来源 NASA FIRMS (VIIRS) · 卫星每日多次过境，热点为近实时检测，仅供参考。务必以现场实况为准。",
-  adv:"⚙️ 进阶 · 给管理员的设置"
+  adv:"⚙️ 进阶 · 给管理员的设置", helpLbl:"帮助"
  },
  en:{
-  title:"FireWatch", sub:"NASA satellite hotspots · live", lang:"中文",
+  title:"FireWatch", sub:"NASA satellite hotspots", lang:"中文",
   tabMon:"Monitor", tabFarm:"My farms", tabAlert:"Alerts",
   riskLbl:"Current risk", checking:"Checking…", reading:"Reading satellite data",
   s1k:"Recent hotspots", s2k:"Watch radius", km:"km",
   hsTitle:"Nearby hotspots", noHs:"No nearby hotspots", noHsSub:"No satellite fires within your watch radius",
-  windk:"Wind", windFrom:"from", gustLbl:"gust", windToward:"toward farm",
+  windk:"Wind", windFrom:"from", gustLbl:"gust", windToward:"toward farm", humLbl:"Humidity", noRain:"no rain", dryDays:"days", dryDays6:"6+ days no rain", dryWarn:"Dry conditions, high fire risk",
   intensity:"Intensity", towardFarm:"Fire blowing toward your farm",
   frpLow:"small", frpMed:"strong", frpHigh:"intense",
   bombatitle:"🔥 Serious hotspot nearby",
@@ -484,15 +514,15 @@ const I = {
   waAlert:(f,n,d,r)=>`🔥 FIRE ALERT · ${f}\n\nNASA detected ${n} hotspot(s)\nNearest: ${d} km (${r})\n\nSource: NASA VIIRS\nInspect the farm perimeter ASAP.`,
   waSafe:(f)=>`✅ ${f}: no satellite hotspots nearby. Source: NASA VIIRS.`,
   foot:"Data: NASA FIRMS (VIIRS) · satellites pass several times daily; hotspots are near-real-time and indicative only. Always confirm on the ground.",
-  adv:"⚙️ Advanced · admin setup"
+  adv:"⚙️ Advanced · admin setup", helpLbl:"Help"
  },
  ms:{
-  title:"FireWatch", sub:"Titik panas satelit NASA · langsung", lang:"BM",
+  title:"FireWatch", sub:"Titik panas satelit NASA", lang:"BM",
   tabMon:"Pantau", tabFarm:"Ladang saya", tabAlert:"Amaran",
   riskLbl:"Risiko semasa", checking:"Menyemak…", reading:"Membaca data satelit",
   s1k:"Titik panas terkini", s2k:"Jejari pantauan", km:"km",
   hsTitle:"Titik panas berdekatan", noHs:"Tiada titik panas berdekatan", noHsSub:"Tiada kebakaran satelit dalam jejari pantauan anda",
-  windk:"Angin", windFrom:"dari", gustLbl:"tiupan", windToward:"ke arah ladang",
+  windk:"Angin", windFrom:"dari", gustLbl:"tiupan", windToward:"ke arah ladang", humLbl:"Kelembapan", noRain:"tiada hujan", dryDays:"hari", dryDays6:"6+ hari tiada hujan", dryWarn:"Cuaca kering, risiko tinggi",
   intensity:"Keamatan", towardFarm:"Api bertiup ke arah ladang anda",
   frpLow:"kecil", frpMed:"kuat", frpHigh:"sengit",
   bombatitle:"🔥 Titik panas serius berdekatan",
@@ -546,15 +576,15 @@ const I = {
   waAlert:(f,n,d,r)=>`🔥 AMARAN KEBAKARAN · ${f}\n\nNASA kesan ${n} titik panas\nTerdekat: ${d} km (${r})\n\nSumber: NASA VIIRS\nPeriksa kawasan ladang segera.`,
   waSafe:(f)=>`✅ ${f}: tiada titik panas satelit berdekatan. Sumber: NASA VIIRS.`,
   foot:"Data: NASA FIRMS (VIIRS) · satelit melintas beberapa kali sehari; titik panas hampir masa nyata dan sebagai panduan sahaja. Sentiasa sahkan di tempat.",
-  adv:"⚙️ Lanjutan · tetapan admin"
+  adv:"⚙️ Lanjutan · tetapan admin", helpLbl:"Bantuan"
  },
  ta:{
-  title:"FireWatch", sub:"NASA செயற்கைக்கோள் தீப்புள்ளிகள் · நேரடி", lang:"த",
+  title:"FireWatch", sub:"NASA செயற்கைக்கோள் தீப்புள்ளிகள்", lang:"த",
   tabMon:"கண்காணி", tabFarm:"என் பண்ணைகள்", tabAlert:"எச்சரிக்கைகள்",
   riskLbl:"தற்போதைய ஆபத்து", checking:"சரிபார்க்கிறது…", reading:"செயற்கைக்கோள் தரவைப் படிக்கிறது",
   s1k:"சமீபத்திய தீப்புள்ளிகள்", s2k:"கண்காணிப்பு ஆரம்", km:"கி.மீ",
   hsTitle:"அருகிலுள்ள தீப்புள்ளிகள்", noHs:"அருகில் தீப்புள்ளிகள் இல்லை", noHsSub:"உங்கள் கண்காணிப்பு ஆரத்தில் செயற்கைக்கோள் தீ இல்லை",
-  windk:"காற்று", windFrom:"இருந்து", gustLbl:"பலத்த காற்று", windToward:"பண்ணையை நோக்கி",
+  windk:"காற்று", windFrom:"இருந்து", gustLbl:"பலத்த காற்று", windToward:"பண்ணையை நோக்கி", humLbl:"ஈரப்பதம்", noRain:"மழை இல்லை", dryDays:"நாட்கள்", dryDays6:"6+ நாட்கள் மழை இல்லை", dryWarn:"வறண்ட வானிலை, அதிக தீ ஆபத்து",
   intensity:"தீவிரம்", towardFarm:"தீ உங்கள் பண்ணையை நோக்கி வீசுகிறது",
   frpLow:"சிறிய", frpMed:"வலுவான", frpHigh:"கடுமையான",
   bombatitle:"🔥 அருகில் தீவிரமான தீப்புள்ளி",
@@ -608,8 +638,48 @@ const I = {
   waAlert:(f,n,d,r)=>`🔥 தீ எச்சரிக்கை · ${f}\n\nNASA ${n} தீப்புள்ளிகளைக் கண்டறிந்தது\nஅருகில்: ${d} கி.மீ (${r})\n\nஆதாரம்: NASA VIIRS\nபண்ணைப் பகுதியை உடனே சரிபார்க்கவும்.`,
   waSafe:(f)=>`✅ ${f}: அருகில் செயற்கைக்கோள் தீப்புள்ளிகள் இல்லை. ஆதாரம்: NASA VIIRS.`,
   foot:"தரவு: NASA FIRMS (VIIRS) · செயற்கைக்கோள்கள் ஒரு நாளில் பல முறை செல்கின்றன; தீப்புள்ளிகள் ஏறக்குறைய நேரடி, வழிகாட்டுதலுக்கு மட்டுமே. எப்போதும் நேரில் சரிபார்க்கவும்.",
-  adv:"⚙️ மேம்பட்ட · நிர்வாக அமைப்பு"
+  adv:"⚙️ மேம்பட்ட · நிர்வாக அமைப்பு", helpLbl:"உதவி"
  }
+};
+
+// ===== User guide content (per language) =====
+const GUIDE = {
+ zh:{ title:"使用指南", secs:[
+  {h:"🔥 这个 App 是做什么的？", b:"它用 NASA 卫星侦测你农场附近的火点，提前警告你，让你有时间应对。它<b>不能</b>灭火，也<b>不是</b>农场上空的即时监控 — 卫星每天只飞过几次。"},
+  {h:"📝 第一步：登记你的农场", b:"到「我的农场」分页，填写姓名与手机号，然后用「使用我的定位」或手动输入坐标，加入你的农场，并设定警报半径（建议 20–40 公里，因为卫星有空档，半径太小可能来不及反应）。"},
+  {h:"🔔 第二步：接收警报（两种方式）", b:"<b>有 Telegram：</b>到「警报设置」点「连接 Telegram」，按 Start，火点出现时会自动通知你 — 即使没打开 App。<br><br><b>没有 Telegram：</b>用 WhatsApp 把农场资料发给离你最近的协调员，由协调员代为监测。协调员是真人，回复不会即时。"},
+  {h:"🛰️ 重要：卫星有空档", b:"火点是卫星侦测的，两次飞过之间有空档，刚烧起来的火可能要等下一次才看得到。所以请把半径设大一点，并<b>相信自己的眼睛和鼻子</b> — 看到烟、闻到焦味，立刻行动，不要等 App。"},
+  {h:"🌤️ 天气与火险", b:"「监测」分页会显示<b>风向、湿度、几天没下雨</b>。空气干燥（湿度低）或久旱时，火更容易蔓延，App 会显示「天气干燥，火险高」提醒，并把附近火点的风险调高。天气资讯免费，<b>不需要 NASA 钥匙</b> — 只要加入农场就能看到。"},
+  {h:"🚒 发现真实火警时", h2:"", b:"在「监测」分页，若附近有较严重火点，会出现 BOMBA 联系卡。请先亲自查看确认，确认属实后再拨打 999（或 BOMBA 直线 994）。<b>切勿明知没有火而谎报</b> — 谎报是违法行为。"},
+  {h:"🌐 切换语言", b:"点右上角的 🌐 按钮，即可在中文、English、Bahasa Melayu、தமிழ் 之间循环切换。"}
+ ]},
+ en:{ title:"User Guide", secs:[
+  {h:"🔥 What does this app do?", b:"It uses NASA satellites to detect fires near your farm and warn you early, giving you time to act. It <b>cannot</b> put out fires, and it is <b>not</b> live monitoring over your farm — satellites only pass a few times a day."},
+  {h:"📝 Step 1: Register your farm", b:"Go to the <b>My farms</b> tab, fill in your name and mobile number, then add your farm using 'Use my location' or by typing coordinates. Set an alert radius (20–40 km recommended — because satellites have gaps, too small a radius leaves little time to react)."},
+  {h:"🔔 Step 2: Get alerts (two ways)", b:"<b>Have Telegram:</b> go to <b>Alerts</b>, tap 'Connect Telegram', press Start. You'll get alerts automatically when a hotspot appears — even with the app closed.<br><br><b>No Telegram:</b> send your farm details to your nearest coordinator via WhatsApp; they'll watch it for you. The coordinator is a real person, so replies aren't immediate."},
+  {h:"🛰️ Important: satellites have gaps", b:"Hotspots are detected by satellites, and there is a gap between passes — a fire that just started may not show until the next pass. So set a wider radius, and <b>trust your own eyes and nose</b> — if you see smoke or smell burning, act immediately, don't wait for the app."},
+  {h:"🌤️ Weather & fire risk", b:"The <b>Monitor</b> tab shows <b>wind, humidity, and days since rain</b>. Dry air (low humidity) or a long dry spell makes fires spread faster, so the app shows a 'Dry conditions, high fire risk' warning and raises the risk level of nearby hotspots. Weather is free and <b>needs no NASA key</b> — it appears as soon as you add a farm."},
+  {h:"🚒 When there's a real fire", b:"On the <b>Monitor</b> tab, if a serious hotspot is nearby, a BOMBA contact card appears. Check and confirm it yourself first, then call 999 (or BOMBA direct, 994). <b>Never knowingly make a false report</b> — false reports are a criminal offence."},
+  {h:"🌐 Change language", b:"Tap the 🌐 button at the top right to cycle through 中文, English, Bahasa Melayu, and தமிழ்."}
+ ]},
+ ms:{ title:"Panduan Pengguna", secs:[
+  {h:"🔥 Apa fungsi aplikasi ini?", b:"Ia menggunakan satelit NASA untuk mengesan kebakaran berhampiran ladang anda dan memberi amaran awal, supaya anda ada masa bertindak. Ia <b>tidak boleh</b> memadam api, dan ia <b>bukan</b> pemantauan langsung di atas ladang anda — satelit hanya melintas beberapa kali sehari."},
+  {h:"📝 Langkah 1: Daftar ladang anda", b:"Pergi ke tab <b>Ladang saya</b>, isi nama dan nombor telefon, kemudian tambah ladang menggunakan 'Guna lokasi saya' atau taip koordinat. Tetapkan jejari amaran (20–40 km disyorkan — kerana satelit ada jurang masa, jejari terlalu kecil menyukarkan tindakan)."},
+  {h:"🔔 Langkah 2: Terima amaran (dua cara)", b:"<b>Ada Telegram:</b> pergi ke <b>Amaran</b>, tekan 'Sambung Telegram', tekan Start. Anda akan terima amaran automatik apabila titik panas muncul — walaupun aplikasi ditutup.<br><br><b>Tiada Telegram:</b> hantar maklumat ladang kepada penyelaras terdekat melalui WhatsApp; mereka akan pantau untuk anda. Penyelaras ialah orang sebenar, jadi balasan tidak serta-merta."},
+  {h:"🛰️ Penting: satelit ada jurang masa", b:"Titik panas dikesan oleh satelit, dan ada jurang antara lintasan — kebakaran yang baru bermula mungkin tidak kelihatan sehingga lintasan berikutnya. Jadi tetapkan jejari lebih luas, dan <b>percaya mata dan hidung anda sendiri</b> — jika nampak asap atau bau terbakar, bertindak segera, jangan tunggu aplikasi."},
+  {h:"🌤️ Cuaca & risiko kebakaran", b:"Tab <b>Pantau</b> memaparkan <b>angin, kelembapan, dan berapa hari tiada hujan</b>. Udara kering (kelembapan rendah) atau musim kering panjang menjadikan api merebak lebih cepat, jadi aplikasi memaparkan amaran 'Cuaca kering, risiko tinggi' dan menaikkan tahap risiko titik panas berdekatan. Data cuaca percuma dan <b>tidak perlukan kunci NASA</b> — ia muncul sebaik anda tambah ladang."},
+  {h:"🚒 Apabila ada kebakaran sebenar", b:"Di tab <b>Pantau</b>, jika ada titik panas serius berdekatan, kad hubungan BOMBA akan muncul. Periksa dan sahkan sendiri dahulu, kemudian hubungi 999 (atau BOMBA terus, 994). <b>Jangan sekali-kali membuat laporan palsu dengan sengaja</b> — laporan palsu adalah kesalahan jenayah."},
+  {h:"🌐 Tukar bahasa", b:"Tekan butang 🌐 di penjuru atas kanan untuk berkitar antara 中文, English, Bahasa Melayu, dan தமிழ்."}
+ ]},
+ ta:{ title:"பயனர் வழிகாட்டி", secs:[
+  {h:"🔥 இந்தச் செயலி என்ன செய்கிறது?", b:"இது உங்கள் பண்ணைக்கு அருகிலுள்ள தீயை NASA செயற்கைக்கோள்கள் மூலம் கண்டறிந்து முன்கூட்டியே எச்சரிக்கிறது, செயல்பட உங்களுக்கு நேரம் தருகிறது. இது தீயை <b>அணைக்க முடியாது</b>, உங்கள் பண்ணைக்கு மேல் <b>நேரடி கண்காணிப்பும் அல்ல</b> — செயற்கைக்கோள்கள் ஒரு நாளில் சில முறை மட்டுமே செல்கின்றன."},
+  {h:"📝 படி 1: உங்கள் பண்ணையைப் பதிவு செய்யவும்", b:"<b>என் பண்ணைகள்</b> தாவலுக்குச் சென்று, பெயர் மற்றும் தொலைபேசி எண்ணை நிரப்பவும், பின்னர் 'என் இருப்பிடத்தைப் பயன்படுத்து' அல்லது ஆயத்தொலைவைத் தட்டச்சு செய்து பண்ணையைச் சேர்க்கவும். எச்சரிக்கை ஆரத்தை அமைக்கவும் (20–40 கி.மீ பரிந்துரைக்கப்படுகிறது — செயற்கைக்கோள்களுக்கு இடைவெளி உள்ளதால், மிகச் சிறிய ஆரம் செயல்பட நேரம் தராது)."},
+  {h:"🔔 படி 2: எச்சரிக்கைகளைப் பெறவும் (இரண்டு வழிகள்)", b:"<b>Telegram உள்ளது:</b> <b>எச்சரிக்கைகள்</b> பகுதிக்குச் சென்று 'Telegram இணைக்கவும்' தட்டி, Start அழுத்தவும். தீப்புள்ளி தோன்றும்போது தானாக எச்சரிக்கை வரும் — செயலி மூடியிருந்தாலும்.<br><br><b>Telegram இல்லை:</b> உங்கள் பண்ணை விவரத்தை அருகிலுள்ள ஒருங்கிணைப்பாளருக்கு WhatsApp மூலம் அனுப்பவும்; அவர்கள் உங்களுக்காகக் கண்காணிப்பார்கள். ஒருங்கிணைப்பாளர் ஒரு நிஜ நபர், எனவே பதில் உடனடியாக இராது."},
+  {h:"🛰️ முக்கியம்: செயற்கைக்கோள்களுக்கு இடைவெளி", b:"தீப்புள்ளிகளை செயற்கைக்கோள்கள் கண்டறிகின்றன, கடப்புகளுக்கு இடையே இடைவெளி உள்ளது — இப்போதுதான் தொடங்கிய தீ அடுத்த கடப்பு வரை தெரியாமல் இருக்கலாம். எனவே அகலமான ஆரத்தை அமைக்கவும், <b>உங்கள் கண்களையும் மூக்கையும் நம்பவும்</b> — புகை கண்டால் அல்லது எரியும் வாசனை வந்தால் உடனே செயல்படவும், செயலிக்காகக் காத்திருக்க வேண்டாம்."},
+  {h:"🌤️ வானிலை & தீ ஆபத்து", b:"<b>கண்காணி</b> தாவல் <b>காற்று, ஈரப்பதம், எத்தனை நாட்கள் மழை இல்லை</b> என்பதைக் காட்டுகிறது. வறண்ட காற்று (குறைந்த ஈரப்பதம்) அல்லது நீண்ட வறட்சி தீ வேகமாகப் பரவச் செய்யும், எனவே செயலி 'வறண்ட வானிலை, அதிக தீ ஆபத்து' எச்சரிக்கையைக் காட்டி அருகிலுள்ள தீப்புள்ளிகளின் ஆபத்து நிலையை உயர்த்துகிறது. வானிலைத் தரவு இலவசம், <b>NASA விசை தேவையில்லை</b> — பண்ணையைச் சேர்த்தவுடன் தோன்றும்."},
+  {h:"🚒 உண்மையான தீ ஏற்படும்போது", b:"<b>கண்காணி</b> தாவலில், அருகில் தீவிரமான தீப்புள்ளி இருந்தால் BOMBA தொடர்பு அட்டை தோன்றும். முதலில் நீங்களே சரிபார்த்து உறுதிசெய்து, பின்னர் 999 (அல்லது BOMBA நேரடி, 994) அழைக்கவும். <b>வேண்டுமென்றே பொய்யான அறிக்கை செய்ய வேண்டாம்</b> — பொய் அறிக்கை ஒரு குற்றம்."},
+  {h:"🌐 மொழியை மாற்றவும்", b:"வலது மேல் மூலையில் உள்ள 🌐 பொத்தானை தட்டி 中文, English, Bahasa Melayu, தமிழ் இடையே சுழற்றவும்."}
+ ]}
 };
 
 let lang = localStorage.getItem("fw_lang")||"zh";
@@ -644,13 +714,15 @@ function windToward(brDeg,windFrom){
   return diff<=50;  // fire sits within 50 deg of "directly upwind" -> wind carries it toward farm
 }
 // risk now blends distance, fire intensity (FRP), and wind direction
-function riskOf(d,frp,toward){
+function riskOf(d,frp,toward,hum,dsr){
   let lvl = d<2?3 : d<5?2 : d<10?1 : 0;          // base on distance (0-3)
   if(!isNaN(frp)&&frp!=null){
     if(frp>=100) lvl++;                            // very intense fire bumps up
     else if(frp>=50 && lvl<3) lvl++;              // strong fire bumps up
   }
   if(toward) lvl++;                                // blowing toward farm bumps up
+  // dry conditions make any fire more dangerous — bump once if very dry air OR long dry spell
+  if((hum!=null && hum<40) || (dsr!=null && dsr>=5)) lvl++;
   lvl=Math.min(lvl,3);
   return ["LOW","MEDIUM","HIGH","CRITICAL"][lvl];
 }
@@ -662,44 +734,84 @@ function toast(msg){const el=document.getElementById("toast");el.textContent=msg
   clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("show"),2200);}
 
 //=================== fetch ===================
+// fetch weather independently (no NASA key needed — Open-Meteo is free/keyless)
+async function loadWeather(farm){
+  const windUrl=`https://api.open-meteo.com/v1/forecast?latitude=${farm.lat}&longitude=${farm.lon}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,relative_humidity_2m&daily=precipitation_sum&past_days=7&forecast_days=1&windspeed_unit=kmh&timezone=auto`;
+  try{
+    const windRes=await fetch(windUrl).then(r=>r.json());
+    let wind=null;
+    if(windRes && windRes.current){
+      wind={
+        spd:windRes.current.wind_speed_10m,
+        dir:windRes.current.wind_direction_10m,
+        gust:windRes.current.wind_gusts_10m,
+        hum:windRes.current.relative_humidity_2m
+      };
+      let dsr=null;
+      if(windRes.daily && Array.isArray(windRes.daily.precipitation_sum)){
+        const arr=windRes.daily.precipitation_sum; dsr=0;
+        for(let k=arr.length-1;k>=0;k--){ if(arr[k]!=null && arr[k]>=1){break;} dsr++; }
+        if(dsr>arr.length-1) dsr=arr.length-1;
+      }
+      wind.dsr=dsr;
+    }
+    lastWind=wind;
+  }catch(e){ /* weather optional; leave lastWind as-is */ }
+  renderWeatherCard();
+}
+function renderWeatherCard(){
+  const t=I[lang];
+  const wc=document.getElementById("windCard");
+  if(!wc) return;
+  if(lastWind){
+    wc.style.display="flex";
+    const blowTo=(lastWind.dir+180)%360;
+    document.getElementById("windArrow").style.transform=`rotate(${blowTo}deg)`;
+    const gust=lastWind.gust!=null?` · ${t.gustLbl} ${Math.round(lastWind.gust)}`:"";
+    document.getElementById("windV").innerHTML=
+      `${Math.round(lastWind.spd)} <small>km/h</small> · ${t.windFrom} ${t.dir[dir8(lastWind.dir)]}${gust?` <small>${gust}</small>`:""}`;
+    document.getElementById("t-windk").textContent=t.windk;
+    const parts=[];
+    if(lastWind.hum!=null) parts.push(`${t.humLbl} ${Math.round(lastWind.hum)}%`);
+    if(lastWind.dsr!=null){
+      if(lastWind.dsr>=6){ parts.push(t.dryDays6); }
+      else { parts.push(`${t.noRain} ${lastWind.dsr} ${t.dryDays}`); }
+    }
+    const isDry = (lastWind.hum!=null && lastWind.hum<40) || (lastWind.dsr!=null && lastWind.dsr>=5);
+    const dryTag = isDry ? ` · <span class="dry">⚠️ ${t.dryWarn}</span>` : "";
+    document.getElementById("windV2").innerHTML = parts.join(" · ") + dryTag;
+  } else { wc.style.display="none"; }
+}
 async function loadData(){
   const t=I[lang], key=lget("key","");
   if(!farms.length){
     setBanner("safe",t.safeBig,t.noFarms);
     document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🌾</div>${t.noFarms}</div>`;
     document.getElementById("s1v").textContent="—";document.getElementById("s2v").textContent="—";
+    const wc=document.getElementById("windCard");if(wc)wc.style.display="none";
     return;
   }
   const farm=farms[active];
   setBanner("safe",t.checking,"<span class='spin'></span>"+t.reading);
+  // load weather independently — works even without a NASA key, shows dry/wind warning
+  loadWeather(farm);
   if(!key){
     setBanner("med",t.checking,t.errKey);
     document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🔑</div>${t.errKey}</div>`;
+    document.getElementById("s2v").innerHTML=farm.rad+" <small>"+t.km+"</small>";
     return;
   }
   const buf=(farm.rad+10)/111;
   const box=`${(farm.lon-buf).toFixed(3)},${(farm.lat-buf).toFixed(3)},${(farm.lon+buf).toFixed(3)},${(farm.lat+buf).toFixed(3)}`;
   const url=`https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/VIIRS_SNPP_NRT/${box}/1`;
-  const windUrl=`https://api.open-meteo.com/v1/forecast?latitude=${farm.lat}&longitude=${farm.lon}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&windspeed_unit=kmh`;
   try{
-    // fetch fire + wind together
-    const [fireRes, windRes] = await Promise.all([
-      fetch(url).then(r=>r.text()),
-      fetch(windUrl).then(r=>r.json()).catch(()=>null)
-    ]);
-    const txt=fireRes;
+    const txt=await fetch(url).then(r=>r.text());
     if(/invalid|error/i.test(txt.slice(0,60))) throw new Error(txt.slice(0,80));
 
-    // parse wind (may be null if Open-Meteo failed — fire data still works)
-    let wind=null;
-    if(windRes && windRes.current){
-      wind={
-        spd:windRes.current.wind_speed_10m,
-        dir:windRes.current.wind_direction_10m,   // direction wind blows FROM (deg)
-        gust:windRes.current.wind_gusts_10m
-      };
-    }
-    lastWind=wind;
+    // weather already loaded via loadWeather(); reuse lastWind for risk + toward
+    const wind=lastWind;
+    const hum = wind?wind.hum:null;
+    const dsr = wind?wind.dsr:null;
 
     const lines=txt.trim().split("\n"), hdr=lines[0].split(",");
     const iLa=hdr.indexOf("latitude"),iLo=hdr.indexOf("longitude"),iD=hdr.indexOf("acq_date"),iT=hdr.indexOf("acq_time");
@@ -715,7 +827,7 @@ async function loadData(){
         const toward=wind?windToward(brDeg,wind.dir):false;
         hits.push({la,lo,d,br:dir8(brDeg),date:c[iD]||"",time:c[iT]||"",
           frp:isNaN(frp)?null:frp, conf, toward,
-          rk:riskOf(d,frp,toward)});
+          rk:riskOf(d,frp,toward,hum,dsr)});
       }}
     hits.sort((a,b)=>a.d-b.d);lastData=hits;render(hits);
   }catch(err){
@@ -749,17 +861,7 @@ function render(hits){
   document.getElementById("bombaCallWrap").style.display = "none";  // always start collapsed
   document.getElementById("bombaVerifyBtn").style.display = "flex"; // restore stage-1 button
   // wind card
-  const wc=document.getElementById("windCard");
-  if(lastWind){
-    wc.style.display="flex";
-    // arrow points in the direction the wind is BLOWING TO (windFrom + 180)
-    const blowTo=(lastWind.dir+180)%360;
-    document.getElementById("windArrow").style.transform=`rotate(${blowTo}deg)`;
-    const gust=lastWind.gust!=null?` · ${t.gustLbl} ${Math.round(lastWind.gust)}`:"";
-    document.getElementById("windV").innerHTML=
-      `${Math.round(lastWind.spd)} <small>km/h</small> · ${t.windFrom} ${t.dir[dir8(lastWind.dir)]}${gust?` <small>${gust}</small>`:""}`;
-    document.getElementById("t-windk").textContent=t.windk;
-  } else { wc.style.display="none"; }
+  renderWeatherCard();
 
   if(!hits.length){list.innerHTML=`<div class="empty"><div class="e-ico">🌿</div><div style="font-weight:800;color:var(--ink2)">${t.noHs}</div><div style="font-size:.8rem;margin-top:4px">${t.noHsSub}</div></div>`;return;}
   list.innerHTML=hits.slice(0,12).map(h=>{
@@ -916,6 +1018,7 @@ function applyLang(){
   const order=["zh","en","ms","ta"];
   const nextL=order[(order.indexOf(lang)+1)%order.length];
   const ll=document.getElementById("langLbl");if(ll)ll.textContent=LBL[nextL];
+  const hl=document.getElementById("helpLbl");if(hl)hl.textContent=t.helpLbl;
   S("tab-mon",t.tabMon);S("tab-farm",t.tabFarm);S("tab-alert",t.tabAlert);
   S("s1k",t.s1k);S("s2k",t.s2k);S("hs-title",t.hsTitle);
   S("t-helptitle",t.helptitle);S("t-radhint",t.radhint);
@@ -954,6 +1057,23 @@ document.getElementById("langBtn").onclick=()=>{
   lang=LANG_CYCLE[(i+1)%LANG_CYCLE.length];
   localStorage.setItem("fw_lang",lang);
   applyLang();renderChips();renderFarmList();populateCoordinators();loadData();
+  if(!document.getElementById("helpOverlay").classList.contains("hide")) renderGuide();
+};
+function renderGuide(){
+  const g=GUIDE[lang]||GUIDE.en;
+  document.getElementById("t-guideTitle").textContent=g.title;
+  document.getElementById("helpContent").innerHTML=g.secs.map(s=>
+    `<div class="help-sec"><h4>${s.h}</h4><p>${s.b}</p></div>`).join("");
+}
+document.getElementById("helpBtn").onclick=()=>{
+  renderGuide();
+  document.getElementById("helpOverlay").classList.remove("hide");
+};
+document.getElementById("helpCloseBtn").onclick=()=>{
+  document.getElementById("helpOverlay").classList.add("hide");
+};
+document.getElementById("helpOverlay").onclick=(e)=>{
+  if(e.target.id==="helpOverlay") document.getElementById("helpOverlay").classList.add("hide");
 };
 document.getElementById("refreshBtn").onclick=loadData;
 document.getElementById("bombaVerifyBtn").onclick=()=>{
