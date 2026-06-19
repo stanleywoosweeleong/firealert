@@ -8,17 +8,17 @@
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22FireWatch%22%2C%22short_name%22%3A%22FireWatch%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a1410%22%2C%22theme_color%22%3A%22%231a1410%22%7D">
 <style>
   :root{
-    --bg:#1a1410; --bg2:#241a13; --card:#2c2018; --line:#3d2e22;
-    --ink:#f5ede3; --ink2:#bba48f; --ink3:#7d6a59;
-    --ember:#ff6b35; --ember2:#ff8f5e; --flame:#ffb627; --char:#0f0b08;
-    --crit:#ff3b30; --high:#ff6b35; --med:#ffb627; --low:#5ec26a; --safe:#4a8c5a;
+    --bg:#f6f4ef; --bg2:#eceae3; --card:#ffffff; --line:#e2ddd2;
+    --ink:#2c2722; --ink2:#6b6358; --ink3:#9a9183;
+    --ember:#e2682f; --ember2:#f0875a; --flame:#e8941f; --char:#ffffff;
+    --crit:#d92d20; --high:#e2682f; --med:#d99413; --low:#3f9d52; --safe:#3f9d52;
     --tg:#2aabee; --wa:#25d366;
-    --shadow:0 8px 28px rgba(0,0,0,.55);
+    --shadow:0 4px 18px rgba(60,50,40,.10);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{
-    background:radial-gradient(120% 80% at 50% -10%, #2a1c10 0%, var(--bg) 55%),var(--bg);
+    background:linear-gradient(180deg,#faf8f4 0%,var(--bg) 30%);
     color:var(--ink);
     font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
     min-height:100vh; padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
@@ -48,17 +48,16 @@
 
   /* banner */
   .banner{border-radius:18px;padding:18px;margin-bottom:14px;position:relative;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow)}
-  .banner .lbl{font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:800;opacity:.85}
+  .banner .lbl{font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:800;opacity:.7}
   .banner .big{font-size:1.85rem;font-weight:900;margin:4px 0 2px;line-height:1.05}
-  .banner .sub{font-size:.82rem;opacity:.9}
-  .banner .pulse{position:absolute;right:-30px;top:-30px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%);animation:breathe 3s ease-in-out infinite}
-  @keyframes breathe{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:1}}
-  .b-safe{background:linear-gradient(135deg,#1f3a26,#16261a)}
-  .b-low{background:linear-gradient(135deg,#2c3a1c,#1d2615)}
-  .b-med{background:linear-gradient(135deg,#4a3410,#2e220e);border-color:#6b4d18}
-  .b-high{background:linear-gradient(135deg,#5a2a12,#34190c);border-color:#8a3d1c}
-  .b-crit{background:linear-gradient(135deg,#6e1714,#3a0d0b);border-color:#a82420;animation:critglow 1.6s ease-in-out infinite}
-  @keyframes critglow{0%,100%{box-shadow:0 0 0 0 rgba(255,59,48,0),var(--shadow)}50%{box-shadow:0 0 0 4px rgba(255,59,48,.25),var(--shadow)}}
+  .banner .sub{font-size:.82rem;opacity:.85}
+  .banner .pulse{display:none}
+  .b-safe{background:#eaf6ec;border-color:#cfe8d4;color:#1f5e30}
+  .b-low{background:#eef6e8;border-color:#d6e8c6;color:#3a6a1f}
+  .b-med{background:#fdf3e0;border-color:#f1dcae;color:#8a5e08}
+  .b-high{background:#fdede3;border-color:#f5cfb6;color:#a64516}
+  .b-crit{background:#fdeae8;border-color:#f3c5bf;color:#a8201a;animation:critglow 2s ease-in-out infinite}
+  @keyframes critglow{0%,100%{box-shadow:var(--shadow)}50%{box-shadow:0 0 0 3px rgba(217,45,32,.18),var(--shadow)}}
 
   .farms{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;margin:0 -2px;scrollbar-width:none}
   .farms::-webkit-scrollbar{display:none}
@@ -72,6 +71,16 @@
   .stat .v small{font-size:.7rem;font-weight:600;color:var(--ink2)}
 
   .sect{font-size:.78rem;color:var(--ink3);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin:18px 2px 9px}
+  /* wind card */
+  .wind{display:flex;align-items:center;gap:13px;background:#fff;border:1px solid var(--line);border-radius:15px;padding:13px 15px;margin-bottom:14px}
+  .wind-ic{width:42px;height:42px;border-radius:50%;background:var(--bg2);display:grid;place-items:center;font-size:1.3rem;flex:none;transition:transform .4s ease;color:var(--ink)}
+  .wind-info{flex:1;min-width:0}
+  .wind-k{font-size:.68rem;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .wind-v{font-size:1rem;font-weight:800;margin-top:2px}
+  .wind-v small{font-weight:600;color:var(--ink2);font-size:.8rem}
+  /* fire blowing-toward flag */
+  .toward-tag{display:inline-flex;align-items:center;gap:4px;background:#fdeae8;color:#a8201a;font-size:.66rem;font-weight:800;padding:3px 7px;border-radius:7px;margin-top:4px}
+  .hs .frp{font-size:.72rem;color:var(--ink2);font-weight:600}
 
   .hs{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 14px;margin-bottom:9px;display:flex;align-items:center;gap:12px}
   .hs .dot{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 10px currentColor}
@@ -92,11 +101,27 @@
   /* forms */
   .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
   .panel h3{margin:0 0 4px;font-size:1rem;font-weight:800}
-  .panel .hint{font-size:.8rem;color:var(--ink2);line-height:1.55;margin:0 0 12px}
+  .panel.primary{border:2px solid var(--tg);box-shadow:0 4px 18px rgba(42,171,238,.15)}
+  .badge{display:inline-block;background:var(--tg);color:#fff;font-size:.66rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+  .badge-soft{display:inline-block;background:var(--bg2);color:var(--ink2);font-size:.66rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+  /* help card */
+  .help{background:#fff;border:1px solid var(--line);border-left:4px solid var(--med);border-radius:14px;margin-bottom:14px;overflow:hidden}
+  .help summary{padding:13px 15px;font-weight:800;font-size:.9rem;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;color:var(--ink)}
+  .help summary::-webkit-details-marker{display:none}
+  .help summary .ar{transition:transform .2s;color:var(--ink3)}
+  .help[open] summary .ar{transform:rotate(180deg)}
+  .help-body{padding:0 15px 15px;font-size:.86rem;color:var(--ink2);line-height:1.6}
+  .help-body p{margin:6px 0}
+  .help-body b{color:var(--ink)}
+  .help-row{display:flex;gap:10px;align-items:flex-start;margin:10px 0}
+  .help-row .hi{font-size:1.1rem;line-height:1.3;flex:none}
+  .radhint{font-size:.8rem;color:var(--med);font-weight:600;line-height:1.45;margin:2px 0 0;display:flex;gap:6px;align-items:flex-start}
+  .radhint .hi{flex:none}
+  .panel .hint{font-size:.86rem;color:var(--ink2);line-height:1.55;margin:0 0 12px}
   .field{display:flex;flex-direction:column;gap:5px;margin:11px 0}
-  .field label{font-size:.74rem;font-weight:700;color:var(--ink3)}
-  .field input{background:var(--char);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:12px;font-size:.9rem;font-family:inherit}
-  .field input:focus{outline:none;border-color:var(--ember)}
+  .field label{font-size:.8rem;font-weight:700;color:var(--ink2)}
+  .field input{background:#faf9f6;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:13px;font-size:.95rem;font-family:inherit}
+  .field input:focus{outline:none;border-color:var(--ember);background:#fff}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .save{background:linear-gradient(135deg,var(--ember),var(--flame));color:var(--char);border:none;border-radius:12px;padding:14px;font-weight:800;width:100%;cursor:pointer;font-family:inherit;font-size:.92rem}
   .btn-loc{background:var(--bg2);color:var(--flame);border:1px solid var(--line);border-radius:10px;padding:12px;font-weight:700;width:100%;cursor:pointer;font-family:inherit;font-size:.86rem;display:flex;align-items:center;justify-content:center;gap:7px}
@@ -117,8 +142,8 @@
   .status.ok .ic{background:var(--low);box-shadow:0 0 8px var(--low)}
   .status.no .ic{background:var(--ink3)}
   .step{display:flex;gap:11px;margin:13px 0}
-  .step .n{width:24px;height:24px;border-radius:50%;background:var(--char);color:var(--flame);font-weight:800;font-size:.78rem;display:grid;place-items:center;flex:none;border:1px solid var(--line)}
-  .step .sx{font-size:.84rem;color:var(--ink2);line-height:1.5}
+  .step .n{width:24px;height:24px;border-radius:50%;background:var(--ember);color:#fff;font-weight:800;font-size:.78rem;display:grid;place-items:center;flex:none}
+  .step .sx{font-size:.9rem;color:var(--ink2);line-height:1.55}
   .step .sx b{color:var(--ink)}
 
   details{background:var(--card);border:1px solid var(--line);border-radius:15px;margin-top:14px;overflow:hidden}
@@ -127,7 +152,7 @@
   summary .ar{transition:transform .2s;color:var(--ink3)}
   details[open] summary .ar{transform:rotate(180deg)}
   .det-body{padding:0 16px 16px;font-size:.84rem;color:var(--ink2);line-height:1.6}
-  .det-body code{background:var(--char);padding:2px 6px;border-radius:5px;font-size:.8em;color:var(--flame);word-break:break-all}
+  .det-body code{background:var(--bg2);padding:2px 6px;border-radius:5px;font-size:.8em;color:var(--ember);word-break:break-all}
 
   .upd{text-align:center;font-size:.72rem;color:var(--ink3);margin:6px 0 0}
   .foot{text-align:center;color:var(--ink3);font-size:.72rem;margin-top:22px;line-height:1.7}
@@ -160,9 +185,20 @@
       <div class="sub" id="b-sub"><span class="spin"></span>正在读取卫星数据</div>
     </div>
     <div class="farms" id="farmchips"></div>
+    <details class="help" id="helpCard">
+      <summary><span id="t-helptitle">❓ 这个警报怎么运作？</span><span class="ar">▾</span></summary>
+      <div class="help-body" id="helpBody"></div>
+    </details>
     <div class="grid">
       <div class="stat"><div class="k" id="s1k">最近热点</div><div class="v" id="s1v">—</div></div>
       <div class="stat"><div class="k" id="s2k">监测半径</div><div class="v" id="s2v">—</div></div>
+    </div>
+    <div class="wind" id="windCard" style="display:none">
+      <div class="wind-ic" id="windArrow">↑</div>
+      <div class="wind-info">
+        <div class="wind-k" id="t-windk">风 Wind</div>
+        <div class="wind-v" id="windV">—</div>
+      </div>
     </div>
     <div class="sect" id="hs-title">附近热点</div>
     <div id="hslist"></div>
@@ -178,22 +214,23 @@
     <div class="panel">
       <h3 id="t-prof">农户资料</h3>
       <p class="hint" id="t-profhint">填写姓名与手机号码，方便接收警报。</p>
-      <div class="field"><label id="f-uname">姓名 Name</label><input id="i-uname" placeholder="胡瑞良"></div>
-      <div class="field"><label id="f-phone">手机号码 Mobile (含国码)</label><input id="i-phone" inputmode="tel" placeholder="+60193824740"></div>
+      <div class="field"><label id="f-uname">姓名 Name</label><input id="i-uname"></div>
+      <div class="field"><label id="f-phone">手机号码 Mobile (含国码)</label><input id="i-phone" inputmode="tel"></div>
       <button class="save" id="saveProfBtn">保存资料</button>
     </div>
 
     <div class="panel">
       <h3 id="t-addfarm">加入农场</h3>
       <p class="hint" id="t-addhint">用「定位」自动取得 GPS，或手动输入坐标。可加入多个农场。</p>
-      <div class="field"><label id="f-fname">农场名称 Farm name</label><input id="i-fname" placeholder="顺豪生态榴莲园"></div>
+      <div class="field"><label id="f-fname">农场名称 Farm name</label><input id="i-fname"></div>
       <button class="btn-loc" id="locBtn">📍 <span id="t-loc">使用我的定位</span></button>
       <div class="or" id="t-or">或手动输入</div>
       <div class="two">
-        <div class="field"><label id="f-lat">纬度 Lat</label><input id="i-lat" inputmode="decimal" placeholder="1.5533"></div>
-        <div class="field"><label id="f-lon">经度 Lon</label><input id="i-lon" inputmode="decimal" placeholder="110.3592"></div>
+        <div class="field"><label id="f-lat">纬度 Lat</label><input id="i-lat" inputmode="decimal"></div>
+        <div class="field"><label id="f-lon">经度 Lon</label><input id="i-lon" inputmode="decimal"></div>
       </div>
-      <div class="field"><label id="f-rad">警报半径 Radius (km)</label><input id="i-rad" inputmode="decimal" placeholder="30"></div>
+      <div class="field"><label id="f-rad">警报半径 Radius (km)</label><input id="i-rad" inputmode="decimal"></div>
+      <p class="radhint"><span class="hi">⏱️</span><span id="t-radhint"></span></p>
       <button class="save" id="addFarmBtn">＋ 加入农场</button>
     </div>
 
@@ -205,7 +242,8 @@
   <div class="view" id="v-alerts">
     <div class="status no" id="connStatus"><span class="ic"></span><span id="connTxt">尚未连接 Telegram</span></div>
 
-    <div class="panel">
+    <div class="panel primary">
+      <span class="badge" id="t-tgbadge">推荐 · 自动</span>
       <h3 id="t-howtitle">如何自动接收警报</h3>
       <p class="hint" id="t-howhint">手机 App 无法在后台自动推送。连接 Telegram 后，云端会在火点出现时自动通知你 — 即使没打开 App。</p>
       <div class="step"><div class="n">1</div><div class="sx" id="st1"></div></div>
@@ -217,17 +255,31 @@
     </div>
 
     <div class="panel">
-      <h3 id="t-watitle">WhatsApp 警报</h3>
+      <span class="badge-soft" id="t-wabadge">无 Telegram 可用</span>
+      <h3 id="t-watitle">把农场发给协调员</h3>
       <p class="hint" id="t-wahint"></p>
-      <button class="save" id="waConnectBtn" style="background:var(--wa);color:#063">📲 <span id="t-waconnect">用 WhatsApp 联系登记</span></button>
+      <button class="save" id="waConnectBtn" style="background:var(--wa);color:#063">📲 <span id="t-waconnect">用 WhatsApp 发送农场资料</span></button>
     </div>
 
-    <div class="field" style="margin-top:14px"><label id="f-key">NASA FIRMS MAP_KEY</label><input id="i-key" placeholder="xxxxxxxxxxxxxxxx"></div>
-    <button class="save" id="saveKeyBtn" style="margin-top:4px">保存 Key</button>
+    <div class="panel" style="margin-top:14px">
+      <h3 id="t-keytitle">NASA 火点钥匙 Key</h3>
+      <p class="hint" id="t-keyhint"></p>
+      <div class="field"><label id="f-key">NASA FIRMS MAP_KEY</label><input id="i-key"></div>
+      <button class="save" id="saveKeyBtn">保存 Key</button>
+      <a id="getKeyLink" href="https://firms.modaps.eosdis.nasa.gov/api/area/" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:10px;color:var(--tg);font-size:.85rem;font-weight:700;text-decoration:none"></a>
+    </div>
 
     <details id="adv">
       <summary><span id="t-adv">⚙️ 进阶 · 给管理员的设置</span><span class="ar">▾</span></summary>
-      <div class="det-body" id="adv-body"></div>
+      <div class="det-body">
+        <div id="adv-paste-wrap" style="margin-bottom:16px">
+          <div style="font-weight:800;color:var(--ink);margin-bottom:4px" id="t-pastetitle">加入农户农场</div>
+          <p style="margin:0 0 8px" id="t-pastehint"></p>
+          <textarea id="i-paste" rows="3" style="width:100%;background:#faf9f6;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:11px;font-size:.85rem;font-family:inherit;resize:vertical" placeholder="FW1|..."></textarea>
+          <button class="save" id="pasteAddBtn" style="margin-top:8px" >加入这些农场</button>
+        </div>
+        <div id="adv-body"></div>
+      </div>
     </details>
   </div>
 
@@ -253,9 +305,14 @@ const I = {
   riskLbl:"当前风险", checking:"检查中…", reading:"正在读取卫星数据",
   s1k:"最近热点", s2k:"监测半径", km:"公里",
   hsTitle:"附近热点", noHs:"附近暂无热点", noHsSub:"监测半径内未检测到卫星火点",
+  windk:"风向 Wind", windFrom:"来自", gustLbl:"阵风", windToward:"吹向农场",
+  intensity:"强度", towardFarm:"火势正吹向你的农场",
+  frpLow:"小火", frpMed:"较强", frpHigh:"猛烈",
   wa:"WhatsApp 转发", tgshare:"Telegram 转发", refresh:"↻ 刷新数据",
   prof:"农户资料", profhint:"填写姓名与手机号码，方便接收警报。",
   uname:"姓名 Name", phone:"手机号码 Mobile (含国码)", saveProf:"保存资料",
+  ph_uname:"请输入您的姓名", ph_phone:"例如 +60123456789", ph_fname:"请输入您的农场名称",
+  ph_lat:"例如 1.5533", ph_lon:"例如 110.3592", ph_rad:"例如 30", ph_key:"贴上您的 NASA Key",
   addfarm:"加入农场", addhint:"用「定位」自动取得 GPS，或手动输入坐标。可加入多个农场。",
   fname:"农场名称 Farm name", loc:"使用我的定位", or:"或手动输入",
   lat:"纬度 Lat", lon:"经度 Lon", rad:"警报半径 Radius (km)", addFarm:"＋ 加入农场",
@@ -266,10 +323,20 @@ const I = {
   st2:"点下方按钮打开 Telegram，按 <b>Start / 开始</b>。",
   st3:"完成！火点出现时会自动收到 Telegram 通知。",
   connect:"连接 Telegram 接收警报",
-  watitle:"WhatsApp 警报",
-  wahint:"WhatsApp 自动推送需由管理员开通。点下方把你的登记资料用 WhatsApp 发给管理员，即可加入 WhatsApp 警报名单。",
-  waconnect:"用 WhatsApp 联系登记",
+  tgbadge:"推荐 · 自动", wabadge:"无 Telegram 可用",
+  watitle:"把农场发给协调员",
+  wahint:"没有 Telegram 账号？把你的姓名与农场位置用 WhatsApp 发给协调员，由协调员代为监测你的农场，火点出现时会通知你。",
+  waconnect:"用 WhatsApp 发送农场资料",
+  waFarmMsg:(name,phone,readable,code)=>`📋 火警守护 · 农场登记\n\n姓名: ${name}\n手机: ${phone}\n\n农场:\n${readable}\n\n———\n协调员代码（请勿修改）:\n${code}`,
+  pastetitle:"加入农户农场", pastehint:"把农户用 WhatsApp 发来的「协调员代码」整段贴在这里（或只贴 FW1| 那一行），即可把他的农场加入你的监测名单。",
+  pasteAdd:"加入这些农场", pasteOk:"已加入 {n} 个农场 ✓", pasteErr:"找不到有效的代码，请贴上完整的 FW1| 代码", someFarm:"农户农场",
+  helptitle:"❓ 这个警报怎么运作？",
+  help1ic:"🛰️", help1:"<b>不是农场上空的即时监控。</b>火点是由 NASA 卫星侦测的。卫星每天只飞过马来西亚几次，所以两次飞过之间会有<b>空档</b> — 刚烧起来的火，可能要等下一次卫星飞过才看得到。",
+  help2ic:"📏", help2:"<b>把半径设大一点，争取时间。</b>因为有空档，火可能在你收到通知前已经烧近了。半径设远一些，让你<b>在火还远的时候</b>就收到预警，而不是火快到了才知道。",
+  help3ic:"👃", help3:"<b>相信自己的眼睛和鼻子。</b>这个 App 是「提早预警」工具，不能取代现场判断。看到烟、闻到焦味，就立刻行动 — 不要等 App。",
+  radhint:"建议半径设远一点（如 20–40 公里）。卫星有空档，半径太小可能等火靠近才通知，来不及反应。",
   key:"NASA FIRMS MAP_KEY", saveKey:"保存 Key",
+  keytitle:"NASA 火点钥匙 Key", keyhint:"监测画面需要一组免费的 NASA 钥匙。点下方按钮免费申请（输入电邮即可取得），再贴回这里。", getKey:"→ 免费申请 NASA 钥匙",
   saved:"已保存 ✓", added:"已加入 ✓", needprof:"请先填写姓名与手机号",
   needfarm:"请先填写农场名称与坐标", locing:"定位中…", locerr:"无法取得定位，请手动输入",
   locok:"已取得定位 ✓",
@@ -281,7 +348,6 @@ const I = {
   dir:{N:"正北",NE:"东北",E:"正东",SE:"东南",S:"正南",SW:"西南",W:"正西",NW:"西北"},
   rk:{CRITICAL:"紧急",HIGH:"高",MEDIUM:"中",LOW:"低"},
   err:"无法读取数据", errKey:"请到「警报设置」填入 NASA MAP_KEY",
-  waReg:(name,phone,farms)=>`📋 火警守护 登记\n\n姓名: ${name}\n手机: ${phone}\n\n农场:\n${farms}\n\n请把我加入 WhatsApp 警报名单。`,
   waAlert:(f,n,d,r)=>`🔥 火警通报 · ${f}\n\nNASA 卫星检测到 ${n} 个火点\n最近距离: ${d} 公里 (${r})\n\n来源: NASA VIIRS\n请尽快巡查农场周边。`,
   waSafe:(f)=>`✅ ${f} 周边目前无卫星火点。来源: NASA VIIRS。`,
   foot:"数据来源 NASA FIRMS (VIIRS) · 卫星每日多次过境，热点为近实时检测，仅供参考。务必以现场实况为准。",
@@ -293,9 +359,14 @@ const I = {
   riskLbl:"Current risk", checking:"Checking…", reading:"Reading satellite data",
   s1k:"Recent hotspots", s2k:"Watch radius", km:"km",
   hsTitle:"Nearby hotspots", noHs:"No nearby hotspots", noHsSub:"No satellite fires within your watch radius",
+  windk:"Wind", windFrom:"from", gustLbl:"gust", windToward:"toward farm",
+  intensity:"Intensity", towardFarm:"Fire blowing toward your farm",
+  frpLow:"small", frpMed:"strong", frpHigh:"intense",
   wa:"Share to WhatsApp", tgshare:"Share to Telegram", refresh:"↻ Refresh",
   prof:"Farmer profile", profhint:"Enter your name and mobile number to receive alerts.",
   uname:"Name", phone:"Mobile (with country code)", saveProf:"Save profile",
+  ph_uname:"Enter your name", ph_phone:"e.g. +60123456789", ph_fname:"Enter your farm name",
+  ph_lat:"e.g. 1.5533", ph_lon:"e.g. 110.3592", ph_rad:"e.g. 30", ph_key:"Paste your NASA key",
   addfarm:"Add a farm", addhint:"Use 'My location' to grab GPS automatically, or type coordinates. Add multiple farms.",
   fname:"Farm name", loc:"Use my location", or:"or enter manually",
   lat:"Lat", lon:"Lon", rad:"Alert radius (km)", addFarm:"＋ Add farm",
@@ -306,10 +377,20 @@ const I = {
   st2:"Tap the button below to open Telegram and press <b>Start</b>.",
   st3:"Done! You'll get Telegram alerts automatically when fires appear.",
   connect:"Connect Telegram for alerts",
-  watitle:"WhatsApp alerts",
-  wahint:"WhatsApp auto-push must be enabled by the admin. Tap below to send your registration to the admin via WhatsApp and join the WhatsApp alert list.",
-  waconnect:"Register via WhatsApp",
+  tgbadge:"Recommended · Auto", wabadge:"No Telegram?",
+  watitle:"Send your farm to the coordinator",
+  wahint:"No Telegram account? Send your name and farm location to the coordinator via WhatsApp. They'll watch your farm for you and notify you when a hotspot appears.",
+  waconnect:"Send farm details via WhatsApp",
+  waFarmMsg:(name,phone,readable,code)=>`📋 FireWatch · Farm registration\n\nName: ${name}\nMobile: ${phone}\n\nFarms:\n${readable}\n\n———\nCoordinator code (do not edit):\n${code}`,
+  pastetitle:"Add a farmer's farm", pastehint:"Paste the whole 'coordinator code' a farmer sent you via WhatsApp (or just the FW1| line) to add their farm to your watch list.",
+  pasteAdd:"Add these farms", pasteOk:"Added {n} farm(s) ✓", pasteErr:"No valid code found — paste the full FW1| code", someFarm:"Farmer's farm",
+  helptitle:"❓ How does this alert work?",
+  help1ic:"🛰️", help1:"<b>It is not live monitoring over your farm.</b> Hotspots are detected by NASA satellites. A satellite only passes over Malaysia a few times a day, so there is a <b>gap</b> between passes — a fire that just started may not show until the next pass.",
+  help2ic:"📏", help2:"<b>Set a wider radius to buy time.</b> Because of the gap, a fire may already be close before you're alerted. A larger radius warns you <b>while the fire is still far</b>, instead of when it's almost at your door.",
+  help3ic:"👃", help3:"<b>Trust your own eyes and nose.</b> This app is an early-warning tool — it can't replace what you see on the ground. If you see smoke or smell burning, act immediately — don't wait for the app.",
+  radhint:"Set a wider radius (e.g. 20–40 km). Satellites have gaps — too small a radius may only warn you once the fire is close, leaving little time to react.",
   key:"NASA FIRMS MAP_KEY", saveKey:"Save key",
+  keytitle:"NASA fire key", keyhint:"The monitor view needs a free NASA key. Tap below to request one free (just enter an email), then paste it here.", getKey:"→ Get a free NASA key",
   saved:"Saved ✓", added:"Added ✓", needprof:"Enter your name and mobile first",
   needfarm:"Enter farm name and coordinates first", locing:"Locating…", locerr:"Couldn't get location — enter manually",
   locok:"Location captured ✓",
@@ -321,7 +402,6 @@ const I = {
   dir:{N:"N",NE:"NE",E:"E",SE:"SE",S:"S",SW:"SW",W:"W",NW:"NW"},
   rk:{CRITICAL:"CRIT",HIGH:"HIGH",MEDIUM:"MED",LOW:"LOW"},
   err:"Couldn't load data", errKey:"Add your NASA MAP_KEY under Alerts",
-  waReg:(name,phone,farms)=>`📋 FireWatch registration\n\nName: ${name}\nMobile: ${phone}\n\nFarms:\n${farms}\n\nPlease add me to the WhatsApp alert list.`,
   waAlert:(f,n,d,r)=>`🔥 FIRE ALERT · ${f}\n\nNASA detected ${n} hotspot(s)\nNearest: ${d} km (${r})\n\nSource: NASA VIIRS\nInspect the farm perimeter ASAP.`,
   waSafe:(f)=>`✅ ${f}: no satellite hotspots nearby. Source: NASA VIIRS.`,
   foot:"Data: NASA FIRMS (VIIRS) · satellites pass several times daily; hotspots are near-real-time and indicative only. Always confirm on the ground.",
@@ -338,17 +418,38 @@ let profile = lget("profile",{name:"",phone:""});
 let farms   = lget("farms",[]);
 let active  = 0;
 let lastData=null;
+let lastWind=null;
 
 //=================== geo ===================
 function dist(la1,lo1,la2,lo2){const R=6371,p=Math.PI/180;
   const a=Math.sin((la2-la1)*p/2)**2+Math.cos(la1*p)*Math.cos(la2*p)*Math.sin((lo2-lo1)*p/2)**2;
   return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
-function bearing(la1,lo1,la2,lo2){const p=Math.PI/180;
+// bearing FROM point1 TO point2, in degrees (0=N, 90=E)
+function bearingDeg(la1,lo1,la2,lo2){const p=Math.PI/180;
   const y=Math.sin((lo2-lo1)*p)*Math.cos(la2*p);
   const x=Math.cos(la1*p)*Math.sin(la2*p)-Math.sin(la1*p)*Math.cos(la2*p)*Math.cos((lo2-lo1)*p);
-  let b=(Math.atan2(y,x)*180/Math.PI+360)%360;
-  return ["N","NE","E","SE","S","SW","W","NW"][Math.round(b/45)%8];}
-function riskOf(d){if(d<2)return"CRITICAL";if(d<5)return"HIGH";if(d<10)return"MEDIUM";return"LOW";}
+  return (Math.atan2(y,x)*180/Math.PI+360)%360;}
+function dir8(deg){return ["N","NE","E","SE","S","SW","W","NW"][Math.round(deg/45)%8];}
+function bearing(la1,lo1,la2,lo2){return dir8(bearingDeg(la1,lo1,la2,lo2));}
+// is a fire (at bearing brDeg from the farm) upwind, i.e. wind carries it toward the farm?
+// windFrom = direction wind blows FROM. Fire is a threat if it sits in the
+// direction the wind comes from, i.e. brDeg ~ windFrom (within +-50 deg).
+function windToward(brDeg,windFrom){
+  // angular difference between the fire's bearing and the wind's origin direction
+  let diff=Math.abs(((brDeg-windFrom+540)%360)-180);  // 0 = perfectly upwind
+  return diff<=50;  // fire sits within 50 deg of "directly upwind" -> wind carries it toward farm
+}
+// risk now blends distance, fire intensity (FRP), and wind direction
+function riskOf(d,frp,toward){
+  let lvl = d<2?3 : d<5?2 : d<10?1 : 0;          // base on distance (0-3)
+  if(!isNaN(frp)&&frp!=null){
+    if(frp>=100) lvl++;                            // very intense fire bumps up
+    else if(frp>=50 && lvl<3) lvl++;              // strong fire bumps up
+  }
+  if(toward) lvl++;                                // blowing toward farm bumps up
+  lvl=Math.min(lvl,3);
+  return ["LOW","MEDIUM","HIGH","CRITICAL"][lvl];
+}
 const RK_COLOR={CRITICAL:"var(--crit)",HIGH:"var(--high)",MEDIUM:"var(--med)",LOW:"var(--low)"};
 
 //=================== toast ===================
@@ -375,16 +476,43 @@ async function loadData(){
   const buf=(farm.rad+10)/111;
   const box=`${(farm.lon-buf).toFixed(3)},${(farm.lat-buf).toFixed(3)},${(farm.lon+buf).toFixed(3)},${(farm.lat+buf).toFixed(3)}`;
   const url=`https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/VIIRS_SNPP_NRT/${box}/1`;
+  const windUrl=`https://api.open-meteo.com/v1/forecast?latitude=${farm.lat}&longitude=${farm.lon}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&windspeed_unit=kmh`;
   try{
-    const txt=await (await fetch(url)).text();
+    // fetch fire + wind together
+    const [fireRes, windRes] = await Promise.all([
+      fetch(url).then(r=>r.text()),
+      fetch(windUrl).then(r=>r.json()).catch(()=>null)
+    ]);
+    const txt=fireRes;
     if(/invalid|error/i.test(txt.slice(0,60))) throw new Error(txt.slice(0,80));
+
+    // parse wind (may be null if Open-Meteo failed — fire data still works)
+    let wind=null;
+    if(windRes && windRes.current){
+      wind={
+        spd:windRes.current.wind_speed_10m,
+        dir:windRes.current.wind_direction_10m,   // direction wind blows FROM (deg)
+        gust:windRes.current.wind_gusts_10m
+      };
+    }
+    lastWind=wind;
+
     const lines=txt.trim().split("\n"), hdr=lines[0].split(",");
     const iLa=hdr.indexOf("latitude"),iLo=hdr.indexOf("longitude"),iD=hdr.indexOf("acq_date"),iT=hdr.indexOf("acq_time");
+    const iFrp=hdr.indexOf("frp"),iConf=hdr.indexOf("confidence");
     const hits=[];
     for(let i=1;i<lines.length;i++){const c=lines[i].split(",");
       const la=parseFloat(c[iLa]),lo=parseFloat(c[iLo]);if(isNaN(la)||isNaN(lo))continue;
       const d=dist(farm.lat,farm.lon,la,lo);
-      if(d<=farm.rad)hits.push({la,lo,d,br:bearing(farm.lat,farm.lon,la,lo),date:c[iD]||"",time:c[iT]||"",rk:riskOf(d)});}
+      if(d<=farm.rad){
+        const brDeg=bearingDeg(farm.lat,farm.lon,la,lo);
+        const frp=iFrp>=0?parseFloat(c[iFrp]):NaN;
+        const conf=iConf>=0?(c[iConf]||"").trim():"";
+        const toward=wind?windToward(brDeg,wind.dir):false;
+        hits.push({la,lo,d,br:dir8(brDeg),date:c[iD]||"",time:c[iT]||"",
+          frp:isNaN(frp)?null:frp, conf, toward,
+          rk:riskOf(d,frp,toward)});
+      }}
     hits.sort((a,b)=>a.d-b.d);lastData=hits;render(hits);
   }catch(err){
     setBanner("med",t.err,String(err.message||err).slice(0,90));
@@ -392,8 +520,13 @@ async function loadData(){
   }
 }
 function setBanner(cls,big,sub){const b=document.getElementById("banner");
-  b.className="banner b-"+cls;document.getElementById("b-big").textContent=big;document.getElementById("b-sub").innerHTML=sub;}
+  b.className="banner b-"+cls;document.getElementById("b-lbl").textContent=I[lang].riskLbl;document.getElementById("b-big").textContent=big;document.getElementById("b-sub").innerHTML=sub;}
 function fmtTime(tm){tm=String(tm).padStart(4,"0");return tm.slice(0,2)+":"+tm.slice(2);}
+function fmtFrp(frp,t){
+  // describe intensity in plain words + the MW number
+  let word = frp>=100?t.frpHigh : frp>=50?t.frpMed : t.frpLow;
+  return `${word} (${Math.round(frp)}MW)`;
+}
 
 function render(hits){
   const t=I[lang],farm=farms[active];
@@ -406,8 +539,25 @@ function render(hits){
   const[cls,big,sub]=map[worst];setBanner(cls,big,sub);
   document.getElementById("b-lbl").textContent=t.riskLbl;
   const list=document.getElementById("hslist");
+  // wind card
+  const wc=document.getElementById("windCard");
+  if(lastWind){
+    wc.style.display="flex";
+    // arrow points in the direction the wind is BLOWING TO (windFrom + 180)
+    const blowTo=(lastWind.dir+180)%360;
+    document.getElementById("windArrow").style.transform=`rotate(${blowTo}deg)`;
+    const gust=lastWind.gust!=null?` · ${t.gustLbl} ${Math.round(lastWind.gust)}`:"";
+    document.getElementById("windV").innerHTML=
+      `${Math.round(lastWind.spd)} <small>km/h</small> · ${t.windFrom} ${t.dir[dir8(lastWind.dir)]}${gust?` <small>${gust}</small>`:""}`;
+    document.getElementById("t-windk").textContent=t.windk;
+  } else { wc.style.display="none"; }
+
   if(!hits.length){list.innerHTML=`<div class="empty"><div class="e-ico">🌿</div><div style="font-weight:800;color:var(--ink2)">${t.noHs}</div><div style="font-size:.8rem;margin-top:4px">${t.noHsSub}</div></div>`;return;}
-  list.innerHTML=hits.slice(0,12).map(h=>`<div class="hs"><div class="dot" style="color:${RK_COLOR[h.rk]}"></div><div class="info"><div class="t">${h.d.toFixed(1)} ${t.km} · ${t.dir[h.br]}</div><div class="d">${h.date} ${fmtTime(h.time)} UTC · ${h.la.toFixed(3)}, ${h.lo.toFixed(3)}</div></div><div class="rk" style="background:${RK_COLOR[h.rk]}22;color:${RK_COLOR[h.rk]}">${t.rk[h.rk]}</div></div>`).join("");
+  list.innerHTML=hits.slice(0,12).map(h=>{
+    const frpTxt = h.frp!=null ? `<span class="frp">· ${t.intensity}: ${fmtFrp(h.frp,t)}</span>` : "";
+    const towardTag = h.toward ? `<div class="toward-tag">⚠️ ${t.towardFarm}</div>` : "";
+    return `<div class="hs"><div class="dot" style="color:${RK_COLOR[h.rk]}"></div><div class="info"><div class="t">${h.d.toFixed(1)} ${t.km} · ${t.dir[h.br]} ${frpTxt}</div><div class="d">${h.date} ${fmtTime(h.time)} UTC · ${h.la.toFixed(3)}, ${h.lo.toFixed(3)}</div>${towardTag}</div><div class="rk" style="background:${RK_COLOR[h.rk]}22;color:${RK_COLOR[h.rk]}">${t.rk[h.rk]}</div></div>`;
+  }).join("");
   const now=new Date().toLocaleTimeString(lang==="zh"?"zh-CN":"en-GB",{hour:"2-digit",minute:"2-digit"});
   document.getElementById("updated").textContent=t.updated(now);
 }
@@ -464,11 +614,38 @@ function updateConnStatus(){
 }
 
 //=================== whatsapp ===================
-function waRegister(){
+function parseFarmCode(raw){
+  // accepts the whole pasted WhatsApp message or just the FW1|... line
+  const t=I[lang];
+  const m=raw.match(/FW1\|([^|]*)\|([^\n]*)/);
+  if(!m){toast(t.pasteErr);return;}
+  const who=(m[1]||"").trim();
+  const segs=m[2].trim().split(";").filter(Boolean);
+  let added=0;
+  segs.forEach(s=>{
+    const p=s.split(",");
+    const la=parseFloat(p[0]), lo=parseFloat(p[1]), rad=parseFloat(p[2])||30;
+    if(isNaN(la)||isNaN(lo))return;
+    const label=who?`${who}`:t.someFarm;
+    farms.push({name:label,lat:la,lon:lo,rad});
+    added++;
+  });
+  if(!added){toast(t.pasteErr);return;}
+  lset("farms",farms);renderFarmList();renderChips();
+  document.getElementById("i-paste").value="";
+  toast(t.pasteOk.replace("{n}",added));
+}
+function farmCode(){
+  // compact paste-able code: FW1|name|lat,lon,rad;lat,lon,rad
+  const parts=farms.map(f=>`${f.lat.toFixed(5)},${f.lon.toFixed(5)},${f.rad}`).join(";");
+  return `FW1|${profile.name}|${parts}`;
+}
+function waSendFarm(){
   const t=I[lang];
   if(!profile.name||!profile.phone){toast(t.needprof);switchView("farms");return;}
-  const farmTxt=farms.length?farms.map(f=>`• ${f.name} (${f.lat.toFixed(4)},${f.lon.toFixed(4)}) ${f.rad}km`).join("\n"):"—";
-  const msg=t.waReg(profile.name,profile.phone,farmTxt);
+  if(!farms.length){toast(t.needfarm);switchView("farms");return;}
+  const readable=farms.map(f=>`• ${f.name} — ${f.lat.toFixed(5)}, ${f.lon.toFixed(5)} · ${f.rad}km`).join("\n");
+  const msg=t.waFarmMsg(profile.name,profile.phone,readable,farmCode());
   window.open(`https://wa.me/${CFG.ADMIN_WA}?text=`+encodeURIComponent(msg),"_blank");
 }
 function waShare(){
@@ -498,9 +675,17 @@ function applyLang(){
   const t=I[lang];
   document.documentElement.lang=lang==="zh"?"zh":"en";
   const S=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  const PH=(id,v)=>{const e=document.getElementById(id);if(e)e.setAttribute("placeholder",v);};
+  PH("i-uname",t.ph_uname);PH("i-phone",t.ph_phone);PH("i-fname",t.ph_fname);
+  PH("i-lat",t.ph_lat);PH("i-lon",t.ph_lon);PH("i-rad",t.ph_rad);PH("i-key",t.ph_key);
   S("t-title",t.title);S("t-sub",t.sub);S("langLbl",t.lang);
   S("tab-mon",t.tabMon);S("tab-farm",t.tabFarm);S("tab-alert",t.tabAlert);
   S("s1k",t.s1k);S("s2k",t.s2k);S("hs-title",t.hsTitle);
+  S("t-helptitle",t.helptitle);S("t-radhint",t.radhint);
+  document.getElementById("helpBody").innerHTML =
+    `<div class="help-row"><span class="hi">${t.help1ic}</span><span>${t.help1}</span></div>`+
+    `<div class="help-row"><span class="hi">${t.help2ic}</span><span>${t.help2}</span></div>`+
+    `<div class="help-row"><span class="hi">${t.help3ic}</span><span>${t.help3}</span></div>`;
   S("t-wa",t.wa);S("t-tgshare",t.tgshare);S("t-refresh",t.refresh);
   S("t-prof",t.prof);S("t-profhint",t.profhint);S("f-uname",t.uname);S("f-phone",t.phone);S("saveProfBtn",t.saveProf);
   S("t-addfarm",t.addfarm);S("t-addhint",t.addhint);S("f-fname",t.fname);S("t-loc",t.loc);S("t-or",t.or);
@@ -510,7 +695,9 @@ function applyLang(){
   document.getElementById("st2").innerHTML=t.st2;
   document.getElementById("st3").innerHTML=t.st3;
   S("t-connect",t.connect);S("t-watitle",t.watitle);S("t-wahint",t.wahint);S("t-waconnect",t.waconnect);
-  S("f-key",t.key);S("saveKeyBtn",t.saveKey);S("t-tgshare",t.tgshare);S("foot",t.foot);S("t-adv",t.adv);
+  S("t-tgbadge",t.tgbadge);S("t-wabadge",t.wabadge);
+  S("t-pastetitle",t.pastetitle);S("t-pastehint",t.pastehint);S("pasteAddBtn",t.pasteAdd);
+  S("f-key",t.key);S("saveKeyBtn",t.saveKey);S("t-keytitle",t.keytitle);S("t-keyhint",t.keyhint);S("getKeyLink",t.getKey);S("t-tgshare",t.tgshare);S("foot",t.foot);S("t-adv",t.adv);
   document.getElementById("adv-body").innerHTML = lang==="zh"
     ? `给管理员：把农场名单部署到 GitHub。机器人用户名设在代码顶部的 <code>CFG.TG_BOT</code>，管理员 WhatsApp 设在 <code>CFG.ADMIN_WA</code>。完整部署步骤见随附的 README 与 bot 程序。`
     : `For the admin: deploy the roster to GitHub. Set the bot username in <code>CFG.TG_BOT</code> at the top of the code and the admin WhatsApp in <code>CFG.ADMIN_WA</code>. Full deploy steps are in the bundled README and bot script.`;
@@ -520,13 +707,14 @@ function applyLang(){
 
 //=================== bind ===================
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchView(b.dataset.v));
-document.getElementById("langBtn").onclick=()=>{lang=lang==="zh"?"en":"zh";localStorage.setItem("fw_lang",lang);applyLang();renderChips();renderFarmList();if(lastData)render(lastData);};
+document.getElementById("langBtn").onclick=()=>{lang=lang==="zh"?"en":"zh";localStorage.setItem("fw_lang",lang);applyLang();renderChips();renderFarmList();loadData();};
 document.getElementById("refreshBtn").onclick=loadData;
 document.getElementById("waBtn").onclick=waShare;
 document.getElementById("tgShareBtn").onclick=tgShare;
 document.getElementById("locBtn").onclick=useLocation;
 document.getElementById("connectTgBtn").onclick=connectTelegram;
-document.getElementById("waConnectBtn").onclick=waRegister;
+document.getElementById("waConnectBtn").onclick=waSendFarm;
+document.getElementById("pasteAddBtn").onclick=()=>parseFarmCode(document.getElementById("i-paste").value);
 
 document.getElementById("saveProfBtn").onclick=()=>{
   const t=I[lang];
