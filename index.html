@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1a1410">
+<title>火警守护 · FireWatch</title>
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22FireWatch%22%2C%22short_name%22%3A%22FireWatch%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a1410%22%2C%22theme_color%22%3A%22%231a1410%22%7D">
+<style>
+  :root{
+    --bg:#1a1410; --bg2:#241a13; --card:#2c2018; --line:#3d2e22;
+    --ink:#f5ede3; --ink2:#bba48f; --ink3:#7d6a59;
+    --ember:#ff6b35; --ember2:#ff8f5e; --flame:#ffb627; --char:#0f0b08;
+    --crit:#ff3b30; --high:#ff6b35; --med:#ffb627; --low:#5ec26a; --safe:#4a8c5a;
+    --tg:#2aabee; --wa:#25d366;
+    --shadow:0 8px 28px rgba(0,0,0,.55);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:radial-gradient(120% 80% at 50% -10%, #2a1c10 0%, var(--bg) 55%),var(--bg);
+    color:var(--ink);
+    font-family:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    min-height:100vh; padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:560px;margin:0 auto;padding:16px 16px 90px}
+
+  header{display:flex;align-items:center;gap:12px;padding:6px 2px 16px}
+  .mark{width:46px;height:46px;border-radius:13px;flex:none;position:relative;
+    background:linear-gradient(150deg,var(--ember) 0%,var(--flame) 100%);
+    display:grid;place-items:center;box-shadow:0 6px 18px rgba(255,107,53,.35)}
+  .mark svg{width:26px;height:26px;display:block}
+  .brand{flex:1;min-width:0}
+  .brand h1{margin:0;font-size:1.18rem;font-weight:800;letter-spacing:.2px}
+  .brand p{margin:2px 0 0;font-size:.74rem;color:var(--ink2);font-weight:500}
+  .lang{background:var(--card);border:1px solid var(--line);color:var(--ink);
+    border-radius:11px;font-size:.74rem;font-weight:700;padding:8px 12px;cursor:pointer;display:flex;gap:5px;align-items:center}
+
+  /* tabs */
+  .tabs{display:flex;gap:6px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:5px;margin-bottom:16px}
+  .tab{flex:1;text-align:center;padding:10px;border-radius:10px;font-size:.86rem;font-weight:700;color:var(--ink2);cursor:pointer;border:none;background:none;font-family:inherit}
+  .tab.on{background:linear-gradient(135deg,var(--ember),var(--flame));color:var(--char);font-weight:800}
+
+  .view{display:none}
+  .view.on{display:block;animation:fade .25s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+  /* banner */
+  .banner{border-radius:18px;padding:18px;margin-bottom:14px;position:relative;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow)}
+  .banner .lbl{font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;font-weight:800;opacity:.85}
+  .banner .big{font-size:1.85rem;font-weight:900;margin:4px 0 2px;line-height:1.05}
+  .banner .sub{font-size:.82rem;opacity:.9}
+  .banner .pulse{position:absolute;right:-30px;top:-30px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%);animation:breathe 3s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:1}}
+  .b-safe{background:linear-gradient(135deg,#1f3a26,#16261a)}
+  .b-low{background:linear-gradient(135deg,#2c3a1c,#1d2615)}
+  .b-med{background:linear-gradient(135deg,#4a3410,#2e220e);border-color:#6b4d18}
+  .b-high{background:linear-gradient(135deg,#5a2a12,#34190c);border-color:#8a3d1c}
+  .b-crit{background:linear-gradient(135deg,#6e1714,#3a0d0b);border-color:#a82420;animation:critglow 1.6s ease-in-out infinite}
+  @keyframes critglow{0%,100%{box-shadow:0 0 0 0 rgba(255,59,48,0),var(--shadow)}50%{box-shadow:0 0 0 4px rgba(255,59,48,.25),var(--shadow)}}
+
+  .farms{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 12px;margin:0 -2px;scrollbar-width:none}
+  .farms::-webkit-scrollbar{display:none}
+  .chip{flex:none;background:var(--card);border:1px solid var(--line);color:var(--ink2);border-radius:999px;padding:9px 15px;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap}
+  .chip.on{background:linear-gradient(135deg,var(--ember),var(--flame));color:var(--char);border-color:transparent;font-weight:800}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:14px}
+  .stat .k{font-size:.68rem;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+  .stat .v{font-size:1.5rem;font-weight:900;margin-top:3px}
+  .stat .v small{font-size:.7rem;font-weight:600;color:var(--ink2)}
+
+  .sect{font-size:.78rem;color:var(--ink3);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin:18px 2px 9px}
+
+  .hs{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 14px;margin-bottom:9px;display:flex;align-items:center;gap:12px}
+  .hs .dot{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 10px currentColor}
+  .hs .info{flex:1;min-width:0}
+  .hs .info .t{font-size:.92rem;font-weight:800}
+  .hs .info .d{font-size:.74rem;color:var(--ink2);margin-top:2px}
+  .hs .rk{font-size:.66rem;font-weight:900;padding:5px 9px;border-radius:8px;text-transform:uppercase;letter-spacing:.5px}
+  .empty{text-align:center;padding:36px 20px;color:var(--ink3)}
+  .empty .e-ico{font-size:2.4rem;margin-bottom:8px}
+
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+  .btn{border:none;border-radius:14px;padding:15px;font-size:.92rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit}
+  .btn-wa{background:var(--wa);color:#063}
+  .btn-tg{background:var(--tg);color:#04304a}
+  .btn svg{width:19px;height:19px}
+  .btn-ghost{grid-column:1/-1;background:var(--bg2);color:var(--ink2);border:1px solid var(--line)}
+
+  /* forms */
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+  .panel h3{margin:0 0 4px;font-size:1rem;font-weight:800}
+  .panel .hint{font-size:.8rem;color:var(--ink2);line-height:1.55;margin:0 0 12px}
+  .field{display:flex;flex-direction:column;gap:5px;margin:11px 0}
+  .field label{font-size:.74rem;font-weight:700;color:var(--ink3)}
+  .field input{background:var(--char);border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:12px;font-size:.9rem;font-family:inherit}
+  .field input:focus{outline:none;border-color:var(--ember)}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .save{background:linear-gradient(135deg,var(--ember),var(--flame));color:var(--char);border:none;border-radius:12px;padding:14px;font-weight:800;width:100%;cursor:pointer;font-family:inherit;font-size:.92rem}
+  .btn-loc{background:var(--bg2);color:var(--flame);border:1px solid var(--line);border-radius:10px;padding:12px;font-weight:700;width:100%;cursor:pointer;font-family:inherit;font-size:.86rem;display:flex;align-items:center;justify-content:center;gap:7px}
+  .or{text-align:center;color:var(--ink3);font-size:.72rem;margin:10px 0;position:relative}
+  .or::before,.or::after{content:"";position:absolute;top:50%;width:38%;height:1px;background:var(--line)}
+  .or::before{left:0}.or::after{right:0}
+
+  .farmrow{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px 13px;margin-bottom:9px;display:flex;align-items:center;gap:11px}
+  .farmrow .fi{flex:1;min-width:0}
+  .farmrow .fi .fn{font-weight:800;font-size:.9rem}
+  .farmrow .fi .fc{font-size:.74rem;color:var(--ink2);margin-top:2px}
+  .farmrow .del{background:none;border:none;color:var(--crit);font-size:1.2rem;cursor:pointer;padding:4px 8px;font-family:inherit}
+
+  .connect{margin-top:6px}
+  .connect .btn{width:100%}
+  .status{display:flex;align-items:center;gap:9px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:.84rem}
+  .status .ic{width:10px;height:10px;border-radius:50%;flex:none}
+  .status.ok .ic{background:var(--low);box-shadow:0 0 8px var(--low)}
+  .status.no .ic{background:var(--ink3)}
+  .step{display:flex;gap:11px;margin:13px 0}
+  .step .n{width:24px;height:24px;border-radius:50%;background:var(--char);color:var(--flame);font-weight:800;font-size:.78rem;display:grid;place-items:center;flex:none;border:1px solid var(--line)}
+  .step .sx{font-size:.84rem;color:var(--ink2);line-height:1.5}
+  .step .sx b{color:var(--ink)}
+
+  details{background:var(--card);border:1px solid var(--line);border-radius:15px;margin-top:14px;overflow:hidden}
+  summary{padding:15px 16px;font-weight:800;font-size:.9rem;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
+  summary::-webkit-details-marker{display:none}
+  summary .ar{transition:transform .2s;color:var(--ink3)}
+  details[open] summary .ar{transform:rotate(180deg)}
+  .det-body{padding:0 16px 16px;font-size:.84rem;color:var(--ink2);line-height:1.6}
+  .det-body code{background:var(--char);padding:2px 6px;border-radius:5px;font-size:.8em;color:var(--flame);word-break:break-all}
+
+  .upd{text-align:center;font-size:.72rem;color:var(--ink3);margin:6px 0 0}
+  .foot{text-align:center;color:var(--ink3);font-size:.72rem;margin-top:22px;line-height:1.7}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--ember);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-2px;margin-right:5px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:var(--char);color:var(--ink);border:1px solid var(--line);border-radius:12px;padding:12px 18px;font-size:.86rem;font-weight:600;box-shadow:var(--shadow);opacity:0;transition:.3s;z-index:50;max-width:90%}
+  .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1.5 3 4 4.5 4 8a4 4 0 0 1-8 0c0-1.2.4-2 1-2.8C9 9 9.5 11 11 11c.8 0 1-.7 1-1.5C12 7 10.5 5 12 2z" fill="#fff"/><path d="M12 13c1.5 0 2.5 1.2 2.5 2.7C14.5 17.5 13.4 19 12 19s-2.5-1.5-2.5-3.3C9.5 14.2 10.5 13 12 13z" fill="#ffe0b0"/></svg></div>
+    <div class="brand"><h1 id="t-title">火警守护</h1><p id="t-sub">NASA 卫星热点 · 实时监测</p></div>
+    <button class="lang" id="langBtn">🌐 <span id="langLbl">EN</span></button>
+  </header>
+
+  <div class="tabs">
+    <button class="tab on" data-v="monitor" id="tab-mon">监测</button>
+    <button class="tab" data-v="farms" id="tab-farm">我的农场</button>
+    <button class="tab" data-v="alerts" id="tab-alert">警报设置</button>
+  </div>
+
+  <!-- ============ MONITOR ============ -->
+  <div class="view on" id="v-monitor">
+    <div class="banner b-safe" id="banner">
+      <div class="pulse"></div>
+      <div class="lbl" id="b-lbl">当前风险</div>
+      <div class="big" id="b-big">检查中…</div>
+      <div class="sub" id="b-sub"><span class="spin"></span>正在读取卫星数据</div>
+    </div>
+    <div class="farms" id="farmchips"></div>
+    <div class="grid">
+      <div class="stat"><div class="k" id="s1k">最近热点</div><div class="v" id="s1v">—</div></div>
+      <div class="stat"><div class="k" id="s2k">监测半径</div><div class="v" id="s2v">—</div></div>
+    </div>
+    <div class="sect" id="hs-title">附近热点</div>
+    <div id="hslist"></div>
+    <div class="actions">
+      <button class="btn btn-wa" id="waBtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20zm4.6-6c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.6-1.2.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-1 2.3c0 1.3 1 2.6 1.1 2.8s1.9 3 4.7 4.2c1.7.7 2.3.8 3.1.7.5-.1 1.5-.6 1.7-1.2s.2-1.1.2-1.2-.2-.2-.4-.3z"/></svg><span id="t-wa">WhatsApp 转发</span></button>
+      <button class="btn btn-tg" id="tgShareBtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.6 19c-.2 1-.9 1.3-1.8.8l-4.8-3.6-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.4 13 1.7 11.5c-1-.3-1-.9.2-1.4L20.6 2.8c.9-.3 1.6.2 1.3 1.5z"/></svg><span id="t-tgshare">Telegram 转发</span></button>
+      <button class="btn btn-ghost" id="refreshBtn"><span id="t-refresh">↻ 刷新数据</span></button>
+    </div>
+  </div>
+
+  <!-- ============ FARMS ============ -->
+  <div class="view" id="v-farms">
+    <div class="panel">
+      <h3 id="t-prof">农户资料</h3>
+      <p class="hint" id="t-profhint">填写姓名与手机号码，方便接收警报。</p>
+      <div class="field"><label id="f-uname">姓名 Name</label><input id="i-uname" placeholder="胡瑞良"></div>
+      <div class="field"><label id="f-phone">手机号码 Mobile (含国码)</label><input id="i-phone" inputmode="tel" placeholder="+60193824740"></div>
+      <button class="save" id="saveProfBtn">保存资料</button>
+    </div>
+
+    <div class="panel">
+      <h3 id="t-addfarm">加入农场</h3>
+      <p class="hint" id="t-addhint">用「定位」自动取得 GPS，或手动输入坐标。可加入多个农场。</p>
+      <div class="field"><label id="f-fname">农场名称 Farm name</label><input id="i-fname" placeholder="顺豪生态榴莲园"></div>
+      <button class="btn-loc" id="locBtn">📍 <span id="t-loc">使用我的定位</span></button>
+      <div class="or" id="t-or">或手动输入</div>
+      <div class="two">
+        <div class="field"><label id="f-lat">纬度 Lat</label><input id="i-lat" inputmode="decimal" placeholder="1.5533"></div>
+        <div class="field"><label id="f-lon">经度 Lon</label><input id="i-lon" inputmode="decimal" placeholder="110.3592"></div>
+      </div>
+      <div class="field"><label id="f-rad">警报半径 Radius (km)</label><input id="i-rad" inputmode="decimal" placeholder="30"></div>
+      <button class="save" id="addFarmBtn">＋ 加入农场</button>
+    </div>
+
+    <div class="sect" id="t-myfarms">已登记农场</div>
+    <div id="farmlist"></div>
+  </div>
+
+  <!-- ============ ALERTS ============ -->
+  <div class="view" id="v-alerts">
+    <div class="status no" id="connStatus"><span class="ic"></span><span id="connTxt">尚未连接 Telegram</span></div>
+
+    <div class="panel">
+      <h3 id="t-howtitle">如何自动接收警报</h3>
+      <p class="hint" id="t-howhint">手机 App 无法在后台自动推送。连接 Telegram 后，云端会在火点出现时自动通知你 — 即使没打开 App。</p>
+      <div class="step"><div class="n">1</div><div class="sx" id="st1"></div></div>
+      <div class="step"><div class="n">2</div><div class="sx" id="st2"></div></div>
+      <div class="step"><div class="n">3</div><div class="sx" id="st3"></div></div>
+      <div class="connect">
+        <button class="btn btn-tg" id="connectTgBtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.6 19c-.2 1-.9 1.3-1.8.8l-4.8-3.6-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.4 13 1.7 11.5c-1-.3-1-.9.2-1.4L20.6 2.8c.9-.3 1.6.2 1.3 1.5z"/></svg><span id="t-connect">连接 Telegram 接收警报</span></button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h3 id="t-watitle">WhatsApp 警报</h3>
+      <p class="hint" id="t-wahint"></p>
+      <button class="save" id="waConnectBtn" style="background:var(--wa);color:#063">📲 <span id="t-waconnect">用 WhatsApp 联系登记</span></button>
+    </div>
+
+    <div class="field" style="margin-top:14px"><label id="f-key">NASA FIRMS MAP_KEY</label><input id="i-key" placeholder="xxxxxxxxxxxxxxxx"></div>
+    <button class="save" id="saveKeyBtn" style="margin-top:4px">保存 Key</button>
+
+    <details id="adv">
+      <summary><span id="t-adv">⚙️ 进阶 · 给管理员的设置</span><span class="ar">▾</span></summary>
+      <div class="det-body" id="adv-body"></div>
+    </details>
+  </div>
+
+  <p class="upd" id="updated"></p>
+  <div class="foot" id="foot"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+//=================== CONFIG ===================
+// Set these to YOUR bot + admin once. Farmers never edit these.
+const CFG = {
+  TG_BOT: "FireAlertMalaysiaBot",          // <-- your Telegram bot username (no @)
+  ADMIN_WA: "60193824740",             // <-- admin WhatsApp (intl, no +) for registration messages
+  REGISTER_URL: "https://firewatch-bot.standphoto.workers.dev/register",                    // <-- your Worker URL, e.g. "https://firewatch-bot.xxx.workers.dev/register" (leave "" to skip)
+};
+
+//=================== i18n ===================
+const I = {
+ zh:{
+  title:"火警守护", sub:"NASA 卫星热点 · 实时监测", lang:"EN",
+  tabMon:"监测", tabFarm:"我的农场", tabAlert:"警报设置",
+  riskLbl:"当前风险", checking:"检查中…", reading:"正在读取卫星数据",
+  s1k:"最近热点", s2k:"监测半径", km:"公里",
+  hsTitle:"附近热点", noHs:"附近暂无热点", noHsSub:"监测半径内未检测到卫星火点",
+  wa:"WhatsApp 转发", tgshare:"Telegram 转发", refresh:"↻ 刷新数据",
+  prof:"农户资料", profhint:"填写姓名与手机号码，方便接收警报。",
+  uname:"姓名 Name", phone:"手机号码 Mobile (含国码)", saveProf:"保存资料",
+  addfarm:"加入农场", addhint:"用「定位」自动取得 GPS，或手动输入坐标。可加入多个农场。",
+  fname:"农场名称 Farm name", loc:"使用我的定位", or:"或手动输入",
+  lat:"纬度 Lat", lon:"经度 Lon", rad:"警报半径 Radius (km)", addFarm:"＋ 加入农场",
+  myfarms:"已登记农场", noFarms:"还没有登记农场",
+  howtitle:"如何自动接收警报",
+  howhint:"手机 App 无法在后台自动推送。连接 Telegram 后，云端会在火点出现时自动通知你 — 即使没打开 App。",
+  st1:"先确认上方<b>「我的农场」</b>已填好姓名、手机号与农场。",
+  st2:"点下方按钮打开 Telegram，按 <b>Start / 开始</b>。",
+  st3:"完成！火点出现时会自动收到 Telegram 通知。",
+  connect:"连接 Telegram 接收警报",
+  watitle:"WhatsApp 警报",
+  wahint:"WhatsApp 自动推送需由管理员开通。点下方把你的登记资料用 WhatsApp 发给管理员，即可加入 WhatsApp 警报名单。",
+  waconnect:"用 WhatsApp 联系登记",
+  key:"NASA FIRMS MAP_KEY", saveKey:"保存 Key",
+  saved:"已保存 ✓", added:"已加入 ✓", needprof:"请先填写姓名与手机号",
+  needfarm:"请先填写农场名称与坐标", locing:"定位中…", locerr:"无法取得定位，请手动输入",
+  locok:"已取得定位 ✓",
+  connOk:"已连接 Telegram", connNo:"尚未连接 Telegram",
+  updated:(t)=>"最后更新 "+t, never:"尚未更新",
+  safeBig:"安全", safeSub:"监测半径内无火点",
+  lowBig:"低风险",medBig:"中等风险",highBig:"高风险",critBig:"紧急火警",
+  lowSub:"远处有零星热点",medSub:"附近出现热点，留意风向",highSub:"火点逼近，建议巡查",critSub:"火点极近，立即检查！",
+  dir:{N:"正北",NE:"东北",E:"正东",SE:"东南",S:"正南",SW:"西南",W:"正西",NW:"西北"},
+  rk:{CRITICAL:"紧急",HIGH:"高",MEDIUM:"中",LOW:"低"},
+  err:"无法读取数据", errKey:"请到「警报设置」填入 NASA MAP_KEY",
+  waReg:(name,phone,farms)=>`📋 火警守护 登记\n\n姓名: ${name}\n手机: ${phone}\n\n农场:\n${farms}\n\n请把我加入 WhatsApp 警报名单。`,
+  waAlert:(f,n,d,r)=>`🔥 火警通报 · ${f}\n\nNASA 卫星检测到 ${n} 个火点\n最近距离: ${d} 公里 (${r})\n\n来源: NASA VIIRS\n请尽快巡查农场周边。`,
+  waSafe:(f)=>`✅ ${f} 周边目前无卫星火点。来源: NASA VIIRS。`,
+  foot:"数据来源 NASA FIRMS (VIIRS) · 卫星每日多次过境，热点为近实时检测，仅供参考。务必以现场实况为准。",
+  adv:"⚙️ 进阶 · 给管理员的设置"
+ },
+ en:{
+  title:"FireWatch", sub:"NASA satellite hotspots · live", lang:"中文",
+  tabMon:"Monitor", tabFarm:"My farms", tabAlert:"Alerts",
+  riskLbl:"Current risk", checking:"Checking…", reading:"Reading satellite data",
+  s1k:"Recent hotspots", s2k:"Watch radius", km:"km",
+  hsTitle:"Nearby hotspots", noHs:"No nearby hotspots", noHsSub:"No satellite fires within your watch radius",
+  wa:"Share to WhatsApp", tgshare:"Share to Telegram", refresh:"↻ Refresh",
+  prof:"Farmer profile", profhint:"Enter your name and mobile number to receive alerts.",
+  uname:"Name", phone:"Mobile (with country code)", saveProf:"Save profile",
+  addfarm:"Add a farm", addhint:"Use 'My location' to grab GPS automatically, or type coordinates. Add multiple farms.",
+  fname:"Farm name", loc:"Use my location", or:"or enter manually",
+  lat:"Lat", lon:"Lon", rad:"Alert radius (km)", addFarm:"＋ Add farm",
+  myfarms:"Registered farms", noFarms:"No farms yet",
+  howtitle:"How to get automatic alerts",
+  howhint:"The phone app can't push in the background. Once you connect Telegram, the cloud notifies you when a hotspot appears — even with the app closed.",
+  st1:"First fill in your name, mobile and farms under <b>My farms</b>.",
+  st2:"Tap the button below to open Telegram and press <b>Start</b>.",
+  st3:"Done! You'll get Telegram alerts automatically when fires appear.",
+  connect:"Connect Telegram for alerts",
+  watitle:"WhatsApp alerts",
+  wahint:"WhatsApp auto-push must be enabled by the admin. Tap below to send your registration to the admin via WhatsApp and join the WhatsApp alert list.",
+  waconnect:"Register via WhatsApp",
+  key:"NASA FIRMS MAP_KEY", saveKey:"Save key",
+  saved:"Saved ✓", added:"Added ✓", needprof:"Enter your name and mobile first",
+  needfarm:"Enter farm name and coordinates first", locing:"Locating…", locerr:"Couldn't get location — enter manually",
+  locok:"Location captured ✓",
+  connOk:"Telegram connected", connNo:"Telegram not connected",
+  updated:(t)=>"Updated "+t, never:"Not updated yet",
+  safeBig:"All clear", safeSub:"No fires in your watch radius",
+  lowBig:"Low risk",medBig:"Medium risk",highBig:"High risk",critBig:"FIRE ALERT",
+  lowSub:"Scattered hotspots far off",medSub:"Hotspots nearby — watch the wind",highSub:"Fire approaching — inspect",critSub:"Very close — inspect now!",
+  dir:{N:"N",NE:"NE",E:"E",SE:"SE",S:"S",SW:"SW",W:"W",NW:"NW"},
+  rk:{CRITICAL:"CRIT",HIGH:"HIGH",MEDIUM:"MED",LOW:"LOW"},
+  err:"Couldn't load data", errKey:"Add your NASA MAP_KEY under Alerts",
+  waReg:(name,phone,farms)=>`📋 FireWatch registration\n\nName: ${name}\nMobile: ${phone}\n\nFarms:\n${farms}\n\nPlease add me to the WhatsApp alert list.`,
+  waAlert:(f,n,d,r)=>`🔥 FIRE ALERT · ${f}\n\nNASA detected ${n} hotspot(s)\nNearest: ${d} km (${r})\n\nSource: NASA VIIRS\nInspect the farm perimeter ASAP.`,
+  waSafe:(f)=>`✅ ${f}: no satellite hotspots nearby. Source: NASA VIIRS.`,
+  foot:"Data: NASA FIRMS (VIIRS) · satellites pass several times daily; hotspots are near-real-time and indicative only. Always confirm on the ground.",
+  adv:"⚙️ Advanced · admin setup"
+ }
+};
+
+let lang = localStorage.getItem("fw_lang")||"zh";
+const NS="fw_";
+function lget(k,d){ try{return JSON.parse(localStorage.getItem(NS+k))??d}catch(e){return d} }
+function lset(k,v){ localStorage.setItem(NS+k,JSON.stringify(v)); }
+
+let profile = lget("profile",{name:"",phone:""});
+let farms   = lget("farms",[]);
+let active  = 0;
+let lastData=null;
+
+//=================== geo ===================
+function dist(la1,lo1,la2,lo2){const R=6371,p=Math.PI/180;
+  const a=Math.sin((la2-la1)*p/2)**2+Math.cos(la1*p)*Math.cos(la2*p)*Math.sin((lo2-lo1)*p/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+function bearing(la1,lo1,la2,lo2){const p=Math.PI/180;
+  const y=Math.sin((lo2-lo1)*p)*Math.cos(la2*p);
+  const x=Math.cos(la1*p)*Math.sin(la2*p)-Math.sin(la1*p)*Math.cos(la2*p)*Math.cos((lo2-lo1)*p);
+  let b=(Math.atan2(y,x)*180/Math.PI+360)%360;
+  return ["N","NE","E","SE","S","SW","W","NW"][Math.round(b/45)%8];}
+function riskOf(d){if(d<2)return"CRITICAL";if(d<5)return"HIGH";if(d<10)return"MEDIUM";return"LOW";}
+const RK_COLOR={CRITICAL:"var(--crit)",HIGH:"var(--high)",MEDIUM:"var(--med)",LOW:"var(--low)"};
+
+//=================== toast ===================
+let toastT;
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");
+  clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove("show"),2200);}
+
+//=================== fetch ===================
+async function loadData(){
+  const t=I[lang], key=lget("key","");
+  if(!farms.length){
+    setBanner("safe",t.safeBig,t.noFarms);
+    document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🌾</div>${t.noFarms}</div>`;
+    document.getElementById("s1v").textContent="—";document.getElementById("s2v").textContent="—";
+    return;
+  }
+  const farm=farms[active];
+  setBanner("safe",t.checking,"<span class='spin'></span>"+t.reading);
+  if(!key){
+    setBanner("med",t.checking,t.errKey);
+    document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🔑</div>${t.errKey}</div>`;
+    return;
+  }
+  const buf=(farm.rad+10)/111;
+  const box=`${(farm.lon-buf).toFixed(3)},${(farm.lat-buf).toFixed(3)},${(farm.lon+buf).toFixed(3)},${(farm.lat+buf).toFixed(3)}`;
+  const url=`https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/VIIRS_SNPP_NRT/${box}/1`;
+  try{
+    const txt=await (await fetch(url)).text();
+    if(/invalid|error/i.test(txt.slice(0,60))) throw new Error(txt.slice(0,80));
+    const lines=txt.trim().split("\n"), hdr=lines[0].split(",");
+    const iLa=hdr.indexOf("latitude"),iLo=hdr.indexOf("longitude"),iD=hdr.indexOf("acq_date"),iT=hdr.indexOf("acq_time");
+    const hits=[];
+    for(let i=1;i<lines.length;i++){const c=lines[i].split(",");
+      const la=parseFloat(c[iLa]),lo=parseFloat(c[iLo]);if(isNaN(la)||isNaN(lo))continue;
+      const d=dist(farm.lat,farm.lon,la,lo);
+      if(d<=farm.rad)hits.push({la,lo,d,br:bearing(farm.lat,farm.lon,la,lo),date:c[iD]||"",time:c[iT]||"",rk:riskOf(d)});}
+    hits.sort((a,b)=>a.d-b.d);lastData=hits;render(hits);
+  }catch(err){
+    setBanner("med",t.err,String(err.message||err).slice(0,90));
+    document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">📡</div>${t.err}</div>`;
+  }
+}
+function setBanner(cls,big,sub){const b=document.getElementById("banner");
+  b.className="banner b-"+cls;document.getElementById("b-big").textContent=big;document.getElementById("b-sub").innerHTML=sub;}
+function fmtTime(tm){tm=String(tm).padStart(4,"0");return tm.slice(0,2)+":"+tm.slice(2);}
+
+function render(hits){
+  const t=I[lang],farm=farms[active];
+  document.getElementById("s1v").innerHTML=hits.length+" <small>"+(lang==="zh"?"个":"")+"</small>";
+  document.getElementById("s2v").innerHTML=farm.rad+" <small>"+t.km+"</small>";
+  let worst="SAFE";
+  if(hits.length){const o=["LOW","MEDIUM","HIGH","CRITICAL"];
+    worst=hits.reduce((w,h)=>o.indexOf(h.rk)>o.indexOf(w)?h.rk:w,"LOW");}
+  const map={SAFE:["safe",t.safeBig,t.safeSub],LOW:["low",t.lowBig,t.lowSub],MEDIUM:["med",t.medBig,t.medSub],HIGH:["high",t.highBig,t.highSub],CRITICAL:["crit",t.critBig,t.critSub]};
+  const[cls,big,sub]=map[worst];setBanner(cls,big,sub);
+  document.getElementById("b-lbl").textContent=t.riskLbl;
+  const list=document.getElementById("hslist");
+  if(!hits.length){list.innerHTML=`<div class="empty"><div class="e-ico">🌿</div><div style="font-weight:800;color:var(--ink2)">${t.noHs}</div><div style="font-size:.8rem;margin-top:4px">${t.noHsSub}</div></div>`;return;}
+  list.innerHTML=hits.slice(0,12).map(h=>`<div class="hs"><div class="dot" style="color:${RK_COLOR[h.rk]}"></div><div class="info"><div class="t">${h.d.toFixed(1)} ${t.km} · ${t.dir[h.br]}</div><div class="d">${h.date} ${fmtTime(h.time)} UTC · ${h.la.toFixed(3)}, ${h.lo.toFixed(3)}</div></div><div class="rk" style="background:${RK_COLOR[h.rk]}22;color:${RK_COLOR[h.rk]}">${t.rk[h.rk]}</div></div>`).join("");
+  const now=new Date().toLocaleTimeString(lang==="zh"?"zh-CN":"en-GB",{hour:"2-digit",minute:"2-digit"});
+  document.getElementById("updated").textContent=t.updated(now);
+}
+
+//=================== farm chips + list ===================
+function renderChips(){
+  const el=document.getElementById("farmchips");
+  if(!farms.length){el.innerHTML="";return;}
+  el.innerHTML=farms.map((f,i)=>`<button class="chip ${i===active?'on':''}" data-i="${i}">${f.name}</button>`).join("");
+  el.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{active=+c.dataset.i;renderChips();loadData();});
+}
+function renderFarmList(){
+  const t=I[lang],el=document.getElementById("farmlist");
+  if(!farms.length){el.innerHTML=`<div class="empty"><div class="e-ico">🌾</div>${t.noFarms}</div>`;return;}
+  el.innerHTML=farms.map((f,i)=>`<div class="farmrow"><div class="fi"><div class="fn">${f.name}</div><div class="fc">${f.lat.toFixed(4)}, ${f.lon.toFixed(4)} · ${f.rad} ${t.km}</div></div><button class="del" data-i="${i}">✕</button></div>`).join("");
+  el.querySelectorAll(".del").forEach(b=>b.onclick=()=>{farms.splice(+b.dataset.i,1);if(active>=farms.length)active=Math.max(0,farms.length-1);lset("farms",farms);renderFarmList();renderChips();loadData();});
+}
+
+//=================== geolocation ===================
+function useLocation(){
+  const t=I[lang];
+  if(!navigator.geolocation){toast(t.locerr);return;}
+  const btn=document.getElementById("locBtn");const old=btn.innerHTML;
+  btn.innerHTML="<span class='spin'></span>"+t.locing;
+  navigator.geolocation.getCurrentPosition(p=>{
+    document.getElementById("i-lat").value=p.coords.latitude.toFixed(5);
+    document.getElementById("i-lon").value=p.coords.longitude.toFixed(5);
+    btn.innerHTML=old;toast(t.locok);
+  },()=>{btn.innerHTML=old;toast(t.locerr);},{enableHighAccuracy:true,timeout:10000});
+}
+
+//=================== telegram connect ===================
+// deep link: t.me/<bot>?start=<payload>. Payload encodes phone so the bot links chat id -> farmer.
+function connectTelegram(){
+  const t=I[lang];
+  if(!profile.name||!profile.phone){toast(t.needprof);switchView("farms");return;}
+  if(!farms.length){toast(t.needfarm);switchView("farms");return;}
+  const phoneDigits=profile.phone.replace(/[^0-9]/g,"");
+  // 1) push full registration (profile + farms) to the Worker roster
+  if(CFG.REGISTER_URL){
+    fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({phone:phoneDigits,name:profile.name,farms})}).catch(()=>{});
+  }
+  // 2) open Telegram so the Start tap links the chat_id to this phone
+  const url=`https://t.me/${CFG.TG_BOT}?start=ph_${phoneDigits}`;
+  lset("tg_attempted",true);updateConnStatus();
+  window.open(url,"_blank");
+}
+function updateConnStatus(){
+  const t=I[lang],el=document.getElementById("connStatus");
+  const connected=lget("tg_connected",false);
+  el.className="status "+(connected?"ok":"no");
+  document.getElementById("connTxt").textContent=connected?t.connOk:t.connNo;
+}
+
+//=================== whatsapp ===================
+function waRegister(){
+  const t=I[lang];
+  if(!profile.name||!profile.phone){toast(t.needprof);switchView("farms");return;}
+  const farmTxt=farms.length?farms.map(f=>`• ${f.name} (${f.lat.toFixed(4)},${f.lon.toFixed(4)}) ${f.rad}km`).join("\n"):"—";
+  const msg=t.waReg(profile.name,profile.phone,farmTxt);
+  window.open(`https://wa.me/${CFG.ADMIN_WA}?text=`+encodeURIComponent(msg),"_blank");
+}
+function waShare(){
+  const t=I[lang];if(!farms.length){toast(t.noFarms);return;}
+  const farm=farms[active];let msg;
+  if(lastData&&lastData.length){const n=lastData[0];msg=t.waAlert(farm.name,lastData.length,n.d.toFixed(1),t.dir[n.br]);}
+  else msg=t.waSafe(farm.name);
+  window.open("https://wa.me/?text="+encodeURIComponent(msg),"_blank");
+}
+function tgShare(){
+  const t=I[lang];if(!farms.length){toast(t.noFarms);return;}
+  const farm=farms[active];let msg;
+  if(lastData&&lastData.length){const n=lastData[0];msg=t.waAlert(farm.name,lastData.length,n.d.toFixed(1),t.dir[n.br]);}
+  else msg=t.waSafe(farm.name);
+  window.open("https://t.me/share/url?url="+encodeURIComponent(" ")+"&text="+encodeURIComponent(msg),"_blank");
+}
+
+//=================== views ===================
+function switchView(v){
+  document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
+  document.querySelectorAll(".view").forEach(el=>el.classList.toggle("on",el.id==="v-"+v));
+  if(v==="monitor")loadData();
+}
+
+//=================== language ===================
+function applyLang(){
+  const t=I[lang];
+  document.documentElement.lang=lang==="zh"?"zh":"en";
+  const S=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  S("t-title",t.title);S("t-sub",t.sub);S("langLbl",t.lang);
+  S("tab-mon",t.tabMon);S("tab-farm",t.tabFarm);S("tab-alert",t.tabAlert);
+  S("s1k",t.s1k);S("s2k",t.s2k);S("hs-title",t.hsTitle);
+  S("t-wa",t.wa);S("t-tgshare",t.tgshare);S("t-refresh",t.refresh);
+  S("t-prof",t.prof);S("t-profhint",t.profhint);S("f-uname",t.uname);S("f-phone",t.phone);S("saveProfBtn",t.saveProf);
+  S("t-addfarm",t.addfarm);S("t-addhint",t.addhint);S("f-fname",t.fname);S("t-loc",t.loc);S("t-or",t.or);
+  S("f-lat",t.lat);S("f-lon",t.lon);S("f-rad",t.rad);S("addFarmBtn",t.addFarm);S("t-myfarms",t.myfarms);
+  S("t-howtitle",t.howtitle);S("t-howhint",t.howhint);
+  document.getElementById("st1").innerHTML=t.st1;
+  document.getElementById("st2").innerHTML=t.st2;
+  document.getElementById("st3").innerHTML=t.st3;
+  S("t-connect",t.connect);S("t-watitle",t.watitle);S("t-wahint",t.wahint);S("t-waconnect",t.waconnect);
+  S("f-key",t.key);S("saveKeyBtn",t.saveKey);S("t-tgshare",t.tgshare);S("foot",t.foot);S("t-adv",t.adv);
+  document.getElementById("adv-body").innerHTML = lang==="zh"
+    ? `给管理员：把农场名单部署到 GitHub。机器人用户名设在代码顶部的 <code>CFG.TG_BOT</code>，管理员 WhatsApp 设在 <code>CFG.ADMIN_WA</code>。完整部署步骤见随附的 README 与 bot 程序。`
+    : `For the admin: deploy the roster to GitHub. Set the bot username in <code>CFG.TG_BOT</code> at the top of the code and the admin WhatsApp in <code>CFG.ADMIN_WA</code>. Full deploy steps are in the bundled README and bot script.`;
+  updateConnStatus();
+  if(!document.getElementById("updated").textContent)document.getElementById("updated").textContent=t.never;
+}
+
+//=================== bind ===================
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchView(b.dataset.v));
+document.getElementById("langBtn").onclick=()=>{lang=lang==="zh"?"en":"zh";localStorage.setItem("fw_lang",lang);applyLang();renderChips();renderFarmList();if(lastData)render(lastData);};
+document.getElementById("refreshBtn").onclick=loadData;
+document.getElementById("waBtn").onclick=waShare;
+document.getElementById("tgShareBtn").onclick=tgShare;
+document.getElementById("locBtn").onclick=useLocation;
+document.getElementById("connectTgBtn").onclick=connectTelegram;
+document.getElementById("waConnectBtn").onclick=waRegister;
+
+document.getElementById("saveProfBtn").onclick=()=>{
+  const t=I[lang];
+  profile.name=document.getElementById("i-uname").value.trim();
+  profile.phone=document.getElementById("i-phone").value.trim();
+  if(!profile.name||!profile.phone){toast(t.needprof);return;}
+  lset("profile",profile);toast(t.saved);
+};
+document.getElementById("addFarmBtn").onclick=()=>{
+  const t=I[lang];
+  const name=document.getElementById("i-fname").value.trim();
+  const la=parseFloat(document.getElementById("i-lat").value);
+  const lo=parseFloat(document.getElementById("i-lon").value);
+  const rad=parseFloat(document.getElementById("i-rad").value)||30;
+  if(!name||isNaN(la)||isNaN(lo)){toast(t.needfarm);return;}
+  farms.push({name,lat:la,lon:lo,rad});lset("farms",farms);
+  document.getElementById("i-fname").value="";document.getElementById("i-lat").value="";
+  document.getElementById("i-lon").value="";document.getElementById("i-rad").value="";
+  renderFarmList();renderChips();toast(t.added);
+};
+document.getElementById("saveKeyBtn").onclick=()=>{
+  const t=I[lang];const k=document.getElementById("i-key").value.trim();
+  if(k)lset("key",k);toast(t.saved);loadData();
+};
+
+//=================== prefill ===================
+document.getElementById("i-uname").value=profile.name;
+document.getElementById("i-phone").value=profile.phone;
+document.getElementById("i-key").value=lget("key","");
+
+applyLang();renderChips();renderFarmList();loadData();
+
+//=================== service worker ===================
+if("serviceWorker" in navigator){
+  const sw=`self.addEventListener("install",e=>self.skipWaiting());
+  self.addEventListener("activate",e=>self.clients.claim());
+  self.addEventListener("fetch",e=>{if(e.request.url.includes("firms.modaps"))return;
+    e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"text/javascript"}))).catch(()=>{});
+}
+</script>
+</body>
+</html>
