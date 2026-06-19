@@ -3,11 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1a1410">
+<meta name="theme-color" content="#E8620E">
 <title>火警守护 · FireWatch</title>
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="FireWatch">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;700;800&display=swap" rel="stylesheet">
-<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22FireWatch%22%2C%22short_name%22%3A%22FireWatch%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231a1410%22%2C%22theme_color%22%3A%22%231a1410%22%7D">
+<link rel="manifest" href="manifest.json">
 <style>
   :root{
     --bg:#f6f4ef; --bg2:#eceae3; --card:#ffffff; --line:#e2ddd2;
@@ -97,6 +103,19 @@
   .stat .v small{font-size:.7rem;font-weight:600;color:var(--ink2)}
 
   .sect{font-size:.78rem;color:var(--ink3);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin:18px 2px 9px}
+  .sos{display:flex;align-items:center;gap:9px;background:#fff;border:1.5px solid #f3c5bf;border-radius:13px;padding:11px 14px;margin-bottom:14px;text-decoration:none;cursor:pointer;width:100%;font-family:inherit;text-align:left}
+  .sos-modal{position:fixed;inset:0;z-index:220;background:rgba(30,24,18,.5);display:flex;align-items:center;justify-content:center;padding:22px}
+  .sos-modal.hide{display:none}
+  .sos-box{background:var(--bg);width:100%;max-width:360px;border-radius:18px;padding:22px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.3)}
+  .sos-box-ic{font-size:2.4rem;margin-bottom:8px}
+  .sos-box-q{font-size:1.05rem;font-weight:900;color:var(--ink);line-height:1.4;margin-bottom:10px}
+  .sos-box-law{font-size:.78rem;color:var(--ink2);line-height:1.5;margin-bottom:18px}
+  .sos-box-call{display:block;background:var(--crit);color:#fff;border-radius:13px;padding:16px;font-size:1.1rem;font-weight:900;text-decoration:none;margin-bottom:10px}
+  .sos-box-cancel{display:block;width:100%;background:transparent;border:1.5px solid var(--line);color:var(--ink2);border-radius:13px;padding:13px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit}
+  .sos:active{background:#fff5f4}
+  .sos-ic{font-size:1.15rem;flex:none}
+  .sos-tx{flex:1;font-weight:800;font-size:.9rem;color:#a8201a;min-width:0}
+  .sos-arrow{color:#c98;font-size:1.3rem;font-weight:700;flex:none}
   /* wind card */
   .wind{display:flex;align-items:center;gap:13px;background:#fff;border:1px solid var(--line);border-radius:15px;padding:13px 15px;margin-bottom:14px}
   .wind-ic{width:42px;height:42px;border-radius:50%;background:var(--bg2);display:grid;place-items:center;font-size:1.3rem;flex:none;transition:transform .4s ease;color:var(--ink)}
@@ -158,9 +177,9 @@
   .radhint{font-size:.8rem;color:var(--med);font-weight:600;line-height:1.45;margin:2px 0 0;display:flex;gap:6px;align-items:flex-start}
   .radhint .hi{flex:none}
   .panel .hint{font-size:.86rem;color:var(--ink2);line-height:1.55;margin:0 0 12px}
-  .field{display:flex;flex-direction:column;gap:5px;margin:11px 0}
+  .field{display:flex;flex-direction:column;gap:5px;margin:11px 0;min-width:0}
   .field label{font-size:.8rem;font-weight:700;color:var(--ink2)}
-  .field input{background:#faf9f6;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:13px;font-size:.95rem;font-family:inherit}
+  .field input,.field select{background:#faf9f6;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:13px;font-size:.95rem;font-family:inherit;width:100%;min-width:0;box-sizing:border-box}
   .field input:focus{outline:none;border-color:var(--ember);background:#fff}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .save{background:linear-gradient(135deg,var(--ember),var(--flame));color:var(--char);border:none;border-radius:12px;padding:14px;font-weight:800;width:100%;cursor:pointer;font-family:inherit;font-size:.92rem}
@@ -248,10 +267,20 @@
       <div class="sub" id="b-sub"><span class="spin"></span>正在读取卫星数据</div>
     </div>
     <div class="farms" id="farmchips"></div>
-    <details class="help" id="helpCard">
-      <summary><span id="t-helptitle">❓ 这个警报怎么运作？</span><span class="ar">▾</span></summary>
-      <div class="help-body" id="helpBody"></div>
-    </details>
+    <button class="sos" id="sosBtn">
+      <span class="sos-ic">🚒</span>
+      <span class="sos-tx" id="t-sos">紧急？拨打 BOMBA 999</span>
+      <span class="sos-arrow">›</span>
+    </button>
+    <div class="sos-modal hide" id="sosModal">
+      <div class="sos-box">
+        <div class="sos-box-ic">🚒</div>
+        <div class="sos-box-q" id="t-sosConfirmQ"></div>
+        <div class="sos-box-law" id="t-sosConfirmLaw"></div>
+        <a class="sos-box-call" id="sosCallBtn" href="tel:999"><span id="t-sosConfirmYes"></span></a>
+        <button class="sos-box-cancel" id="sosCancelBtn"><span id="t-sosConfirmNo"></span></button>
+      </div>
+    </div>
     <div class="grid">
       <div class="stat"><div class="k" id="s1k">最近热点</div><div class="v" id="s1v">—</div></div>
       <div class="stat"><div class="k" id="s2k">监测半径</div><div class="v" id="s2v">—</div></div>
@@ -404,13 +433,13 @@ const I = {
   bombatitle:"🔥 附近有较严重火点",
   bombatext:"卫星侦测到附近有较强火点。<b>请先亲自查看或确认</b>是否真的失火 — 火点不一定是真火。确认属实后，才拨打 BOMBA。",
   bombaverify:"① 我先去查看 / 确认火情",
-  bombacall:"② 确认属实 — 拨打 999",
+  bombacall:"② 确认属实 — 拨打 999", sos:"紧急？拨打 BOMBA 999", sosConfirmQ:"你是否已经亲眼看到火或烟？", sosConfirmLaw:"请只在确认真实火警时拨打。明知没有火而谎报属违法行为。", sosConfirmYes:"是的，立即拨打 999", sosConfirmNo:"取消",
   bombaalt:"或直拨 BOMBA：<a href=\"tel:994\">994</a> · 手机无 SIM 卡可拨 <a href=\"tel:112\">112</a>",
   bombalaw:"⚠️ 善意报告真实火警没有问题。但<b>明知没有火</b>而谎报，属违法行为（1998 通讯及多媒体法令第 233 条），最高可罚 RM50,000 或监禁一年。",
   wa:"WhatsApp 转发", tgshare:"Telegram 转发", refresh:"↻ 刷新数据",
   prof:"农户资料", profhint:"填写姓名与手机号码，方便接收警报。",
-  uname:"姓名 Name", phone:"手机号码 Mobile (含国码)", saveProf:"保存资料",
-  ph_uname:"请输入您的姓名", ph_phone:"例如 +60123456789", ph_fname:"请输入您的农场名称",
+  uname:"姓名 Name", phone:"手机号码 Mobile", saveProf:"保存资料", badphone:"请输入有效的手机号码（如 0193824740）",
+  ph_uname:"请输入您的姓名", ph_phone:"例如 0193824740", ph_fname:"请输入您的农场名称",
   ph_lat:"例如 3.2478", ph_lon:"例如 102.4189", ph_rad:"例如 30", ph_key:"贴上您的 NASA Key",
   addfarm:"加入农场", addhint:"用「定位」自动取得 GPS，或手动输入坐标。可加入多个农场。",
   fname:"农场名称 Farm name", loc:"使用我的定位", or:"或手动输入",
@@ -466,13 +495,13 @@ const I = {
   bombatitle:"🔥 Serious hotspot nearby",
   bombatext:"A satellite detected a strong hotspot near this farm. <b>Check or confirm it yourself first</b> — a hotspot is not always a real fire. Only call BOMBA once you've confirmed it's real.",
   bombaverify:"① I'll check / confirm the fire first",
-  bombacall:"② Confirmed — call 999",
+  bombacall:"② Confirmed — call 999", sos:"Emergency? Call BOMBA 999", sosConfirmQ:"Have you seen the fire or smoke yourself?", sosConfirmLaw:"Only call if the fire is real. Knowingly making a false report is an offence.", sosConfirmYes:"Yes, call 999 now", sosConfirmNo:"Cancel",
   bombaalt:"Or call BOMBA direct: <a href=\"tel:994\">994</a> · no SIM? dial <a href=\"tel:112\">112</a>",
   bombalaw:"⚠️ Reporting a real fire in good faith is fine. But <b>knowingly making a false report</b> is an offence (Communications & Multimedia Act 1998, s.233) — up to RM50,000 fine or one year jail.",
   wa:"Share to WhatsApp", tgshare:"Share to Telegram", refresh:"↻ Refresh",
   prof:"Farmer profile", profhint:"Enter your name and mobile number to receive alerts.",
-  uname:"Name", phone:"Mobile (with country code)", saveProf:"Save profile",
-  ph_uname:"Enter your name", ph_phone:"e.g. +60123456789", ph_fname:"Enter your farm name",
+  uname:"Name", phone:"Mobile number", saveProf:"Save profile", badphone:"Enter a valid mobile number (e.g. 0193824740)",
+  ph_uname:"Enter your name", ph_phone:"e.g. 0193824740", ph_fname:"Enter your farm name",
   ph_lat:"e.g. 3.2478", ph_lon:"e.g. 102.4189", ph_rad:"e.g. 30", ph_key:"Paste your NASA key",
   addfarm:"Add a farm", addhint:"Use 'My location' to grab GPS automatically, or type coordinates. Add multiple farms.",
   fname:"Farm name", loc:"Use my location", or:"or enter manually",
@@ -528,13 +557,13 @@ const I = {
   bombatitle:"🔥 Titik panas serius berdekatan",
   bombatext:"Satelit mengesan titik panas kuat berhampiran ladang ini. <b>Periksa atau sahkan sendiri dahulu</b> — titik panas tidak semestinya kebakaran sebenar. Hubungi BOMBA hanya setelah anda sahkan ia benar.",
   bombaverify:"① Saya akan periksa / sahkan dahulu",
-  bombacall:"② Disahkan — hubungi 999",
+  bombacall:"② Disahkan — hubungi 999", sos:"Kecemasan? Hubungi BOMBA 999", sosConfirmQ:"Adakah anda nampak api atau asap sendiri?", sosConfirmLaw:"Hubungi hanya jika kebakaran benar. Membuat laporan palsu dengan sengaja adalah kesalahan.", sosConfirmYes:"Ya, hubungi 999 sekarang", sosConfirmNo:"Batal",
   bombaalt:"Atau hubungi BOMBA terus: <a href=\"tel:994\">994</a> · tiada SIM? dail <a href=\"tel:112\">112</a>",
   bombalaw:"⚠️ Melaporkan kebakaran sebenar dengan niat baik tiada masalah. Tetapi <b>membuat laporan palsu dengan sengaja</b> adalah kesalahan (Akta Komunikasi & Multimedia 1998, s.233) — denda sehingga RM50,000 atau penjara setahun.",
   wa:"Kongsi ke WhatsApp", tgshare:"Kongsi ke Telegram", refresh:"↻ Muat semula",
   prof:"Profil petani", profhint:"Isikan nama dan nombor telefon untuk menerima amaran.",
-  uname:"Nama", phone:"Telefon (dengan kod negara)", saveProf:"Simpan profil",
-  ph_uname:"Masukkan nama anda", ph_phone:"cth. +60123456789", ph_fname:"Masukkan nama ladang anda",
+  uname:"Nama", phone:"Nombor telefon", saveProf:"Simpan profil", badphone:"Masukkan nombor telefon sah (cth. 0193824740)",
+  ph_uname:"Masukkan nama anda", ph_phone:"cth. 0193824740", ph_fname:"Masukkan nama ladang anda",
   ph_lat:"cth. 3.2478", ph_lon:"cth. 102.4189", ph_rad:"cth. 30", ph_key:"Tampal kunci NASA anda",
   addfarm:"Tambah ladang", addhint:"Guna 'Lokasi saya' untuk GPS automatik, atau taip koordinat. Boleh tambah beberapa ladang.",
   fname:"Nama ladang", loc:"Guna lokasi saya", or:"atau masukkan sendiri",
@@ -590,13 +619,13 @@ const I = {
   bombatitle:"🔥 அருகில் தீவிரமான தீப்புள்ளி",
   bombatext:"இந்தப் பண்ணைக்கு அருகில் வலுவான தீப்புள்ளியை செயற்கைக்கோள் கண்டறிந்தது. <b>முதலில் நீங்களே சரிபார்க்கவும்</b> — தீப்புள்ளி எப்போதும் உண்மையான தீ அல்ல. உண்மை என உறுதிசெய்த பின்னரே BOMBA-வை அழைக்கவும்.",
   bombaverify:"① நான் முதலில் சரிபார்க்கிறேன்",
-  bombacall:"② உறுதி — 999 அழைக்கவும்",
+  bombacall:"② உறுதி — 999 அழைக்கவும்", sos:"அவசரமா? BOMBA 999 அழைக்கவும்", sosConfirmQ:"நீங்களே தீ அல்லது புகையைப் பார்த்தீர்களா?", sosConfirmLaw:"தீ உண்மையாக இருந்தால் மட்டும் அழைக்கவும். வேண்டுமென்றே பொய் அறிக்கை செய்வது குற்றம்.", sosConfirmYes:"ஆம், இப்போது 999 அழைக்கவும்", sosConfirmNo:"ரத்து",
   bombaalt:"அல்லது BOMBA-வை நேரடியாக அழைக்கவும்: <a href=\"tel:994\">994</a> · SIM இல்லையா? <a href=\"tel:112\">112</a>",
   bombalaw:"⚠️ உண்மையான தீயை நல்லெண்ணத்துடன் தெரிவிப்பது சரி. ஆனால் <b>வேண்டுமென்றே பொய்யான அறிக்கை</b> செய்வது குற்றம் (தொடர்பு & பல்லூடக சட்டம் 1998, பிரிவு 233) — RM50,000 வரை அபராதம் அல்லது ஒரு வருடம் சிறை.",
   wa:"WhatsApp-இல் பகிர்", tgshare:"Telegram-இல் பகிர்", refresh:"↻ புதுப்பி",
   prof:"விவசாயி விவரம்", profhint:"எச்சரிக்கைகளைப் பெற உங்கள் பெயர் மற்றும் தொலைபேசி எண்ணை நிரப்பவும்.",
-  uname:"பெயர்", phone:"தொலைபேசி (நாட்டுக் குறியீட்டுடன்)", saveProf:"விவரத்தைச் சேமி",
-  ph_uname:"உங்கள் பெயரை உள்ளிடவும்", ph_phone:"எ.கா. +60123456789", ph_fname:"உங்கள் பண்ணையின் பெயரை உள்ளிடவும்",
+  uname:"பெயர்", phone:"தொலைபேசி எண்", saveProf:"விவரத்தைச் சேமி", badphone:"சரியான தொலைபேசி எண்ணை உள்ளிடவும் (எ.கா. 0193824740)",
+  ph_uname:"உங்கள் பெயரை உள்ளிடவும்", ph_phone:"எ.கா. 0193824740", ph_fname:"உங்கள் பண்ணையின் பெயரை உள்ளிடவும்",
   ph_lat:"எ.கா. 3.2478", ph_lon:"எ.கா. 102.4189", ph_rad:"எ.கா. 30", ph_key:"உங்கள் NASA விசையை ஒட்டவும்",
   addfarm:"பண்ணை சேர்", addhint:"GPS-க்கு 'என் இருப்பிடம்' பயன்படுத்தவும், அல்லது ஆயத்தொலைவை தட்டச்சு செய்யவும். பல பண்ணைகளைச் சேர்க்கலாம்.",
   fname:"பண்ணை பெயர்", loc:"என் இருப்பிடத்தைப் பயன்படுத்து", or:"அல்லது கைமுறையாக உள்ளிடவும்",
@@ -690,6 +719,31 @@ function lset(k,v){ localStorage.setItem(NS+k,JSON.stringify(v)); }
 
 let profile = lget("profile",{name:"",phone:""});
 let farms   = lget("farms",[]);
+
+// Normalize a Malaysian-style mobile number into international digits (e.g. 60193824740).
+// Accepts: 0193824740, 019-382 4740, +60 19-382 4740, 60193824740, 193824740, etc.
+// Returns "" if it doesn't look like a usable number.
+function normalizePhone(raw){
+  if(!raw) return "";
+  let s=String(raw).trim();
+  const hadPlus=s.trim().startsWith("+");
+  let d=s.replace(/[^0-9]/g,"");      // keep digits only
+  if(!d) return "";
+  if(hadPlus){
+    // already international (+60..., +65..., etc) — trust the digits as-is
+    return d;
+  }
+  if(d.startsWith("60")){
+    return d;                          // 60xxxxxxxxx already intl form
+  }
+  if(d.startsWith("0")){
+    return "60"+d.slice(1);            // local 0xx... -> 60xx...
+  }
+  // bare national number without leading 0 (e.g. 193824740) -> assume Malaysia
+  return "60"+d;
+}
+// pretty version for display/messages: +60 19-382 4740 style is overkill; use +<digits>
+function phoneIntl(raw){ const d=normalizePhone(raw); return d?("+"+d):""; }
 let active  = 0;
 let lastData=null;
 let lastWind=null;
@@ -906,7 +960,7 @@ function connectTelegram(){
   const t=I[lang];
   if(!profile.name||!profile.phone){toast(t.needprof);switchView("farms");return;}
   if(!farms.length){toast(t.needfarm);switchView("farms");return;}
-  const phoneDigits=profile.phone.replace(/[^0-9]/g,"");
+  const phoneDigits=normalizePhone(profile.phone);
   // 1) push full registration (profile + farms) to the Worker roster
   if(CFG.REGISTER_URL){
     fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},
@@ -979,7 +1033,7 @@ function waSendFarm(){
   const wa=sel && sel.value ? sel.value : ((CFG.COORDINATORS&&CFG.COORDINATORS[0])?CFG.COORDINATORS[0].wa:"");
   if(!wa){toast(t.noCoord);return;}
   const readable=farms.map(f=>`• ${f.name} — ${f.lat.toFixed(5)}, ${f.lon.toFixed(5)} · ${f.rad}km`).join("\n");
-  const msg=t.waFarmMsg(profile.name,profile.phone,readable,farmCode());
+  const msg=t.waFarmMsg(profile.name,phoneIntl(profile.phone),readable,farmCode());
   window.open(`https://wa.me/${wa}?text=`+encodeURIComponent(msg),"_blank");
 }
 function waShare(){
@@ -1021,14 +1075,12 @@ function applyLang(){
   const hl=document.getElementById("helpLbl");if(hl)hl.textContent=t.helpLbl;
   S("tab-mon",t.tabMon);S("tab-farm",t.tabFarm);S("tab-alert",t.tabAlert);
   S("s1k",t.s1k);S("s2k",t.s2k);S("hs-title",t.hsTitle);
-  S("t-helptitle",t.helptitle);S("t-radhint",t.radhint);
+  S("t-sos",t.sos);
+  S("t-sosConfirmQ",t.sosConfirmQ);S("t-sosConfirmLaw",t.sosConfirmLaw);S("t-sosConfirmYes",t.sosConfirmYes);S("t-sosConfirmNo",t.sosConfirmNo);
+  S("t-radhint",t.radhint);
   S("t-bombatitle",t.bombatitle);document.getElementById("t-bombatext").innerHTML=t.bombatext;S("t-bombacall",t.bombacall);S("t-bombaverify",t.bombaverify);
   document.getElementById("t-bombaalt").innerHTML=t.bombaalt;
   document.getElementById("t-bombalaw").innerHTML=t.bombalaw;
-  document.getElementById("helpBody").innerHTML =
-    `<div class="help-row"><span class="hi">${t.help1ic}</span><span>${t.help1}</span></div>`+
-    `<div class="help-row"><span class="hi">${t.help2ic}</span><span>${t.help2}</span></div>`+
-    `<div class="help-row"><span class="hi">${t.help3ic}</span><span>${t.help3}</span></div>`;
   S("t-wa",t.wa);S("t-tgshare",t.tgshare);S("t-refresh",t.refresh);
   S("t-prof",t.prof);S("t-profhint",t.profhint);S("f-uname",t.uname);S("f-phone",t.phone);S("saveProfBtn",t.saveProf);
   S("t-addfarm",t.addfarm);S("t-addhint",t.addhint);S("f-fname",t.fname);S("t-loc",t.loc);S("t-or",t.or);
@@ -1076,6 +1128,20 @@ document.getElementById("helpOverlay").onclick=(e)=>{
   if(e.target.id==="helpOverlay") document.getElementById("helpOverlay").classList.add("hide");
 };
 document.getElementById("refreshBtn").onclick=loadData;
+// SOS: small always-there button opens a quick verify-confirm before dialling 999
+document.getElementById("sosBtn").onclick=()=>{
+  document.getElementById("sosModal").classList.remove("hide");
+};
+document.getElementById("sosCancelBtn").onclick=()=>{
+  document.getElementById("sosModal").classList.add("hide");
+};
+document.getElementById("sosModal").onclick=(e)=>{
+  if(e.target.id==="sosModal") document.getElementById("sosModal").classList.add("hide");
+};
+// after the call link is tapped, close the modal too
+document.getElementById("sosCallBtn").addEventListener("click",()=>{
+  setTimeout(()=>document.getElementById("sosModal").classList.add("hide"),300);
+});
 document.getElementById("bombaVerifyBtn").onclick=()=>{
   document.getElementById("bombaCallWrap").style.display="block";
   document.getElementById("bombaVerifyBtn").style.display="none";
@@ -1090,8 +1156,12 @@ document.getElementById("pasteAddBtn").onclick=()=>parseFarmCode(document.getEle
 document.getElementById("saveProfBtn").onclick=()=>{
   const t=I[lang];
   profile.name=document.getElementById("i-uname").value.trim();
-  profile.phone=document.getElementById("i-phone").value.trim();
-  if(!profile.name||!profile.phone){toast(t.needprof);return;}
+  const rawPhone=document.getElementById("i-phone").value.trim();
+  if(!profile.name||!rawPhone){toast(t.needprof);return;}
+  const intl=normalizePhone(rawPhone);
+  if(intl.length<10||intl.length>14){toast(t.badphone);return;}
+  profile.phone=phoneIntl(rawPhone);
+  document.getElementById("i-phone").value=profile.phone;
   lset("profile",profile);toast(t.saved);
 };
 document.getElementById("addFarmBtn").onclick=()=>{
@@ -1132,13 +1202,14 @@ applyLang();renderChips();renderFarmList();populateCoordinators();loadData();
   });
 })();
 
-//=================== service worker ===================
+//=================== service worker (offline support) ===================
+// Registers the real sw.js file (served from the same folder on GitHub Pages).
+// Using a real file — not a Blob URL — so the worker has a proper scope and
+// reliably controls offline navigation in Chrome, Safari, and others.
 if("serviceWorker" in navigator){
-  const sw=`self.addEventListener("install",e=>self.skipWaiting());
-  self.addEventListener("activate",e=>self.clients.claim());
-  self.addEventListener("fetch",e=>{if(e.request.url.includes("firms.modaps"))return;
-    e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});`;
-  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:"text/javascript"}))).catch(()=>{});
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").catch(()=>{});
+  });
 }
 </script>
 </body>
