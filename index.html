@@ -81,6 +81,16 @@
   /* fire blowing-toward flag */
   .toward-tag{display:inline-flex;align-items:center;gap:4px;background:#fdeae8;color:#a8201a;font-size:.66rem;font-weight:800;padding:3px 7px;border-radius:7px;margin-top:4px}
   .hs .frp{font-size:.72rem;color:var(--ink2);font-weight:600}
+  /* bomba emergency call */
+  .bomba{background:#fff5f4;border:1px solid #f3c5bf;border-radius:15px;padding:15px;margin-bottom:14px}
+  .bomba .bt{font-weight:800;font-size:.95rem;color:#a8201a;display:flex;align-items:center;gap:7px}
+  .bomba .bx{font-size:.82rem;color:var(--ink2);line-height:1.5;margin:7px 0 12px}
+  .bomba-call{display:flex;align-items:center;justify-content:center;gap:9px;background:var(--crit);color:#fff;border:none;border-radius:13px;padding:16px;font-size:1.15rem;font-weight:900;width:100%;cursor:pointer;font-family:inherit;text-decoration:none}
+  .bomba-call svg{width:22px;height:22px}
+  .bomba-verify{display:flex;align-items:center;justify-content:center;gap:8px;background:#fff;color:#a8201a;border:2px solid var(--crit);border-radius:13px;padding:15px;font-size:1rem;font-weight:800;width:100%;cursor:pointer;font-family:inherit}
+  .bomba-alt{text-align:center;font-size:.8rem;color:var(--ink2);margin-top:9px}
+  .bomba-alt a{color:var(--crit);font-weight:800;text-decoration:none}
+  .bomba-law{text-align:center;font-size:.72rem;color:var(--ink3);margin-top:10px;line-height:1.45;border-top:1px dashed var(--line);padding-top:9px}
 
   .hs{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px 14px;margin-bottom:9px;display:flex;align-items:center;gap:12px}
   .hs .dot{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 10px currentColor}
@@ -104,6 +114,8 @@
   .panel.primary{border:2px solid var(--tg);box-shadow:0 4px 18px rgba(42,171,238,.15)}
   .badge{display:inline-block;background:var(--tg);color:#fff;font-size:.66rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-bottom:8px}
   .badge-soft{display:inline-block;background:var(--bg2);color:var(--ink2);font-size:.66rem;font-weight:800;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:999px;margin-bottom:8px}
+  .coord-note{font-size:.78rem;color:var(--low);font-weight:600;margin:-2px 0 12px;display:flex;gap:6px;align-items:flex-start}
+  .sleep-note{font-size:.78rem;color:var(--ink2);line-height:1.5;margin:11px 0 0;background:var(--bg2);border-radius:10px;padding:10px 12px;display:flex;gap:7px;align-items:flex-start}
   /* help card */
   .help{background:#fff;border:1px solid var(--line);border-left:4px solid var(--med);border-radius:14px;margin-bottom:14px;overflow:hidden}
   .help summary{padding:13px 15px;font-weight:800;font-size:.9rem;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;color:var(--ink)}
@@ -200,6 +212,21 @@
         <div class="wind-v" id="windV">—</div>
       </div>
     </div>
+    <div class="bomba" id="bombaCard" style="display:none">
+      <div class="bt" id="t-bombatitle">🚒 发现火情？联系 BOMBA</div>
+      <div class="bx" id="t-bombatext"></div>
+      <!-- stage 1: verify first -->
+      <button class="bomba-verify" id="bombaVerifyBtn"><span id="t-bombaverify"></span></button>
+      <!-- stage 2: revealed only after verify -->
+      <div id="bombaCallWrap" style="display:none">
+        <a class="bomba-call" id="bombaCallBtn" href="tel:999">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1l-2.2 2z"/></svg>
+          <span id="t-bombacall">拨打 999</span>
+        </a>
+        <div class="bomba-alt" id="t-bombaalt"></div>
+        <div class="bomba-law" id="t-bombalaw"></div>
+      </div>
+    </div>
     <div class="sect" id="hs-title">附近热点</div>
     <div id="hslist"></div>
     <div class="actions">
@@ -258,7 +285,12 @@
       <span class="badge-soft" id="t-wabadge">无 Telegram 可用</span>
       <h3 id="t-watitle">把农场发给协调员</h3>
       <p class="hint" id="t-wahint"></p>
+      <div class="field"><label id="f-coord">协调员 Coordinator</label>
+        <select id="i-coord" style="background:#faf9f6;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:13px;font-size:.95rem;font-family:inherit"></select>
+      </div>
+      <p class="coord-note" id="t-coordnote"></p>
       <button class="save" id="waConnectBtn" style="background:var(--wa);color:#063">📲 <span id="t-waconnect">用 WhatsApp 发送农场资料</span></button>
+      <p class="sleep-note" id="t-sleepnote"></p>
     </div>
 
     <div class="panel" style="margin-top:14px">
@@ -293,8 +325,17 @@
 // Set these to YOUR bot + admin once. Farmers never edit these.
 const CFG = {
   TG_BOT: "FireAlertMalaysiaBot",          // <-- your Telegram bot username (no @)
-  ADMIN_WA: "60193824740",             // <-- admin WhatsApp (intl, no +) for registration messages
   REGISTER_URL: "https://firewatch-bot.standphoto.workers.dev/register",                    // <-- your Worker URL, e.g. "https://firewatch-bot.xxx.workers.dev/register" (leave "" to skip)
+
+  // ---- COORDINATORS ----------------------------------------------------
+  // Each coordinator watches farms near their own town. A farmer's farm is
+  // auto-matched to the NEAREST coordinator by GPS (they can change it).
+  // To add a coordinator: copy a line, fill in name, town, lat, lon, wa (WhatsApp, intl no +).
+  // Keep at least one entry. lat/lon = roughly the coordinator's town centre.
+  COORDINATORS: [
+    { name: "Stanley Woo", town: "Triang", lat: 3.24780, lon: 102.41885, wa: "60193824740" },
+    // { name: "...",        town: "...",     lat: 0.0,    lon: 0.0,      wa: "60..." },
+  ],
 };
 
 //=================== i18n ===================
@@ -308,11 +349,17 @@ const I = {
   windk:"风向 Wind", windFrom:"来自", gustLbl:"阵风", windToward:"吹向农场",
   intensity:"强度", towardFarm:"火势正吹向你的农场",
   frpLow:"小火", frpMed:"较强", frpHigh:"猛烈",
+  bombatitle:"🔥 附近有较严重火点",
+  bombatext:"卫星侦测到附近有较强火点。<b>请先亲自查看或确认</b>是否真的失火 — 火点不一定是真火。确认属实后，才拨打 BOMBA。",
+  bombaverify:"① 我先去查看 / 确认火情",
+  bombacall:"② 确认属实 — 拨打 999",
+  bombaalt:"或直拨 BOMBA：<a href=\"tel:994\">994</a> · 手机无 SIM 卡可拨 <a href=\"tel:112\">112</a>",
+  bombalaw:"⚠️ 善意报告真实火警没有问题。但<b>明知没有火</b>而谎报，属违法行为（1998 通讯及多媒体法令第 233 条），最高可罚 RM50,000 或监禁一年。",
   wa:"WhatsApp 转发", tgshare:"Telegram 转发", refresh:"↻ 刷新数据",
   prof:"农户资料", profhint:"填写姓名与手机号码，方便接收警报。",
   uname:"姓名 Name", phone:"手机号码 Mobile (含国码)", saveProf:"保存资料",
   ph_uname:"请输入您的姓名", ph_phone:"例如 +60123456789", ph_fname:"请输入您的农场名称",
-  ph_lat:"例如 1.5533", ph_lon:"例如 110.3592", ph_rad:"例如 30", ph_key:"贴上您的 NASA Key",
+  ph_lat:"例如 3.2478", ph_lon:"例如 102.4189", ph_rad:"例如 30", ph_key:"贴上您的 NASA Key",
   addfarm:"加入农场", addhint:"用「定位」自动取得 GPS，或手动输入坐标。可加入多个农场。",
   fname:"农场名称 Farm name", loc:"使用我的定位", or:"或手动输入",
   lat:"纬度 Lat", lon:"经度 Lon", rad:"警报半径 Radius (km)", addFarm:"＋ 加入农场",
@@ -327,6 +374,8 @@ const I = {
   watitle:"把农场发给协调员",
   wahint:"没有 Telegram 账号？把你的姓名与农场位置用 WhatsApp 发给协调员，由协调员代为监测你的农场，火点出现时会通知你。",
   waconnect:"用 WhatsApp 发送农场资料",
+  coordLabel:"协调员 Coordinator", coordNote:"已自动选择离你最近的协调员，可自行更换。", noCoord:"暂无协调员",
+  sleepNote:"⏳ 协调员是真人（目前只有一位），需要休息睡觉，回复不会即时 — 尤其是深夜。请耐心等候确认，你的农场可能要稍后才开始被监测。",
   waFarmMsg:(name,phone,readable,code)=>`📋 火警守护 · 农场登记\n\n姓名: ${name}\n手机: ${phone}\n\n农场:\n${readable}\n\n———\n协调员代码（请勿修改）:\n${code}`,
   pastetitle:"加入农户农场", pastehint:"把农户用 WhatsApp 发来的「协调员代码」整段贴在这里（或只贴 FW1| 那一行），即可把他的农场加入你的监测名单。",
   pasteAdd:"加入这些农场", pasteOk:"已加入 {n} 个农场 ✓", pasteErr:"找不到有效的代码，请贴上完整的 FW1| 代码", someFarm:"农户农场",
@@ -362,11 +411,17 @@ const I = {
   windk:"Wind", windFrom:"from", gustLbl:"gust", windToward:"toward farm",
   intensity:"Intensity", towardFarm:"Fire blowing toward your farm",
   frpLow:"small", frpMed:"strong", frpHigh:"intense",
+  bombatitle:"🔥 Serious hotspot nearby",
+  bombatext:"A satellite detected a strong hotspot near this farm. <b>Check or confirm it yourself first</b> — a hotspot is not always a real fire. Only call BOMBA once you've confirmed it's real.",
+  bombaverify:"① I'll check / confirm the fire first",
+  bombacall:"② Confirmed — call 999",
+  bombaalt:"Or call BOMBA direct: <a href=\"tel:994\">994</a> · no SIM? dial <a href=\"tel:112\">112</a>",
+  bombalaw:"⚠️ Reporting a real fire in good faith is fine. But <b>knowingly making a false report</b> is an offence (Communications & Multimedia Act 1998, s.233) — up to RM50,000 fine or one year jail.",
   wa:"Share to WhatsApp", tgshare:"Share to Telegram", refresh:"↻ Refresh",
   prof:"Farmer profile", profhint:"Enter your name and mobile number to receive alerts.",
   uname:"Name", phone:"Mobile (with country code)", saveProf:"Save profile",
   ph_uname:"Enter your name", ph_phone:"e.g. +60123456789", ph_fname:"Enter your farm name",
-  ph_lat:"e.g. 1.5533", ph_lon:"e.g. 110.3592", ph_rad:"e.g. 30", ph_key:"Paste your NASA key",
+  ph_lat:"e.g. 3.2478", ph_lon:"e.g. 102.4189", ph_rad:"e.g. 30", ph_key:"Paste your NASA key",
   addfarm:"Add a farm", addhint:"Use 'My location' to grab GPS automatically, or type coordinates. Add multiple farms.",
   fname:"Farm name", loc:"Use my location", or:"or enter manually",
   lat:"Lat", lon:"Lon", rad:"Alert radius (km)", addFarm:"＋ Add farm",
@@ -381,6 +436,8 @@ const I = {
   watitle:"Send your farm to the coordinator",
   wahint:"No Telegram account? Send your name and farm location to the coordinator via WhatsApp. They'll watch your farm for you and notify you when a hotspot appears.",
   waconnect:"Send farm details via WhatsApp",
+  coordLabel:"Coordinator", coordNote:"Nearest coordinator selected automatically — you can change it.", noCoord:"No coordinator available",
+  sleepNote:"⏳ The coordinator is a real person (currently just one) who needs to sleep, so replies are not immediate — especially at night. Please be patient for confirmation; your farm may only start being watched a little later.",
   waFarmMsg:(name,phone,readable,code)=>`📋 FireWatch · Farm registration\n\nName: ${name}\nMobile: ${phone}\n\nFarms:\n${readable}\n\n———\nCoordinator code (do not edit):\n${code}`,
   pastetitle:"Add a farmer's farm", pastehint:"Paste the whole 'coordinator code' a farmer sent you via WhatsApp (or just the FW1| line) to add their farm to your watch list.",
   pasteAdd:"Add these farms", pasteOk:"Added {n} farm(s) ✓", pasteErr:"No valid code found — paste the full FW1| code", someFarm:"Farmer's farm",
@@ -539,6 +596,11 @@ function render(hits){
   const[cls,big,sub]=map[worst];setBanner(cls,big,sub);
   document.getElementById("b-lbl").textContent=t.riskLbl;
   const list=document.getElementById("hslist");
+  // Bomba card — only for genuinely serious fires (HIGH or CRITICAL), and reset to "verify first" stage
+  const serious = hits.some(h=>h.rk==="HIGH"||h.rk==="CRITICAL");
+  document.getElementById("bombaCard").style.display = serious ? "block" : "none";
+  document.getElementById("bombaCallWrap").style.display = "none";  // always start collapsed
+  document.getElementById("bombaVerifyBtn").style.display = "flex"; // restore stage-1 button
   // wind card
   const wc=document.getElementById("windCard");
   if(lastWind){
@@ -640,13 +702,36 @@ function farmCode(){
   const parts=farms.map(f=>`${f.lat.toFixed(5)},${f.lon.toFixed(5)},${f.rad}`).join(";");
   return `FW1|${profile.name}|${parts}`;
 }
+// build the coordinator dropdown, sorted nearest-first to the farmer's farms, auto-select nearest
+function populateCoordinators(){
+  const sel=document.getElementById("i-coord");
+  if(!sel) return;
+  const coords=(CFG.COORDINATORS||[]).slice();
+  // reference point = first farm (or none)
+  const ref = farms.length ? farms[0] : null;
+  coords.forEach(c=>{ c._d = ref ? dist(ref.lat,ref.lon,c.lat,c.lon) : null; });
+  if(ref) coords.sort((a,b)=>a._d-b._d);
+  const t=I[lang];
+  sel.innerHTML=coords.map((c,i)=>{
+    const near = (ref && c._d!=null) ? ` · ${Math.round(c._d)}${t.km}` : "";
+    return `<option value="${c.wa}" data-name="${c.name}">${c.name} (${c.town})${near}</option>`;
+  }).join("");
+  // auto-select nearest (index 0 after sort)
+  if(coords.length) sel.selectedIndex=0;
+  // show "auto-suggested nearest" note when we had a farm to match on
+  const note=document.getElementById("t-coordnote");
+  if(note) note.style.display = (ref && coords.length>1) ? "flex" : "none";
+}
 function waSendFarm(){
   const t=I[lang];
   if(!profile.name||!profile.phone){toast(t.needprof);switchView("farms");return;}
   if(!farms.length){toast(t.needfarm);switchView("farms");return;}
+  const sel=document.getElementById("i-coord");
+  const wa=sel && sel.value ? sel.value : ((CFG.COORDINATORS&&CFG.COORDINATORS[0])?CFG.COORDINATORS[0].wa:"");
+  if(!wa){toast(t.noCoord);return;}
   const readable=farms.map(f=>`• ${f.name} — ${f.lat.toFixed(5)}, ${f.lon.toFixed(5)} · ${f.rad}km`).join("\n");
   const msg=t.waFarmMsg(profile.name,profile.phone,readable,farmCode());
-  window.open(`https://wa.me/${CFG.ADMIN_WA}?text=`+encodeURIComponent(msg),"_blank");
+  window.open(`https://wa.me/${wa}?text=`+encodeURIComponent(msg),"_blank");
 }
 function waShare(){
   const t=I[lang];if(!farms.length){toast(t.noFarms);return;}
@@ -668,6 +753,7 @@ function switchView(v){
   document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("on",b.dataset.v===v));
   document.querySelectorAll(".view").forEach(el=>el.classList.toggle("on",el.id==="v-"+v));
   if(v==="monitor")loadData();
+  if(v==="alerts")populateCoordinators();
 }
 
 //=================== language ===================
@@ -682,6 +768,9 @@ function applyLang(){
   S("tab-mon",t.tabMon);S("tab-farm",t.tabFarm);S("tab-alert",t.tabAlert);
   S("s1k",t.s1k);S("s2k",t.s2k);S("hs-title",t.hsTitle);
   S("t-helptitle",t.helptitle);S("t-radhint",t.radhint);
+  S("t-bombatitle",t.bombatitle);document.getElementById("t-bombatext").innerHTML=t.bombatext;S("t-bombacall",t.bombacall);S("t-bombaverify",t.bombaverify);
+  document.getElementById("t-bombaalt").innerHTML=t.bombaalt;
+  document.getElementById("t-bombalaw").innerHTML=t.bombalaw;
   document.getElementById("helpBody").innerHTML =
     `<div class="help-row"><span class="hi">${t.help1ic}</span><span>${t.help1}</span></div>`+
     `<div class="help-row"><span class="hi">${t.help2ic}</span><span>${t.help2}</span></div>`+
@@ -695,20 +784,25 @@ function applyLang(){
   document.getElementById("st2").innerHTML=t.st2;
   document.getElementById("st3").innerHTML=t.st3;
   S("t-connect",t.connect);S("t-watitle",t.watitle);S("t-wahint",t.wahint);S("t-waconnect",t.waconnect);
+  S("f-coord",t.coordLabel);document.getElementById("t-coordnote").innerHTML="📍 "+t.coordNote;document.getElementById("t-sleepnote").innerHTML=t.sleepNote;
   S("t-tgbadge",t.tgbadge);S("t-wabadge",t.wabadge);
   S("t-pastetitle",t.pastetitle);S("t-pastehint",t.pastehint);S("pasteAddBtn",t.pasteAdd);
   S("f-key",t.key);S("saveKeyBtn",t.saveKey);S("t-keytitle",t.keytitle);S("t-keyhint",t.keyhint);S("getKeyLink",t.getKey);S("t-tgshare",t.tgshare);S("foot",t.foot);S("t-adv",t.adv);
   document.getElementById("adv-body").innerHTML = lang==="zh"
-    ? `给管理员：把农场名单部署到 GitHub。机器人用户名设在代码顶部的 <code>CFG.TG_BOT</code>，管理员 WhatsApp 设在 <code>CFG.ADMIN_WA</code>。完整部署步骤见随附的 README 与 bot 程序。`
-    : `For the admin: deploy the roster to GitHub. Set the bot username in <code>CFG.TG_BOT</code> at the top of the code and the admin WhatsApp in <code>CFG.ADMIN_WA</code>. Full deploy steps are in the bundled README and bot script.`;
+    ? `给管理员：把农场名单部署到 GitHub。机器人用户名设在代码顶部的 <code>CFG.TG_BOT</code>，协调员名单设在 <code>CFG.COORDINATORS</code>。完整部署步骤见随附的 README 与 bot 程序。`
+    : `For the admin: deploy the roster to GitHub. Set the bot username in <code>CFG.TG_BOT</code> and the coordinator list in <code>CFG.COORDINATORS</code> at the top of the code. Full deploy steps are in the bundled README and bot script.`;
   updateConnStatus();
   if(!document.getElementById("updated").textContent)document.getElementById("updated").textContent=t.never;
 }
 
 //=================== bind ===================
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchView(b.dataset.v));
-document.getElementById("langBtn").onclick=()=>{lang=lang==="zh"?"en":"zh";localStorage.setItem("fw_lang",lang);applyLang();renderChips();renderFarmList();loadData();};
+document.getElementById("langBtn").onclick=()=>{lang=lang==="zh"?"en":"zh";localStorage.setItem("fw_lang",lang);applyLang();renderChips();renderFarmList();populateCoordinators();loadData();};
 document.getElementById("refreshBtn").onclick=loadData;
+document.getElementById("bombaVerifyBtn").onclick=()=>{
+  document.getElementById("bombaCallWrap").style.display="block";
+  document.getElementById("bombaVerifyBtn").style.display="none";
+};
 document.getElementById("waBtn").onclick=waShare;
 document.getElementById("tgShareBtn").onclick=tgShare;
 document.getElementById("locBtn").onclick=useLocation;
@@ -745,7 +839,7 @@ document.getElementById("i-uname").value=profile.name;
 document.getElementById("i-phone").value=profile.phone;
 document.getElementById("i-key").value=lget("key","");
 
-applyLang();renderChips();renderFarmList();loadData();
+applyLang();renderChips();renderFarmList();populateCoordinators();loadData();
 
 //=================== service worker ===================
 if("serviceWorker" in navigator){
