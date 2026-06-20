@@ -104,6 +104,19 @@
 
   .sect{font-size:.78rem;color:var(--ink3);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin:18px 2px 9px}
   .sos{display:flex;align-items:center;gap:9px;background:#fff;border:1.5px solid #f3c5bf;border-radius:13px;padding:11px 14px;margin-bottom:14px;text-decoration:none;cursor:pointer;width:100%;font-family:inherit;text-align:left}
+  /* all-farms overview */
+  .overview{margin-bottom:14px}
+  .overview-h{font-size:.72rem;color:var(--ink3);font-weight:800;text-transform:uppercase;letter-spacing:1px;margin:2px 2px 8px}
+  .ovrow{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid var(--line);border-radius:13px;padding:12px 14px;margin-bottom:8px;cursor:pointer;width:100%;font-family:inherit;text-align:left}
+  .ovrow:active{background:var(--bg2)}
+  .ovrow.sel{border-color:var(--ember);border-width:1.5px}
+  .ov-dot{width:12px;height:12px;border-radius:50%;flex:none}
+  .ov-mid{flex:1;min-width:0}
+  .ov-name{font-weight:800;font-size:.92rem;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ov-sub{font-size:.76rem;color:var(--ink2);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ov-sub .dry{color:#a8201a;font-weight:700}
+  .ov-rk{font-size:.7rem;font-weight:800;padding:3px 8px;border-radius:7px;flex:none}
+  .ov-arrow{color:var(--ink3);font-size:1.1rem;flex:none}
   .sos-modal{position:fixed;inset:0;z-index:220;background:rgba(30,24,18,.5);display:flex;align-items:center;justify-content:center;padding:22px}
   .sos-modal.hide{display:none}
   .sos-box{background:var(--bg);width:100%;max-width:360px;border-radius:18px;padding:22px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.3)}
@@ -120,6 +133,7 @@
   .wind{display:flex;align-items:center;gap:13px;background:#fff;border:1px solid var(--line);border-radius:15px;padding:13px 15px;margin-bottom:14px}
   .wind-ic{width:42px;height:42px;border-radius:50%;background:var(--bg2);display:grid;place-items:center;font-size:1.3rem;flex:none;transition:transform .4s ease;color:var(--ink)}
   .wind-info{flex:1;min-width:0}
+  .wind-farm{font-size:.98rem;font-weight:800;color:var(--ink);margin-bottom:2px}
   .wind-k{font-size:.68rem;color:var(--ink3);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
   .wind-v{font-size:1rem;font-weight:800;margin-top:2px}
   .wind-v2{font-size:.8rem;color:var(--ink2);font-weight:600;margin-top:3px}
@@ -149,14 +163,12 @@
   .empty .e-ico{font-size:2.4rem;margin-bottom:8px}
 
   .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
-  .btn{border:none;border-radius:14px;padding:15px 12px;font-size:.92rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;white-space:nowrap;min-width:0}
+  .btn{border:none;border-radius:14px;padding:15px 8px;font-size:.88rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;font-family:inherit;white-space:nowrap;min-width:0}
   .btn svg{width:18px;height:18px;flex:none}
-  .btn span{overflow:hidden;text-overflow:ellipsis}
   /* share buttons: icon + brand name */
-  .actions .btn-wa svg,.actions .btn-tg svg{width:20px;height:20px}
+  .actions .btn-wa svg,.actions .btn-tg svg{width:18px;height:18px}
   .btn-wa{background:var(--wa);color:#063}
   .btn-tg{background:var(--tg);color:#04304a}
-  .btn svg{width:19px;height:19px}
   .btn-ghost{grid-column:1/-1;background:var(--bg2);color:var(--ink2);border:1px solid var(--line)}
 
   /* forms */
@@ -271,6 +283,10 @@
       <div class="sub" id="b-sub"><span class="spin"></span>正在读取卫星数据</div>
     </div>
     <div class="farms" id="farmchips"></div>
+    <div class="overview" id="overview" style="display:none">
+      <div class="overview-h" id="t-overviewH">所有农场</div>
+      <div id="overviewList"></div>
+    </div>
     <button class="sos" id="sosBtn">
       <span class="sos-ic">🚒</span>
       <span class="sos-tx" id="t-sos">紧急？拨打 BOMBA 999</span>
@@ -292,7 +308,8 @@
     <div class="wind" id="windCard" style="display:none">
       <div class="wind-ic" id="windArrow">↑</div>
       <div class="wind-info">
-        <div class="wind-k" id="t-windk">风 Wind</div>
+        <div class="wind-farm" id="windFarm"></div>
+        <div class="wind-k" id="t-windk">风向</div>
         <div class="wind-v" id="windV">—</div>
         <div class="wind-v2" id="windV2"></div>
       </div>
@@ -431,23 +448,23 @@ const I = {
   riskLbl:"当前风险", checking:"检查中…", reading:"正在读取卫星数据",
   s1k:"最近热点", s2k:"监测半径", km:"公里",
   hsTitle:"附近热点", noHs:"附近暂无热点", noHsSub:"监测半径内未检测到卫星火点",
-  windk:"风向 Wind", windFrom:"来自", gustLbl:"阵风", windToward:"吹向农场", humLbl:"湿度", noRain:"已", dryDays:"天没下雨", dryDays6:"6+ 天没下雨", dryWarn:"天气干燥，火险高",
+  windk:"风向", windFrom:"来自", gustLbl:"阵风", windToward:"吹向农场", humLbl:"湿度", noRain:"已", dryDays:"天没下雨", dryDays6:"6+ 天没下雨", dryWarn:"天气干燥，火险高",
   intensity:"强度", towardFarm:"火势正吹向你的农场",
   frpLow:"小火", frpMed:"较强", frpHigh:"猛烈",
   bombatitle:"🔥 附近有较严重火点",
   bombatext:"卫星侦测到附近有较强火点。<b>请先亲自查看或确认</b>是否真的失火 — 火点不一定是真火。确认属实后，才拨打 BOMBA。",
   bombaverify:"① 我先去查看 / 确认火情",
-  bombacall:"② 确认属实 — 拨打 999", sos:"紧急？拨打 BOMBA 999", sosConfirmQ:"你是否已经亲眼看到火或烟？", sosConfirmLaw:"请只在确认真实火警时拨打。明知没有火而谎报属违法行为。", sosConfirmYes:"是的，立即拨打 999", sosConfirmNo:"取消",
+  bombacall:"② 确认属实 — 拨打 999", sos:"紧急？拨打 BOMBA 999", sosConfirmQ:"你是否已经亲眼看到火或烟？", sosConfirmLaw:"请只在确认真实火警时拨打。明知没有火而谎报属违法行为。", sosConfirmYes:"是的，立即拨打 999", sosConfirmNo:"取消", overviewH:"所有农场", ovSafe:"安全", ovNoKey:"需要 NASA 钥匙",
   bombaalt:"或直拨 BOMBA：<a href=\"tel:994\">994</a> · 手机无 SIM 卡可拨 <a href=\"tel:112\">112</a>",
   bombalaw:"⚠️ 善意报告真实火警没有问题。但<b>明知没有火</b>而谎报，属违法行为（1998 通讯及多媒体法令第 233 条），最高可罚 RM50,000 或监禁一年。",
   wa:"WhatsApp", tgshare:"Telegram", sharesect:"分享报告", refresh:"↻ 刷新数据",
   prof:"农户资料", profhint:"填写姓名与手机号码，方便接收警报。",
-  uname:"姓名 Name", phone:"手机号码 Mobile", saveProf:"保存资料", badphone:"请输入有效的手机号码（如 0193824740）",
+  uname:"姓名", phone:"手机号码", saveProf:"保存资料", badphone:"请输入有效的手机号码（如 0193824740）",
   ph_uname:"请输入您的姓名", ph_phone:"例如 0193824740", ph_fname:"请输入您的农场名称",
   ph_lat:"例如 3.2478", ph_lon:"例如 102.4189", ph_rad:"例如 30", ph_key:"贴上您的 NASA Key",
   addfarm:"加入农场", addhint:"用「定位」自动取得 GPS，或手动输入坐标。可加入多个农场。",
-  fname:"农场名称 Farm name", loc:"使用我的定位", or:"或手动输入",
-  lat:"纬度 Lat", lon:"经度 Lon", rad:"警报半径 Radius (km)", addFarm:"＋ 加入农场",
+  fname:"农场名称", loc:"使用我的定位", or:"或手动输入",
+  lat:"纬度", lon:"经度", rad:"警报半径 (公里)", addFarm:"＋ 加入农场",
   myfarms:"已登记农场", noFarms:"还没有登记农场",
   howtitle:"如何自动接收警报",
   howhint:"手机 App 无法在后台自动推送。连接 Telegram 后，云端会在火点出现时自动通知你 — 即使没打开 App。",
@@ -459,7 +476,7 @@ const I = {
   watitle:"把农场发给协调员",
   wahint:"没有 Telegram 账号？把你的姓名与农场位置用 WhatsApp 发给协调员，由协调员代为监测你的农场，火点出现时会通知你。",
   waconnect:"用 WhatsApp 发送农场资料",
-  coordLabel:"协调员 Coordinator", coordNote:"已自动选择离你最近的协调员，可自行更换。", noCoord:"暂无协调员",
+  coordLabel:"协调员", coordNote:"已自动选择离你最近的协调员，可自行更换。", noCoord:"暂无协调员",
   sleepNote:"⏳ 协调员是真人（目前只有一位），需要休息睡觉，回复不会即时 — 尤其是深夜。请耐心等候确认，你的农场可能要稍后才开始被监测。",
   waFarmMsg:(name,phone,readable,code)=>`📋 火警守护 · 农场登记\n\n姓名: ${name}\n手机: ${phone}\n\n农场:\n${readable}\n\n———\n协调员代码（请勿修改）:\n${code}`,
   pastetitle:"加入农户农场", pastehint:"把农户用 WhatsApp 发来的「协调员代码」整段贴在这里（或只贴 FW1| 那一行），即可把他的农场加入你的监测名单。",
@@ -484,7 +501,7 @@ const I = {
   err:"无法读取数据", errKey:"请到「警报设置」填入 NASA MAP_KEY", keyOkBig:"已登记 ✓", keyOkSub:"你已登记，火点出现时会收到 Telegram 通知。想在这里也看到实时火点，请到「警报设置」加入免费的 NASA 钥匙（可选）。",
   waAlert:(f,n,d,r)=>`🔥 火警通报 · ${f}\n\nNASA 卫星检测到 ${n} 个火点\n最近距离: ${d} 公里 (${r})\n\n来源: NASA VIIRS\n请尽快巡查农场周边。`,
   waSafe:(f)=>`✅ ${f} 周边目前无卫星火点。来源: NASA VIIRS。`,
-  foot:"数据来源 NASA FIRMS (VIIRS) · 卫星每日多次过境，热点为近实时检测，仅供参考。务必以现场实况为准。",
+  foot:"NASA FIRMS · 仅供参考，以现场为准",
   adv:"⚙️ 进阶 · 给管理员的设置", helpLbl:"帮助"
  },
  en:{
@@ -499,7 +516,7 @@ const I = {
   bombatitle:"🔥 Serious hotspot nearby",
   bombatext:"A satellite detected a strong hotspot near this farm. <b>Check or confirm it yourself first</b> — a hotspot is not always a real fire. Only call BOMBA once you've confirmed it's real.",
   bombaverify:"① I'll check / confirm the fire first",
-  bombacall:"② Confirmed — call 999", sos:"Emergency? Call BOMBA 999", sosConfirmQ:"Have you seen the fire or smoke yourself?", sosConfirmLaw:"Only call if the fire is real. Knowingly making a false report is an offence.", sosConfirmYes:"Yes, call 999 now", sosConfirmNo:"Cancel",
+  bombacall:"② Confirmed — call 999", sos:"Emergency? Call BOMBA 999", sosConfirmQ:"Have you seen the fire or smoke yourself?", sosConfirmLaw:"Only call if the fire is real. Knowingly making a false report is an offence.", sosConfirmYes:"Yes, call 999 now", sosConfirmNo:"Cancel", overviewH:"All farms", ovSafe:"Safe", ovNoKey:"needs NASA key",
   bombaalt:"Or call BOMBA direct: <a href=\"tel:994\">994</a> · no SIM? dial <a href=\"tel:112\">112</a>",
   bombalaw:"⚠️ Reporting a real fire in good faith is fine. But <b>knowingly making a false report</b> is an offence (Communications & Multimedia Act 1998, s.233) — up to RM50,000 fine or one year jail.",
   wa:"WhatsApp", tgshare:"Telegram", sharesect:"Share report", refresh:"↻ Refresh",
@@ -546,7 +563,7 @@ const I = {
   err:"Couldn't load data", errKey:"Add your NASA MAP_KEY under Alerts", keyOkBig:"Registered ✓", keyOkSub:"You are registered and will get Telegram alerts when a fire appears. To also see live hotspots here, add a free NASA key under Alerts (optional).",
   waAlert:(f,n,d,r)=>`🔥 FIRE ALERT · ${f}\n\nNASA detected ${n} hotspot(s)\nNearest: ${d} km (${r})\n\nSource: NASA VIIRS\nInspect the farm perimeter ASAP.`,
   waSafe:(f)=>`✅ ${f}: no satellite hotspots nearby. Source: NASA VIIRS.`,
-  foot:"Data: NASA FIRMS (VIIRS) · satellites pass several times daily; hotspots are near-real-time and indicative only. Always confirm on the ground.",
+  foot:"NASA FIRMS · indicative only, verify on the ground",
   adv:"⚙️ Advanced · admin setup", helpLbl:"Help"
  },
  ms:{
@@ -561,7 +578,7 @@ const I = {
   bombatitle:"🔥 Titik panas serius berdekatan",
   bombatext:"Satelit mengesan titik panas kuat berhampiran ladang ini. <b>Periksa atau sahkan sendiri dahulu</b> — titik panas tidak semestinya kebakaran sebenar. Hubungi BOMBA hanya setelah anda sahkan ia benar.",
   bombaverify:"① Saya akan periksa / sahkan dahulu",
-  bombacall:"② Disahkan — hubungi 999", sos:"Kecemasan? Hubungi BOMBA 999", sosConfirmQ:"Adakah anda nampak api atau asap sendiri?", sosConfirmLaw:"Hubungi hanya jika kebakaran benar. Membuat laporan palsu dengan sengaja adalah kesalahan.", sosConfirmYes:"Ya, hubungi 999 sekarang", sosConfirmNo:"Batal",
+  bombacall:"② Disahkan — hubungi 999", sos:"Kecemasan? Hubungi BOMBA 999", sosConfirmQ:"Adakah anda nampak api atau asap sendiri?", sosConfirmLaw:"Hubungi hanya jika kebakaran benar. Membuat laporan palsu dengan sengaja adalah kesalahan.", sosConfirmYes:"Ya, hubungi 999 sekarang", sosConfirmNo:"Batal", overviewH:"Semua ladang", ovSafe:"Selamat", ovNoKey:"perlu kunci NASA",
   bombaalt:"Atau hubungi BOMBA terus: <a href=\"tel:994\">994</a> · tiada SIM? dail <a href=\"tel:112\">112</a>",
   bombalaw:"⚠️ Melaporkan kebakaran sebenar dengan niat baik tiada masalah. Tetapi <b>membuat laporan palsu dengan sengaja</b> adalah kesalahan (Akta Komunikasi & Multimedia 1998, s.233) — denda sehingga RM50,000 atau penjara setahun.",
   wa:"WhatsApp", tgshare:"Telegram", sharesect:"Kongsi laporan", refresh:"↻ Muat semula",
@@ -608,7 +625,7 @@ const I = {
   err:"Gagal memuat data", errKey:"Masukkan NASA MAP_KEY di bawah Amaran", keyOkBig:"Berdaftar ✓", keyOkSub:"Anda telah berdaftar dan akan terima amaran Telegram apabila kebakaran muncul. Untuk lihat titik panas langsung di sini, tambah kunci NASA percuma di bawah Amaran (pilihan).",
   waAlert:(f,n,d,r)=>`🔥 AMARAN KEBAKARAN · ${f}\n\nNASA kesan ${n} titik panas\nTerdekat: ${d} km (${r})\n\nSumber: NASA VIIRS\nPeriksa kawasan ladang segera.`,
   waSafe:(f)=>`✅ ${f}: tiada titik panas satelit berdekatan. Sumber: NASA VIIRS.`,
-  foot:"Data: NASA FIRMS (VIIRS) · satelit melintas beberapa kali sehari; titik panas hampir masa nyata dan sebagai panduan sahaja. Sentiasa sahkan di tempat.",
+  foot:"NASA FIRMS · panduan sahaja, sahkan di tempat",
   adv:"⚙️ Lanjutan · tetapan admin", helpLbl:"Bantuan"
  },
  ta:{
@@ -623,7 +640,7 @@ const I = {
   bombatitle:"🔥 அருகில் தீவிரமான தீப்புள்ளி",
   bombatext:"இந்தப் பண்ணைக்கு அருகில் வலுவான தீப்புள்ளியை செயற்கைக்கோள் கண்டறிந்தது. <b>முதலில் நீங்களே சரிபார்க்கவும்</b> — தீப்புள்ளி எப்போதும் உண்மையான தீ அல்ல. உண்மை என உறுதிசெய்த பின்னரே BOMBA-வை அழைக்கவும்.",
   bombaverify:"① நான் முதலில் சரிபார்க்கிறேன்",
-  bombacall:"② உறுதி — 999 அழைக்கவும்", sos:"அவசரமா? BOMBA 999 அழைக்கவும்", sosConfirmQ:"நீங்களே தீ அல்லது புகையைப் பார்த்தீர்களா?", sosConfirmLaw:"தீ உண்மையாக இருந்தால் மட்டும் அழைக்கவும். வேண்டுமென்றே பொய் அறிக்கை செய்வது குற்றம்.", sosConfirmYes:"ஆம், இப்போது 999 அழைக்கவும்", sosConfirmNo:"ரத்து",
+  bombacall:"② உறுதி — 999 அழைக்கவும்", sos:"அவசரமா? BOMBA 999 அழைக்கவும்", sosConfirmQ:"நீங்களே தீ அல்லது புகையைப் பார்த்தீர்களா?", sosConfirmLaw:"தீ உண்மையாக இருந்தால் மட்டும் அழைக்கவும். வேண்டுமென்றே பொய் அறிக்கை செய்வது குற்றம்.", sosConfirmYes:"ஆம், இப்போது 999 அழைக்கவும்", sosConfirmNo:"ரத்து", overviewH:"அனைத்து பண்ணைகள்", ovSafe:"பாதுகாப்பு", ovNoKey:"NASA விசை தேவை",
   bombaalt:"அல்லது BOMBA-வை நேரடியாக அழைக்கவும்: <a href=\"tel:994\">994</a> · SIM இல்லையா? <a href=\"tel:112\">112</a>",
   bombalaw:"⚠️ உண்மையான தீயை நல்லெண்ணத்துடன் தெரிவிப்பது சரி. ஆனால் <b>வேண்டுமென்றே பொய்யான அறிக்கை</b> செய்வது குற்றம் (தொடர்பு & பல்லூடக சட்டம் 1998, பிரிவு 233) — RM50,000 வரை அபராதம் அல்லது ஒரு வருடம் சிறை.",
   wa:"WhatsApp", tgshare:"Telegram", sharesect:"அறிக்கையைப் பகிர்", refresh:"↻ புதுப்பி",
@@ -670,7 +687,7 @@ const I = {
   err:"தரவை ஏற்ற முடியவில்லை", errKey:"எச்சரிக்கைகள் பகுதியில் NASA MAP_KEY-ஐ உள்ளிடவும்", keyOkBig:"பதிவு செய்யப்பட்டது ✓", keyOkSub:"நீங்கள் பதிவு செய்துள்ளீர்கள், தீ தோன்றும்போது Telegram எச்சரிக்கை பெறுவீர்கள். இங்கே நேரடி தீப்புள்ளிகளையும் காண, எச்சரிக்கைகள் பகுதியில் இலவச NASA விசையைச் சேர்க்கவும் (விருப்பத்தேர்வு).",
   waAlert:(f,n,d,r)=>`🔥 தீ எச்சரிக்கை · ${f}\n\nNASA ${n} தீப்புள்ளிகளைக் கண்டறிந்தது\nஅருகில்: ${d} கி.மீ (${r})\n\nஆதாரம்: NASA VIIRS\nபண்ணைப் பகுதியை உடனே சரிபார்க்கவும்.`,
   waSafe:(f)=>`✅ ${f}: அருகில் செயற்கைக்கோள் தீப்புள்ளிகள் இல்லை. ஆதாரம்: NASA VIIRS.`,
-  foot:"தரவு: NASA FIRMS (VIIRS) · செயற்கைக்கோள்கள் ஒரு நாளில் பல முறை செல்கின்றன; தீப்புள்ளிகள் ஏறக்குறைய நேரடி, வழிகாட்டுதலுக்கு மட்டுமே. எப்போதும் நேரில் சரிபார்க்கவும்.",
+  foot:"NASA FIRMS · வழிகாட்டுதல் மட்டுமே, நேரில் சரிபார்க்கவும்",
   adv:"⚙️ மேம்பட்ட · நிர்வாக அமைப்பு", helpLbl:"உதவி"
  }
 };
@@ -823,6 +840,9 @@ function renderWeatherCard(){
   if(!wc) return;
   if(lastWind){
     wc.style.display="flex";
+    // show which farm this weather is for
+    const fn=document.getElementById("windFarm");
+    if(fn) fn.textContent = (farms[active] && farms[active].name) ? farms[active].name : "";
     const blowTo=(lastWind.dir+180)%360;
     document.getElementById("windArrow").style.transform=`rotate(${blowTo}deg)`;
     const gust=lastWind.gust!=null?` · ${t.gustLbl} ${Math.round(lastWind.gust)}`:"";
@@ -840,6 +860,93 @@ function renderWeatherCard(){
     document.getElementById("windV2").innerHTML = parts.join(" · ") + dryTag;
   } else { wc.style.display="none"; }
 }
+// fetch a single farm's fire + weather summary (for the all-farms overview)
+async function fetchFarmStatus(farm, key){
+  const out={name:farm.name, rad:farm.rad, rk:"LOW", nearest:null, hum:null, dsr:null, dry:false, ok:false, noKey:!key};
+  // weather (no key needed)
+  try{
+    const wu=`https://api.open-meteo.com/v1/forecast?latitude=${farm.lat}&longitude=${farm.lon}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,relative_humidity_2m&daily=precipitation_sum&past_days=7&forecast_days=1&windspeed_unit=kmh&timezone=auto`;
+    const wd=await fetch(wu).then(r=>r.json());
+    if(wd&&wd.current){
+      out.hum=wd.current.relative_humidity_2m;
+      out.wdir=wd.current.wind_direction_10m;
+      if(wd.daily&&Array.isArray(wd.daily.precipitation_sum)){
+        const arr=wd.daily.precipitation_sum; let dsr=0;
+        for(let k=arr.length-1;k>=0;k--){ if(arr[k]!=null&&arr[k]>=1){break;} dsr++; }
+        out.dsr=Math.min(dsr,arr.length-1);
+      }
+      out.dry=(out.hum!=null&&out.hum<40)||(out.dsr!=null&&out.dsr>=5);
+    }
+  }catch(e){}
+  // fire (needs key)
+  if(key){
+    try{
+      const buf=(farm.rad+10)/111;
+      const box=`${(farm.lon-buf).toFixed(3)},${(farm.lat-buf).toFixed(3)},${(farm.lon+buf).toFixed(3)},${(farm.lat+buf).toFixed(3)}`;
+      const txt=await fetch(`https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/VIIRS_SNPP_NRT/${box}/1`).then(r=>r.text());
+      if(!/invalid|error/i.test(txt.slice(0,60))){
+        out.ok=true;
+        const lines=txt.trim().split("\n"), hdr=lines[0].split(",");
+        const iLa=hdr.indexOf("latitude"),iLo=hdr.indexOf("longitude"),iFrp=hdr.indexOf("frp");
+        let worst="LOW", best=null;
+        for(let i=1;i<lines.length;i++){const c=lines[i].split(",");
+          const la=parseFloat(c[iLa]),lo=parseFloat(c[iLo]); if(isNaN(la)||isNaN(lo))continue;
+          const d=dist(farm.lat,farm.lon,la,lo);
+          if(d<=farm.rad){
+            const brDeg=bearingDeg(farm.lat,farm.lon,la,lo);
+            const frp=iFrp>=0?parseFloat(c[iFrp]):NaN;
+            const toward=out.wdir!=null?windToward(brDeg,out.wdir):false;
+            const rk=riskOf(d,frp,toward,out.hum,out.dsr);
+            if(["LOW","MEDIUM","HIGH","CRITICAL"].indexOf(rk)>["LOW","MEDIUM","HIGH","CRITICAL"].indexOf(worst)) worst=rk;
+            if(best===null||d<best) best=d;
+          }
+        }
+        out.rk=worst; out.nearest=best;
+      }
+    }catch(e){}
+  }
+  return out;
+}
+
+async function loadAllFarmsStatus(){
+  const ov=document.getElementById("overview");
+  if(!ov) return;
+  if(farms.length<2){ ov.style.display="none"; return; }   // only show for 2+ farms
+  ov.style.display="block";
+  const t=I[lang], key=lget("key","");
+  document.getElementById("t-overviewH").textContent=t.overviewH;
+  const list=document.getElementById("overviewList");
+  // initial skeleton
+  list.innerHTML=farms.map((f,i)=>`<button class="ovrow ${i===active?'sel':''}" data-i="${i}"><span class="ov-dot" style="background:var(--ink3)"></span><span class="ov-mid"><span class="ov-name">${f.name||t.someFarm}</span><span class="ov-sub">${t.checking}</span></span><span class="ov-arrow">›</span></button>`).join("");
+  bindOverviewRows();
+  // fetch all in parallel
+  const results=await Promise.all(farms.map(f=>fetchFarmStatus(f,key)));
+  list.innerHTML=results.map((s,i)=>{
+    const color=RK_COLOR[s.rk]||"var(--low)";
+    const rkLabel=t.rk[s.rk]||s.rk;
+    const subBits=[];
+    if(s.nearest!=null) subBits.push(`${s.nearest.toFixed(1)} ${t.km}`);
+    else if(key) subBits.push(t.ovSafe);
+    else subBits.push(t.ovNoKey);
+    if(s.hum!=null) subBits.push(`${t.humLbl} ${Math.round(s.hum)}%`);
+    if(s.dry) subBits.push(`<span class="dry">⚠️ ${t.dryWarn}</span>`);
+    const showRk = key && s.ok;
+    return `<button class="ovrow ${i===active?'sel':''}" data-i="${i}">`+
+      `<span class="ov-dot" style="background:${showRk?color:'var(--ink3)'}"></span>`+
+      `<span class="ov-mid"><span class="ov-name">${s.name||t.someFarm}</span>`+
+      `<span class="ov-sub">${subBits.join(" · ")}</span></span>`+
+      (showRk?`<span class="ov-rk" style="background:${color}22;color:${color}">${rkLabel}</span>`:"")+
+      `<span class="ov-arrow">›</span></button>`;
+  }).join("");
+  bindOverviewRows();
+}
+function bindOverviewRows(){
+  document.querySelectorAll("#overviewList .ovrow").forEach(r=>r.onclick=()=>{
+    active=+r.dataset.i; renderChips(); loadData();
+    document.getElementById("windCard").scrollIntoView({behavior:"smooth",block:"center"});
+  });
+}
+
 async function loadData(){
   const t=I[lang], key=lget("key","");
   if(!farms.length){
@@ -847,10 +954,12 @@ async function loadData(){
     document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🌾</div>${t.noFarms}</div>`;
     document.getElementById("s1v").textContent="—";document.getElementById("s2v").textContent="—";
     const wc=document.getElementById("windCard");if(wc)wc.style.display="none";
+    const ov=document.getElementById("overview");if(ov)ov.style.display="none";
     return;
   }
   const farm=farms[active];
   setBanner("safe",t.checking,"<span class='spin'></span>"+t.reading);
+  loadAllFarmsStatus();   // refresh the all-farms overview (shows for 2+ farms)
   // load weather independently — works even without a NASA key, shows dry/wind warning
   loadWeather(farm);
   if(!key){
@@ -949,7 +1058,7 @@ function renderFarmList(){
   const t=I[lang],el=document.getElementById("farmlist");
   if(!farms.length){el.innerHTML=`<div class="empty"><div class="e-ico">🌾</div>${t.noFarms}</div>`;return;}
   el.innerHTML=farms.map((f,i)=>`<div class="farmrow"><div class="fi"><div class="fn">${f.name}</div><div class="fc">${f.lat.toFixed(4)}, ${f.lon.toFixed(4)} · ${f.rad} ${t.km}</div></div><button class="del" data-i="${i}">✕</button></div>`).join("");
-  el.querySelectorAll(".del").forEach(b=>b.onclick=()=>{farms.splice(+b.dataset.i,1);if(active>=farms.length)active=Math.max(0,farms.length-1);lset("farms",farms);renderFarmList();renderChips();loadData();});
+  el.querySelectorAll(".del").forEach(b=>b.onclick=()=>{farms.splice(+b.dataset.i,1);if(active>=farms.length)active=Math.max(0,farms.length-1);lset("farms",farms);syncRoster();renderFarmList();renderChips();loadData();});
 }
 
 //=================== geolocation ===================
@@ -981,6 +1090,18 @@ function connectTelegram(){
   const url=`https://t.me/${CFG.TG_BOT}?start=ph_${phoneDigits}_${lang}`;
   lset("tg_attempted",true);updateConnStatus();
   window.open(url,"_blank");
+}
+// Keep the server roster in sync after the user adds/deletes a farm.
+// Only runs if the user has already registered (otherwise there's nothing on the
+// server yet). Re-sends the FULL current farm list, so deletions propagate too.
+function syncRoster(){
+  if(!CFG.REGISTER_URL) return;
+  const registered = lget("tg_attempted",false) && profile.name && profile.phone;
+  if(!registered) return;
+  const phoneDigits=normalizePhone(profile.phone);
+  if(!phoneDigits) return;
+  fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({phone:phoneDigits,name:profile.name,farms,lang})}).catch(()=>{});
 }
 function updateConnStatus(){
   const t=I[lang],el=document.getElementById("connStatus");
@@ -1182,7 +1303,7 @@ document.getElementById("addFarmBtn").onclick=()=>{
   const lo=parseFloat(document.getElementById("i-lon").value);
   const rad=parseFloat(document.getElementById("i-rad").value)||30;
   if(!name||isNaN(la)||isNaN(lo)){toast(t.needfarm);return;}
-  farms.push({name,lat:la,lon:lo,rad});lset("farms",farms);
+  farms.push({name,lat:la,lon:lo,rad});lset("farms",farms);syncRoster();
   document.getElementById("i-fname").value="";document.getElementById("i-lat").value="";
   document.getElementById("i-lon").value="";document.getElementById("i-rad").value="";
   renderFarmList();renderChips();toast(t.added);
