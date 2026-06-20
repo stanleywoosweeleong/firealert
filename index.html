@@ -44,6 +44,7 @@
   .brand p{margin:2px 0 0;font-size:.74rem;color:var(--ink2);font-weight:500}
   .lang{background:var(--card);border:1px solid var(--line);color:var(--ink);
     border-radius:11px;font-size:.78rem;font-weight:700;padding:8px 10px;cursor:pointer;display:flex;gap:4px;align-items:center;font-family:inherit;white-space:nowrap;flex:none}
+  .lang.lang-active{border-color:var(--ember);background:#fff7f0;color:var(--ember)}
   /* first-launch language gate */
   .lang-gate{position:fixed;inset:0;z-index:200;background:linear-gradient(180deg,#faf8f4,#f0ece3);display:flex;align-items:center;justify-content:center;padding:24px}
   .lang-gate.hide{display:none}
@@ -1262,9 +1263,9 @@ function applyLang(){
   PH("i-lat",t.ph_lat);PH("i-lon",t.ph_lon);PH("i-rad",t.ph_rad);PH("i-key",t.ph_key);
   S("t-title",t.title);S("t-sub",t.sub);
   const LBL={zh:"中文",en:"EN",ms:"BM",ta:"த"};
-  const order=["zh","en","ms","ta"];
-  const nextL=order[(order.indexOf(lang)+1)%order.length];
-  const ll=document.getElementById("langLbl");if(ll)ll.textContent=LBL[nextL];
+  const ll=document.getElementById("langLbl");
+  // at rest the button shows the CURRENT language; once activated it shows next (handled in the click)
+  if(ll && !langActive) ll.textContent=LBL[lang];
   const hl=document.getElementById("helpLbl");if(hl)hl.textContent=t.helpLbl;
   S("tab-mon",t.tabMon);S("tab-farm",t.tabFarm);S("tab-alert",t.tabAlert);
   S("s1k",t.s1k);S("s2k",t.s2k);S("hs-title",t.hsTitle);
@@ -1298,12 +1299,40 @@ function applyLang(){
 //=================== bind ===================
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>switchView(b.dataset.v));
 const LANG_CYCLE=["zh","en","ms","ta"];
+const LANG_LBL={zh:"中文",en:"EN",ms:"BM",ta:"த"};
+let langActive=false;       // false = resting (shows current lang); true = cycling
+let langIdleTimer=null;
+function langResetIdle(){
+  clearTimeout(langIdleTimer);
+  // after a pause, return to resting state showing the chosen language
+  langIdleTimer=setTimeout(()=>{
+    langActive=false;
+    const btn=document.getElementById("langBtn");if(btn)btn.classList.remove("lang-active");
+    const ll=document.getElementById("langLbl");if(ll)ll.textContent=LANG_LBL[lang];
+  },2200);
+}
 document.getElementById("langBtn").onclick=()=>{
-  const i=LANG_CYCLE.indexOf(lang);
-  lang=LANG_CYCLE[(i+1)%LANG_CYCLE.length];
+  const btn=document.getElementById("langBtn");
+  const ll=document.getElementById("langLbl");
+  if(!langActive){
+    // first tap: ACTIVATE only — don't change language yet
+    langActive=true;
+    btn.classList.add("lang-active");
+    // hint the next language so the user knows tapping again will switch
+    const nextL=LANG_CYCLE[(LANG_CYCLE.indexOf(lang)+1)%LANG_CYCLE.length];
+    if(ll) ll.textContent="→ "+LANG_LBL[nextL];
+    langResetIdle();
+    return;
+  }
+  // subsequent taps: cycle to the next language
+  lang=LANG_CYCLE[(LANG_CYCLE.indexOf(lang)+1)%LANG_CYCLE.length];
   localStorage.setItem("fw_lang",lang);
   applyLang();renderChips();renderFarmList();populateCoordinators();loadData();
   if(!document.getElementById("helpOverlay").classList.contains("hide")) renderGuide();
+  // keep showing the NEXT option while actively cycling
+  const nextL=LANG_CYCLE[(LANG_CYCLE.indexOf(lang)+1)%LANG_CYCLE.length];
+  if(ll) ll.textContent="→ "+LANG_LBL[nextL];
+  langResetIdle();
 };
 function renderGuide(){
   const g=GUIDE[lang]||GUIDE.en;
