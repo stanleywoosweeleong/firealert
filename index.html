@@ -63,6 +63,7 @@
   .help-close{background:var(--bg2);border:none;color:var(--ink2);width:34px;height:34px;border-radius:50%;font-size:1rem;cursor:pointer;font-family:inherit}
   .help-content{overflow-y:auto;padding:18px;-webkit-overflow-scrolling:touch}
   .help-sec{margin-bottom:20px}
+  .help-divider{text-align:center;font-size:.82rem;font-weight:800;color:var(--ink3);letter-spacing:1px;margin:6px 0 18px;padding-top:14px;border-top:1px solid var(--line)}
   .help-sec:last-child{margin-bottom:4px}
   .help-sec h4{margin:0 0 7px;font-size:.95rem;font-weight:800;color:var(--ink);display:flex;gap:8px;align-items:center}
   .help-sec p{margin:0 0 8px;font-size:.88rem;color:var(--ink2);line-height:1.6}
@@ -199,6 +200,11 @@
   .field input:focus{outline:none;border-color:var(--ember);background:#fff}
   .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .save{background:linear-gradient(135deg,var(--ember),var(--flame));color:var(--char);border:none;border-radius:12px;padding:14px;font-weight:800;width:100%;cursor:pointer;font-family:inherit;font-size:.92rem}
+  .key-saved-row{display:flex;align-items:center;gap:9px;background:#f0f7f0;border:1px solid #cfe6cf;border-radius:11px;padding:13px 14px;margin-bottom:10px}
+  .key-saved-ic{font-size:1.1rem;flex:none}
+  .key-saved-mask{flex:1;font-family:monospace;font-size:.95rem;font-weight:700;color:var(--ink);letter-spacing:1px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .key-saved-ok{color:#2e7d32;font-size:.8rem;font-weight:800;flex:none}
+  .key-change{background:var(--bg2);color:var(--ink2);border:1px solid var(--line)}
   .btn-loc{background:var(--bg2);color:var(--flame);border:1px solid var(--line);border-radius:10px;padding:12px;font-weight:700;width:100%;cursor:pointer;font-family:inherit;font-size:.86rem;display:flex;align-items:center;justify-content:center;gap:7px}
   .or{text-align:center;color:var(--ink3);font-size:.72rem;margin:10px 0;position:relative}
   .or::before,.or::after{content:"";position:absolute;top:50%;width:38%;height:1px;background:var(--line)}
@@ -398,8 +404,20 @@
     <div class="panel" style="margin-top:14px">
       <h3 id="t-keytitle">NASA 火点钥匙 Key</h3>
       <p class="hint" id="t-keyhint"></p>
-      <div class="field"><label id="f-key" for="i-key">NASA FIRMS MAP_KEY</label><input id="i-key"></div>
-      <button class="save" id="saveKeyBtn">保存 Key</button>
+      <!-- edit state: input + save -->
+      <div id="keyEdit">
+        <div class="field"><label id="f-key" for="i-key">NASA FIRMS MAP_KEY</label><input id="i-key" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+        <button class="save" id="saveKeyBtn">保存 Key</button>
+      </div>
+      <!-- saved state: masked display + change button -->
+      <div id="keySaved" style="display:none">
+        <div class="key-saved-row">
+          <span class="key-saved-ic">🔑</span>
+          <span class="key-saved-mask" id="keyMask"></span>
+          <span class="key-saved-ok" id="t-keySavedOk"></span>
+        </div>
+        <button class="save key-change" id="changeKeyBtn"></button>
+      </div>
       <a id="getKeyLink" href="https://firms.modaps.eosdis.nasa.gov/api/area/" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:10px;color:var(--tg);font-size:.85rem;font-weight:700;text-decoration:none"></a>
     </div>
 
@@ -487,7 +505,7 @@ const I = {
   help3ic:"👃", help3:"<b>相信自己的眼睛和鼻子。</b>这个 App 是「提早预警」工具，不能取代现场判断。看到烟、闻到焦味，就立刻行动 — 不要等 App。",
   radhint:"建议半径设远一点（如 20–40 公里）。卫星有空档，半径太小可能等火靠近才通知，来不及反应。",
   key:"NASA FIRMS MAP_KEY", saveKey:"保存 Key",
-  keytitle:"NASA 火点钥匙 Key", keyhint:"监测画面需要一组免费的 NASA 钥匙。点下方按钮免费申请（输入电邮即可取得），再贴回这里。", getKey:"→ 免费申请 NASA 钥匙",
+  keytitle:"NASA 火点钥匙 Key", keyhint:"监测画面需要一组免费的 NASA 钥匙。点下方按钮免费申请（输入电邮即可取得），再贴回这里。", getKey:"→ 免费申请 NASA 钥匙", keySavedOk:"✓ 已保存", changeKey:"更换钥匙",
   saved:"已保存 ✓", added:"已加入 ✓", needprof:"请先填写姓名与手机号",
   needfarm:"请先填写农场名称与坐标", locing:"定位中…", locerr:"无法取得定位，请手动输入",
   locok:"已取得定位 ✓",
@@ -549,7 +567,7 @@ const I = {
   help3ic:"👃", help3:"<b>Trust your own eyes and nose.</b> This app is an early-warning tool — it can't replace what you see on the ground. If you see smoke or smell burning, act immediately — don't wait for the app.",
   radhint:"Set a wider radius (e.g. 20–40 km). Satellites have gaps — too small a radius may only warn you once the fire is close, leaving little time to react.",
   key:"NASA FIRMS MAP_KEY", saveKey:"Save key",
-  keytitle:"NASA fire key", keyhint:"The monitor view needs a free NASA key. Tap below to request one free (just enter an email), then paste it here.", getKey:"→ Get a free NASA key",
+  keytitle:"NASA fire key", keyhint:"The monitor view needs a free NASA key. Tap below to request one free (just enter an email), then paste it here.", getKey:"→ Get a free NASA key", keySavedOk:"✓ saved", changeKey:"Change key",
   saved:"Saved ✓", added:"Added ✓", needprof:"Enter your name and mobile first",
   needfarm:"Enter farm name and coordinates first", locing:"Locating…", locerr:"Couldn't get location — enter manually",
   locok:"Location captured ✓",
@@ -611,7 +629,7 @@ const I = {
   help3ic:"👃", help3:"<b>Percaya mata dan hidung anda sendiri.</b> Aplikasi ini alat amaran awal — ia tidak menggantikan pemerhatian di tempat. Jika nampak asap atau bau terbakar, bertindak segera — jangan tunggu aplikasi.",
   radhint:"Tetapkan jejari lebih luas (cth. 20–40 km). Satelit ada jurang masa — jejari terlalu kecil mungkin hanya beri amaran apabila api sudah hampir, sukar untuk bertindak.",
   key:"NASA FIRMS MAP_KEY", saveKey:"Simpan kunci",
-  keytitle:"Kunci NASA", keyhint:"Paparan pantauan perlukan kunci NASA percuma. Tekan di bawah untuk mohon percuma (masukkan emel sahaja), kemudian tampal di sini.", getKey:"→ Dapatkan kunci NASA percuma",
+  keytitle:"Kunci NASA", keyhint:"Paparan pantauan perlukan kunci NASA percuma. Tekan di bawah untuk mohon percuma (masukkan emel sahaja), kemudian tampal di sini.", getKey:"→ Dapatkan kunci NASA percuma", keySavedOk:"✓ disimpan", changeKey:"Tukar kunci",
   saved:"Disimpan ✓", added:"Ditambah ✓", needprof:"Isi nama dan telefon dahulu",
   needfarm:"Isi nama ladang dan koordinat dahulu", locing:"Mencari lokasi…", locerr:"Gagal dapat lokasi — masukkan sendiri",
   locok:"Lokasi diperoleh ✓",
@@ -673,7 +691,7 @@ const I = {
   help3ic:"👃", help3:"<b>உங்கள் கண்களையும் மூக்கையும் நம்பவும்.</b> இந்தச் செயலி முன்கூட்டிய எச்சரிக்கைக் கருவி — நேரடிப் பார்வையை மாற்றாது. புகை கண்டால் அல்லது எரியும் வாசனை வந்தால், உடனே செயல்படவும் — செயலிக்காகக் காத்திருக்க வேண்டாம்.",
   radhint:"அகலமான ஆரம் அமைக்கவும் (எ.கா. 20–40 கி.மீ). செயற்கைக்கோள்களுக்கு இடைவெளி உள்ளது — மிகச் சிறிய ஆரம் தீ அருகில் வந்த பின்னரே எச்சரிக்கலாம்.",
   key:"NASA FIRMS MAP_KEY", saveKey:"விசையைச் சேமி",
-  keytitle:"NASA விசை", keyhint:"கண்காணிப்புத் திரைக்கு இலவச NASA விசை தேவை. கீழே அழுத்தி இலவசமாக விண்ணப்பிக்கவும் (மின்னஞ்சல் மட்டும்), பின் இங்கே ஒட்டவும்.", getKey:"→ இலவச NASA விசையைப் பெறு",
+  keytitle:"NASA விசை", keyhint:"கண்காணிப்புத் திரைக்கு இலவச NASA விசை தேவை. கீழே அழுத்தி இலவசமாக விண்ணப்பிக்கவும் (மின்னஞ்சல் மட்டும்), பின் இங்கே ஒட்டவும்.", getKey:"→ இலவச NASA விசையைப் பெறு", keySavedOk:"✓ சேமிக்கப்பட்டது", changeKey:"விசையை மாற்று",
   saved:"சேமிக்கப்பட்டது ✓", added:"சேர்க்கப்பட்டது ✓", needprof:"முதலில் பெயர், தொலைபேசியை நிரப்பவும்",
   needfarm:"முதலில் பண்ணை பெயர், ஆயத்தொலைவை நிரப்பவும்", locing:"இருப்பிடம் தேடுகிறது…", locerr:"இருப்பிடம் கிடைக்கவில்லை — கைமுறையாக உள்ளிடவும்",
   locok:"இருப்பிடம் பெறப்பட்டது ✓",
@@ -701,7 +719,17 @@ const GUIDE = {
   {h:"🛰️ 重要：卫星有空档", b:"火点是卫星侦测的，两次飞过之间有空档，刚烧起来的火可能要等下一次才看得到。所以请把半径设大一点，并<b>相信自己的眼睛和鼻子</b> — 看到烟、闻到焦味，立刻行动，不要等 App。"},
   {h:"🌤️ 天气与火险", b:"「监测」分页会显示<b>风向、湿度、几天没下雨</b>。空气干燥（湿度低）或久旱时，火更容易蔓延，App 会显示「天气干燥，火险高」提醒，并把附近火点的风险调高。天气资讯免费，<b>不需要 NASA 钥匙</b> — 只要加入农场就能看到。"},
   {h:"🚒 发现真实火警时", h2:"", b:"在「监测」分页，若附近有较严重火点，会出现 BOMBA 联系卡。请先亲自查看确认，确认属实后再拨打 999（或 BOMBA 直线 994）。<b>切勿明知没有火而谎报</b> — 谎报是违法行为。"},
-  {h:"🌐 切换语言", b:"点右上角的 🌐 按钮，即可在中文、English、Bahasa Melayu、தமிழ் 之间循环切换。"}
+  {h:"🌐 切换语言", b:"点右上角的 🌐 按钮，即可在中文、English、Bahasa Melayu、தமிழ் 之间循环切换。"},
+  {h:"常见问题 FAQ", b:""},
+  {h:"❓ 我没填 NASA 钥匙，还会收到警报吗？", b:"会的。自动 Telegram 警报由服务器发送，<b>不需要你的 NASA 钥匙</b>。钥匙只影响「监测」画面里的实时火点显示。只要你已登记并连接 Telegram，火点出现时就会通知你。"},
+  {h:"❓ 我要一直开着 App 吗？", b:"不用。连接 Telegram 后，警报会自动推送到 Telegram，<b>即使 App 关闭也会收到</b>。你不需要一直开着 App。"},
+  {h:"❓ 为什么「监测」显示安全，但实际有火？", b:"卫星每天只飞过几次，两次之间有空档；刚烧起来的火可能要等下一次卫星才看得到。所以请<b>相信自己的眼睛和鼻子</b>，看到烟或闻到焦味立刻行动，不要等 App。"},
+  {h:"❓ 我有好几个农场，都会被监测吗？", b:"会的。系统会自动监测你登记的<b>每一个农场</b>，不论 App 当前显示哪一个。「监测」画面顶部会列出所有农场的状态。"},
+  {h:"❓ 警报会用什么语言发给我？", b:"用你选择的语言 + 马来语（国语）一起发，方便不同族群都能看懂。"},
+  {h:"❓ 这个 App 收费吗？会耗很多流量吗？", b:"完全免费。它只在你打开「监测」或收到警报时才连网，流量很少。"},
+  {h:"❓ 我删除了一个农场，系统还会监测它吗？", b:"不会。在 App 里删除农场后，系统会自动同步，停止监测该农场。"},
+  {h:"❓ 我换了手机，资料还在吗？", b:"农场资料存在手机里，换手机需要重新登记一次（重新加入农场并连接 Telegram）。你的 Telegram 连接本身不变。"},
+  {h:"❓ 警报准吗？我要完全相信它吗？", b:"它是<b>预警工具</b>，数据来自 NASA 卫星，仅供参考。不要完全依赖它，务必以现场实况为准。"}
  ]},
  en:{ title:"User Guide", secs:[
   {h:"🔥 What does this app do?", b:"It uses NASA satellites to detect fires near your farm and warn you early, giving you time to act. It <b>cannot</b> put out fires, and it is <b>not</b> live monitoring over your farm — satellites only pass a few times a day."},
@@ -710,7 +738,17 @@ const GUIDE = {
   {h:"🛰️ Important: satellites have gaps", b:"Hotspots are detected by satellites, and there is a gap between passes — a fire that just started may not show until the next pass. So set a wider radius, and <b>trust your own eyes and nose</b> — if you see smoke or smell burning, act immediately, don't wait for the app."},
   {h:"🌤️ Weather & fire risk", b:"The <b>Monitor</b> tab shows <b>wind, humidity, and days since rain</b>. Dry air (low humidity) or a long dry spell makes fires spread faster, so the app shows a 'Dry conditions, high fire risk' warning and raises the risk level of nearby hotspots. Weather is free and <b>needs no NASA key</b> — it appears as soon as you add a farm."},
   {h:"🚒 When there's a real fire", b:"On the <b>Monitor</b> tab, if a serious hotspot is nearby, a BOMBA contact card appears. Check and confirm it yourself first, then call 999 (or BOMBA direct, 994). <b>Never knowingly make a false report</b> — false reports are a criminal offence."},
-  {h:"🌐 Change language", b:"Tap the 🌐 button at the top right to cycle through 中文, English, Bahasa Melayu, and தமிழ்."}
+  {h:"🌐 Change language", b:"Tap the 🌐 button at the top right to cycle through 中文, English, Bahasa Melayu, and தமிழ்."},
+  {h:"FAQ", b:""},
+  {h:"❓ No NASA key — will I still get alerts?", b:"Yes. Automatic Telegram alerts are sent by the server and <b>do not need your NASA key</b>. The key only affects the live hotspot view inside the Monitor screen. As long as you've registered and connected Telegram, you'll be alerted when a fire appears."},
+  {h:"❓ Do I need to keep the app open?", b:"No. Once Telegram is connected, alerts are pushed to Telegram automatically — <b>even with the app closed</b>. You don't need to keep it open."},
+  {h:"❓ Monitor says safe, but there's a real fire — why?", b:"Satellites only pass a few times a day, with gaps in between; a fire that just started may not show until the next pass. So <b>trust your own eyes and nose</b> — act immediately if you see smoke or smell burning, don't wait for the app."},
+  {h:"❓ I have several farms — are they all watched?", b:"Yes. The system automatically monitors <b>every farm</b> you've registered, regardless of which one the app is showing. The Monitor screen lists all farms' status at the top."},
+  {h:"❓ What language will my alert be in?", b:"In your chosen language plus Malay (the national language), so different communities can all read it."},
+  {h:"❓ Does the app cost money or use much data?", b:"It's completely free. It only goes online when you open the Monitor or receive an alert, using very little data."},
+  {h:"❓ I deleted a farm — is it still monitored?", b:"No. When you delete a farm in the app, the system syncs automatically and stops monitoring it."},
+  {h:"❓ I changed phones — is my data still there?", b:"Farm data is stored on your phone, so a new phone needs registering again (re-add farms and connect Telegram). Your Telegram connection itself stays the same."},
+  {h:"❓ Is the alert accurate? Should I fully trust it?", b:"It's an <b>early-warning tool</b> using NASA satellite data, for reference only. Don't rely on it completely — always confirm on the ground."}
  ]},
  ms:{ title:"Panduan Pengguna", secs:[
   {h:"🔥 Apa fungsi aplikasi ini?", b:"Ia menggunakan satelit NASA untuk mengesan kebakaran berhampiran ladang anda dan memberi amaran awal, supaya anda ada masa bertindak. Ia <b>tidak boleh</b> memadam api, dan ia <b>bukan</b> pemantauan langsung di atas ladang anda — satelit hanya melintas beberapa kali sehari."},
@@ -719,7 +757,17 @@ const GUIDE = {
   {h:"🛰️ Penting: satelit ada jurang masa", b:"Titik panas dikesan oleh satelit, dan ada jurang antara lintasan — kebakaran yang baru bermula mungkin tidak kelihatan sehingga lintasan berikutnya. Jadi tetapkan jejari lebih luas, dan <b>percaya mata dan hidung anda sendiri</b> — jika nampak asap atau bau terbakar, bertindak segera, jangan tunggu aplikasi."},
   {h:"🌤️ Cuaca & risiko kebakaran", b:"Tab <b>Pantau</b> memaparkan <b>angin, kelembapan, dan berapa hari tiada hujan</b>. Udara kering (kelembapan rendah) atau musim kering panjang menjadikan api merebak lebih cepat, jadi aplikasi memaparkan amaran 'Cuaca kering, risiko tinggi' dan menaikkan tahap risiko titik panas berdekatan. Data cuaca percuma dan <b>tidak perlukan kunci NASA</b> — ia muncul sebaik anda tambah ladang."},
   {h:"🚒 Apabila ada kebakaran sebenar", b:"Di tab <b>Pantau</b>, jika ada titik panas serius berdekatan, kad hubungan BOMBA akan muncul. Periksa dan sahkan sendiri dahulu, kemudian hubungi 999 (atau BOMBA terus, 994). <b>Jangan sekali-kali membuat laporan palsu dengan sengaja</b> — laporan palsu adalah kesalahan jenayah."},
-  {h:"🌐 Tukar bahasa", b:"Tekan butang 🌐 di penjuru atas kanan untuk berkitar antara 中文, English, Bahasa Melayu, dan தமிழ்."}
+  {h:"🌐 Tukar bahasa", b:"Tekan butang 🌐 di penjuru atas kanan untuk berkitar antara 中文, English, Bahasa Melayu, dan தமிழ்."},
+  {h:"SOALAN LAZIM (FAQ)", b:""},
+  {h:"❓ Tiada kunci NASA — adakah saya masih terima amaran?", b:"Ya. Amaran Telegram automatik dihantar oleh pelayan dan <b>tidak perlukan kunci NASA anda</b>. Kunci hanya menjejaskan paparan titik panas langsung dalam skrin Pantau. Selagi anda telah daftar dan sambung Telegram, anda akan diberi amaran apabila kebakaran muncul."},
+  {h:"❓ Perlukah saya biarkan aplikasi terbuka?", b:"Tidak. Setelah Telegram disambung, amaran ditolak ke Telegram secara automatik — <b>walaupun aplikasi ditutup</b>. Anda tidak perlu biarkan ia terbuka."},
+  {h:"❓ Pantau kata selamat, tetapi ada kebakaran sebenar — kenapa?", b:"Satelit hanya melintas beberapa kali sehari, dengan jurang di antaranya; kebakaran yang baru bermula mungkin tidak kelihatan sehingga lintasan berikutnya. Jadi <b>percaya mata dan hidung anda sendiri</b> — bertindak segera jika nampak asap atau bau terbakar, jangan tunggu aplikasi."},
+  {h:"❓ Saya ada beberapa ladang — semuanya dipantau?", b:"Ya. Sistem memantau <b>setiap ladang</b> yang anda daftar secara automatik, tidak kira yang mana ditunjukkan aplikasi. Skrin Pantau menyenaraikan status semua ladang di bahagian atas."},
+  {h:"❓ Amaran saya dalam bahasa apa?", b:"Dalam bahasa pilihan anda serta Bahasa Melayu (bahasa kebangsaan), supaya pelbagai kaum boleh membacanya."},
+  {h:"❓ Adakah aplikasi ini berbayar atau guna banyak data?", b:"Ia percuma sepenuhnya. Ia hanya dalam talian apabila anda buka Pantau atau terima amaran, menggunakan data yang sangat sedikit."},
+  {h:"❓ Saya padam satu ladang — masih dipantau?", b:"Tidak. Apabila anda padam ladang dalam aplikasi, sistem segerak secara automatik dan berhenti memantaunya."},
+  {h:"❓ Saya tukar telefon — data masih ada?", b:"Data ladang disimpan dalam telefon, jadi telefon baharu perlu didaftar semula (tambah ladang dan sambung Telegram semula). Sambungan Telegram anda kekal sama."},
+  {h:"❓ Adakah amaran tepat? Patutkah saya percaya sepenuhnya?", b:"Ia <b>alat amaran awal</b> menggunakan data satelit NASA, sebagai panduan sahaja. Jangan bergantung sepenuhnya — sentiasa sahkan di tempat."}
  ]},
  ta:{ title:"பயனர் வழிகாட்டி", secs:[
   {h:"🔥 இந்தச் செயலி என்ன செய்கிறது?", b:"இது உங்கள் பண்ணைக்கு அருகிலுள்ள தீயை NASA செயற்கைக்கோள்கள் மூலம் கண்டறிந்து முன்கூட்டியே எச்சரிக்கிறது, செயல்பட உங்களுக்கு நேரம் தருகிறது. இது தீயை <b>அணைக்க முடியாது</b>, உங்கள் பண்ணைக்கு மேல் <b>நேரடி கண்காணிப்பும் அல்ல</b> — செயற்கைக்கோள்கள் ஒரு நாளில் சில முறை மட்டுமே செல்கின்றன."},
@@ -728,7 +776,17 @@ const GUIDE = {
   {h:"🛰️ முக்கியம்: செயற்கைக்கோள்களுக்கு இடைவெளி", b:"தீப்புள்ளிகளை செயற்கைக்கோள்கள் கண்டறிகின்றன, கடப்புகளுக்கு இடையே இடைவெளி உள்ளது — இப்போதுதான் தொடங்கிய தீ அடுத்த கடப்பு வரை தெரியாமல் இருக்கலாம். எனவே அகலமான ஆரத்தை அமைக்கவும், <b>உங்கள் கண்களையும் மூக்கையும் நம்பவும்</b> — புகை கண்டால் அல்லது எரியும் வாசனை வந்தால் உடனே செயல்படவும், செயலிக்காகக் காத்திருக்க வேண்டாம்."},
   {h:"🌤️ வானிலை & தீ ஆபத்து", b:"<b>கண்காணி</b> தாவல் <b>காற்று, ஈரப்பதம், எத்தனை நாட்கள் மழை இல்லை</b> என்பதைக் காட்டுகிறது. வறண்ட காற்று (குறைந்த ஈரப்பதம்) அல்லது நீண்ட வறட்சி தீ வேகமாகப் பரவச் செய்யும், எனவே செயலி 'வறண்ட வானிலை, அதிக தீ ஆபத்து' எச்சரிக்கையைக் காட்டி அருகிலுள்ள தீப்புள்ளிகளின் ஆபத்து நிலையை உயர்த்துகிறது. வானிலைத் தரவு இலவசம், <b>NASA விசை தேவையில்லை</b> — பண்ணையைச் சேர்த்தவுடன் தோன்றும்."},
   {h:"🚒 உண்மையான தீ ஏற்படும்போது", b:"<b>கண்காணி</b> தாவலில், அருகில் தீவிரமான தீப்புள்ளி இருந்தால் BOMBA தொடர்பு அட்டை தோன்றும். முதலில் நீங்களே சரிபார்த்து உறுதிசெய்து, பின்னர் 999 (அல்லது BOMBA நேரடி, 994) அழைக்கவும். <b>வேண்டுமென்றே பொய்யான அறிக்கை செய்ய வேண்டாம்</b> — பொய் அறிக்கை ஒரு குற்றம்."},
-  {h:"🌐 மொழியை மாற்றவும்", b:"வலது மேல் மூலையில் உள்ள 🌐 பொத்தானை தட்டி 中文, English, Bahasa Melayu, தமிழ் இடையே சுழற்றவும்."}
+  {h:"🌐 மொழியை மாற்றவும்", b:"வலது மேல் மூலையில் உள்ள 🌐 பொத்தானை தட்டி 中文, English, Bahasa Melayu, தமிழ் இடையே சுழற்றவும்."},
+  {h:"அடிக்கடி கேட்கப்படும் கேள்விகள் (FAQ)", b:""},
+  {h:"❓ NASA விசை இல்லை — இன்னும் எச்சரிக்கை வருமா?", b:"ஆம். தானியங்கி Telegram எச்சரிக்கைகள் சேவையகத்தால் அனுப்பப்படுகின்றன, <b>உங்கள் NASA விசை தேவையில்லை</b>. விசை கண்காணி திரையில் உள்ள நேரடி தீப்புள்ளி காட்சியை மட்டுமே பாதிக்கிறது. நீங்கள் பதிவு செய்து Telegram இணைத்திருந்தால், தீ தோன்றும்போது எச்சரிக்கை வரும்."},
+  {h:"❓ செயலியை எப்போதும் திறந்து வைக்க வேண்டுமா?", b:"இல்லை. Telegram இணைத்த பின், எச்சரிக்கைகள் தானாக Telegram-க்கு அனுப்பப்படும் — <b>செயலி மூடியிருந்தாலும்</b>. திறந்து வைக்க வேண்டியதில்லை."},
+  {h:"❓ கண்காணி பாதுகாப்பு என்கிறது, ஆனால் உண்மையில் தீ உள்ளது — ஏன்?", b:"செயற்கைக்கோள்கள் ஒரு நாளில் சில முறை மட்டுமே செல்கின்றன, இடையில் இடைவெளி உள்ளது; இப்போதுதான் தொடங்கிய தீ அடுத்த கடப்பு வரை தெரியாமல் இருக்கலாம். எனவே <b>உங்கள் கண்களையும் மூக்கையும் நம்பவும்</b> — புகை அல்லது எரியும் வாசனை கண்டால் உடனே செயல்படவும், செயலிக்காகக் காத்திருக்க வேண்டாம்."},
+  {h:"❓ எனக்கு பல பண்ணைகள் — அனைத்தும் கண்காணிக்கப்படுமா?", b:"ஆம். நீங்கள் பதிவு செய்த <b>ஒவ்வொரு பண்ணையையும்</b> கணினி தானாக கண்காணிக்கிறது, செயலி எதைக் காட்டினாலும். கண்காணி திரையின் மேற்பகுதியில் அனைத்து பண்ணைகளின் நிலையும் பட்டியலிடப்படும்."},
+  {h:"❓ எனது எச்சரிக்கை எந்த மொழியில் வரும்?", b:"உங்கள் தேர்ந்தெடுத்த மொழி மற்றும் மலாய் (தேசிய மொழி) — பல்வேறு சமூகங்களும் படிக்கும் வகையில்."},
+  {h:"❓ இந்த செயலி கட்டணமா? அதிக டேட்டா பயன்படுத்துமா?", b:"முற்றிலும் இலவசம். நீங்கள் கண்காணியைத் திறக்கும்போது அல்லது எச்சரிக்கை பெறும்போது மட்டுமே இணையம் பயன்படும், மிகக் குறைந்த டேட்டா."},
+  {h:"❓ ஒரு பண்ணையை நீக்கினேன் — இன்னும் கண்காணிக்கப்படுமா?", b:"இல்லை. செயலியில் பண்ணையை நீக்கியதும், கணினி தானாக ஒத்திசைத்து அதைக் கண்காணிப்பதை நிறுத்தும்."},
+  {h:"❓ தொலைபேசியை மாற்றினேன் — எனது தரவு இருக்குமா?", b:"பண்ணை தரவு தொலைபேசியில் சேமிக்கப்படுகிறது, எனவே புதிய தொலைபேசியில் மீண்டும் பதிவு செய்ய வேண்டும் (பண்ணைகளைச் சேர்த்து Telegram இணைக்கவும்). உங்கள் Telegram இணைப்பு அப்படியே இருக்கும்."},
+  {h:"❓ எச்சரிக்கை துல்லியமா? முழுமையாக நம்பலாமா?", b:"இது NASA செயற்கைக்கோள் தரவைப் பயன்படுத்தும் <b>முன்கூட்டிய எச்சரிக்கைக் கருவி</b>, வழிகாட்டுதலுக்கு மட்டுமே. முழுமையாக நம்ப வேண்டாம் — எப்போதும் நேரில் சரிபார்க்கவும்."}
  ]}
 };
 
@@ -1226,6 +1284,7 @@ function applyLang(){
   S("t-tgbadge",t.tgbadge);S("t-wabadge",t.wabadge);
   S("t-pastetitle",t.pastetitle);S("t-pastehint",t.pastehint);S("pasteAddBtn",t.pasteAdd);
   S("f-key",t.key);S("saveKeyBtn",t.saveKey);S("t-keytitle",t.keytitle);S("t-keyhint",t.keyhint);S("getKeyLink",t.getKey);S("foot",t.foot);S("t-adv",t.adv);
+  S("t-keySavedOk",t.keySavedOk);S("changeKeyBtn",t.changeKey);
   document.getElementById("adv-body").innerHTML = lang==="zh"
     ? `给管理员：把农场名单部署到 GitHub。机器人用户名设在代码顶部的 <code>CFG.TG_BOT</code>，协调员名单设在 <code>CFG.COORDINATORS</code>。完整部署步骤见随附的 README 与 bot 程序。`
     : `For the admin: deploy the roster to GitHub. Set the bot username in <code>CFG.TG_BOT</code> and the coordinator list in <code>CFG.COORDINATORS</code> at the top of the code. Full deploy steps are in the bundled README and bot script.`;
@@ -1246,8 +1305,11 @@ document.getElementById("langBtn").onclick=()=>{
 function renderGuide(){
   const g=GUIDE[lang]||GUIDE.en;
   document.getElementById("t-guideTitle").textContent=g.title;
-  document.getElementById("helpContent").innerHTML=g.secs.map(s=>
-    `<div class="help-sec"><h4>${s.h}</h4><p>${s.b}</p></div>`).join("");
+  document.getElementById("helpContent").innerHTML=g.secs.map(s=>{
+    const isDivider = !s.b;
+    if(isDivider) return `<div class="help-divider">${s.h}</div>`;
+    return `<div class="help-sec"><h4>${s.h}</h4><p>${s.b}</p></div>`;
+  }).join("");
 }
 document.getElementById("helpBtn").onclick=()=>{
   renderGuide();
@@ -1308,15 +1370,46 @@ document.getElementById("addFarmBtn").onclick=()=>{
   document.getElementById("i-lon").value="";document.getElementById("i-rad").value="";
   renderFarmList();renderChips();toast(t.added);
 };
+function maskKey(k){
+  if(!k) return "";
+  if(k.length<=4) return "••••";
+  return "••••••••" + k.slice(-4);   // show only last 4 chars
+}
+function renderKeyState(){
+  const k=lget("key","");
+  const edit=document.getElementById("keyEdit");
+  const saved=document.getElementById("keySaved");
+  if(k){
+    edit.style.display="none";
+    saved.style.display="block";
+    document.getElementById("keyMask").textContent=maskKey(k);
+  }else{
+    edit.style.display="block";
+    saved.style.display="none";
+    document.getElementById("i-key").value="";   // keep field blank with placeholder
+  }
+}
 document.getElementById("saveKeyBtn").onclick=()=>{
   const t=I[lang];const k=document.getElementById("i-key").value.trim();
-  if(k)lset("key",k);toast(t.saved);loadData();
+  if(!k){toast(t.needprof);return;}
+  lset("key",k);
+  document.getElementById("i-key").value="";   // clear the visible field immediately
+  toast(t.saved);
+  renderKeyState();
+  loadData();
+};
+document.getElementById("changeKeyBtn").onclick=()=>{
+  // switch back to edit mode; field starts blank so the old key isn't shown
+  document.getElementById("keySaved").style.display="none";
+  document.getElementById("keyEdit").style.display="block";
+  document.getElementById("i-key").value="";
+  document.getElementById("i-key").focus();
 };
 
 //=================== prefill ===================
 document.getElementById("i-uname").value=profile.name;
 document.getElementById("i-phone").value=profile.phone;
-document.getElementById("i-key").value=lget("key","");
+renderKeyState();   // show masked saved-key (or blank input) — never the raw key
 
 applyLang();renderChips();renderFarmList();populateCoordinators();loadData();
 
