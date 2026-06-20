@@ -129,6 +129,7 @@
   .sos-box-law{font-size:.78rem;color:var(--ink2);line-height:1.5;margin-bottom:18px}
   .sos-box-call{display:block;background:var(--crit);color:#fff;border-radius:13px;padding:16px;font-size:1.1rem;font-weight:900;text-decoration:none;margin-bottom:10px}
   .sos-box-cancel{display:block;width:100%;background:transparent;border:1.5px solid var(--line);color:var(--ink2);border-radius:13px;padding:13px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit}
+  .confirm-yes{display:block;width:100%;background:var(--crit);color:#fff;border:none;border-radius:13px;padding:15px;font-size:1rem;font-weight:900;cursor:pointer;font-family:inherit;margin-bottom:10px}
   .sos:active{background:#fff5f4}
   .sos-ic{font-size:1.15rem;flex:none}
   .sos-tx{flex:1;font-weight:800;font-size:.9rem;color:#a8201a;min-width:0}
@@ -218,6 +219,11 @@
   .farmrow .fi .fn{font-weight:800;font-size:.9rem}
   .farmrow .fi .fc{font-size:.74rem;color:var(--ink2);margin-top:2px}
   .farmrow .del{background:none;border:none;color:var(--crit);font-size:1.2rem;cursor:pointer;padding:4px 8px;font-family:inherit}
+  .frow-btns{display:flex;align-items:center;gap:2px;flex:none}
+  .farmrow .fedit{background:none;border:none;color:var(--ink2);font-size:1.05rem;cursor:pointer;padding:4px 8px;font-family:inherit}
+  .farmrow-del{opacity:.75}
+  .farmrow-del .fn{text-decoration:line-through;color:var(--ink2)}
+  .frestore{background:var(--bg);border:1px solid var(--ember);color:var(--ember);border-radius:9px;font-size:.8rem;font-weight:800;padding:7px 13px;cursor:pointer;font-family:inherit;flex:none}
 
   .connect{margin-top:6px}
   .connect .btn{width:100%}
@@ -273,7 +279,7 @@
   <header>
     <div class="mark"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2c1.5 3 4 4.5 4 8a4 4 0 0 1-8 0c0-1.2.4-2 1-2.8C9 9 9.5 11 11 11c.8 0 1-.7 1-1.5C12 7 10.5 5 12 2z" fill="#fff"/><path d="M12 13c1.5 0 2.5 1.2 2.5 2.7C14.5 17.5 13.4 19 12 19s-2.5-1.5-2.5-3.3C9.5 14.2 10.5 13 12 13z" fill="#ffe0b0"/></svg></div>
     <div class="brand"><h1 id="t-title">火警守护</h1><p id="t-sub">NASA 卫星热点 · 实时监测</p></div>
-    <button class="lang" id="helpBtn" aria-label="Help">❓ <span id="helpLbl">Help</span></button>
+    <button class="lang" id="helpBtn" aria-label="Help"><span id="helpLbl">Help</span></button>
     <button class="lang" id="langBtn">🌐 <span id="langLbl">EN</span></button>
   </header>
 
@@ -374,6 +380,7 @@
 
     <div class="sect" id="t-myfarms">已登记农场</div>
     <div id="farmlist"></div>
+    <div id="deletedWrap" style="display:none"></div>
   </div>
 
   <!-- ============ ALERTS ============ -->
@@ -443,6 +450,17 @@
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- reusable styled confirm dialog -->
+<div class="sos-modal hide" id="confirmModal">
+  <div class="sos-box">
+    <div class="sos-box-ic" id="confirmIc">🗑️</div>
+    <div class="sos-box-q" id="confirmQ"></div>
+    <div class="sos-box-law" id="confirmSub"></div>
+    <button class="confirm-yes" id="confirmYes"></button>
+    <button class="sos-box-cancel" id="confirmNo"></button>
+  </div>
+</div>
+
 <script>
 //=================== CONFIG ===================
 // Set these to YOUR bot + admin once. Farmers never edit these.
@@ -485,7 +503,7 @@ const I = {
   ph_lat:"例如 3.2478", ph_lon:"例如 102.4189", ph_rad:"例如 30", ph_key:"贴上您的 NASA Key",
   addfarm:"加入农场", addhint:"用「定位」自动取得 GPS，或手动输入坐标。可加入多个农场。",
   fname:"农场名称", loc:"使用我的定位", or:"或手动输入",
-  lat:"纬度", lon:"经度", rad:"警报半径 (公里)", addFarm:"＋ 加入农场",
+  lat:"纬度", lon:"经度", rad:"警报半径 (公里)", addFarm:"＋ 加入农场", edit:"编辑", del:"删除", editfarm:"编辑农场", saveEdit:"✓ 保存修改", updated:"农场已更新", delTitle:"确定删除「{name}」？", delSub:"删除后可在「最近删除」里恢复，警报也会一并恢复。", recentlyDeleted:"最近删除", restore:"恢复", restored:"农场已恢复，警报继续",
   myfarms:"已登记农场", noFarms:"还没有登记农场",
   howtitle:"如何自动接收警报",
   howhint:"手机 App 无法在后台自动推送。连接 Telegram 后，云端会在火点出现时自动通知你 — 即使没打开 App。",
@@ -547,7 +565,7 @@ const I = {
   ph_lat:"e.g. 3.2478", ph_lon:"e.g. 102.4189", ph_rad:"e.g. 30", ph_key:"Paste your NASA key",
   addfarm:"Add a farm", addhint:"Use 'My location' to grab GPS automatically, or type coordinates. Add multiple farms.",
   fname:"Farm name", loc:"Use my location", or:"or enter manually",
-  lat:"Lat", lon:"Lon", rad:"Alert radius (km)", addFarm:"＋ Add farm",
+  lat:"Lat", lon:"Lon", rad:"Alert radius (km)", addFarm:"＋ Add farm", edit:"Edit", del:"Delete", editfarm:"Edit farm", saveEdit:"✓ Save changes", updated:"Farm updated", delTitle:"Delete \"{name}\"?", delSub:"You can restore it from Recently deleted, and alerts will resume.", recentlyDeleted:"Recently deleted", restore:"Restore", restored:"Farm restored, alerts resumed",
   myfarms:"Registered farms", noFarms:"No farms yet",
   howtitle:"How to get automatic alerts",
   howhint:"The phone app can't push in the background. Once you connect Telegram, the cloud notifies you when a hotspot appears — even with the app closed.",
@@ -609,7 +627,7 @@ const I = {
   ph_lat:"cth. 3.2478", ph_lon:"cth. 102.4189", ph_rad:"cth. 30", ph_key:"Tampal kunci NASA anda",
   addfarm:"Tambah ladang", addhint:"Guna 'Lokasi saya' untuk GPS automatik, atau taip koordinat. Boleh tambah beberapa ladang.",
   fname:"Nama ladang", loc:"Guna lokasi saya", or:"atau masukkan sendiri",
-  lat:"Lat", lon:"Lon", rad:"Jejari amaran (km)", addFarm:"＋ Tambah ladang",
+  lat:"Lat", lon:"Lon", rad:"Jejari amaran (km)", addFarm:"＋ Tambah ladang", edit:"Sunting", del:"Padam", editfarm:"Sunting ladang", saveEdit:"✓ Simpan perubahan", updated:"Ladang dikemas kini", delTitle:"Padam \"{name}\"?", delSub:"Anda boleh pulihkannya dari Baru dipadam, dan amaran akan disambung semula.", recentlyDeleted:"Baru dipadam", restore:"Pulih", restored:"Ladang dipulihkan, amaran disambung",
   myfarms:"Ladang berdaftar", noFarms:"Tiada ladang lagi",
   howtitle:"Cara terima amaran automatik",
   howhint:"Aplikasi telefon tidak boleh menolak amaran di latar belakang. Setelah sambung Telegram, awan akan beritahu anda apabila titik panas muncul — walaupun aplikasi ditutup.",
@@ -671,7 +689,7 @@ const I = {
   ph_lat:"எ.கா. 3.2478", ph_lon:"எ.கா. 102.4189", ph_rad:"எ.கா. 30", ph_key:"உங்கள் NASA விசையை ஒட்டவும்",
   addfarm:"பண்ணை சேர்", addhint:"GPS-க்கு 'என் இருப்பிடம்' பயன்படுத்தவும், அல்லது ஆயத்தொலைவை தட்டச்சு செய்யவும். பல பண்ணைகளைச் சேர்க்கலாம்.",
   fname:"பண்ணை பெயர்", loc:"என் இருப்பிடத்தைப் பயன்படுத்து", or:"அல்லது கைமுறையாக உள்ளிடவும்",
-  lat:"அட்ச.", lon:"தீர்க்.", rad:"எச்சரிக்கை ஆரம் (கி.மீ)", addFarm:"＋ பண்ணை சேர்",
+  lat:"அட்ச.", lon:"தீர்க்.", rad:"எச்சரிக்கை ஆரம் (கி.மீ)", addFarm:"＋ பண்ணை சேர்", edit:"திருத்து", del:"நீக்கு", editfarm:"பண்ணையைத் திருத்து", saveEdit:"✓ மாற்றங்களைச் சேமி", updated:"பண்ணை புதுப்பிக்கப்பட்டது", delTitle:"\"{name}\" நீக்கவா?", delSub:"சமீபத்தில் நீக்கியதில் இருந்து மீட்டெடுக்கலாம், எச்சரிக்கைகளும் தொடரும்.", recentlyDeleted:"சமீபத்தில் நீக்கியது", restore:"மீட்டெடு", restored:"பண்ணை மீட்டெடுக்கப்பட்டது, எச்சரிக்கைகள் தொடரும்",
   myfarms:"பதிவு செய்யப்பட்ட பண்ணைகள்", noFarms:"இன்னும் பண்ணைகள் இல்லை",
   howtitle:"தானியங்கி எச்சரிக்கைகளைப் பெறுவது எப்படி",
   howhint:"செயலி பின்னணியில் தானாக அறிவிக்க முடியாது. Telegram இணைத்த பின், தீப்புள்ளி தோன்றும்போது மேகம் உங்களுக்கு அறிவிக்கும் — செயலி மூடியிருந்தாலும்.",
@@ -719,6 +737,7 @@ const GUIDE = {
   {h:"🔥 这个 App 是做什么的？", b:"它用 NASA 卫星侦测你农场附近的火点，提前警告你，让你有时间应对。它<b>不能</b>灭火，也<b>不是</b>农场上空的即时监控 — 卫星每天只飞过几次。"},
   {h:"📝 第一步：登记你的农场", b:"到「我的农场」分页，填写姓名与手机号，然后用「使用我的定位」或手动输入坐标，加入你的农场，并设定警报半径（建议 20–40 公里，因为卫星有空档，半径太小可能来不及反应）。"},
   {h:"🔔 第二步：接收警报（两种方式）", b:"<b>有 Telegram：</b>到「警报设置」点「连接 Telegram」，按 Start，火点出现时会自动通知你 — 即使没打开 App。<br><br><b>没有 Telegram：</b>用 WhatsApp 把农场资料发给离你最近的协调员，由协调员代为监测。协调员是真人，回复不会即时。"},
+  {h:"🔑 第三步：加入 NASA 钥匙（选填）", b:"这一步<b>可选</b> — 不填也照样会收到 Telegram 警报。填了之后，「监测」分页就能看到农场附近的<b>实时卫星火点</b>。<br><br>做法：到「警报设置」，点「免费申请 NASA 钥匙」的链接，输入电邮即可免费取得一组钥匙，再贴回 App 里按「保存」。钥匙保存后会自动隐藏，只显示末尾几位，保护你的隐私。"},
   {h:"🛰️ 重要：卫星有空档", b:"火点是卫星侦测的，两次飞过之间有空档，刚烧起来的火可能要等下一次才看得到。所以请把半径设大一点，并<b>相信自己的眼睛和鼻子</b> — 看到烟、闻到焦味，立刻行动，不要等 App。"},
   {h:"🌤️ 天气与火险", b:"「监测」分页会显示<b>风向、湿度、几天没下雨</b>。空气干燥（湿度低）或久旱时，火更容易蔓延，App 会显示「天气干燥，火险高」提醒，并把附近火点的风险调高。天气资讯免费，<b>不需要 NASA 钥匙</b> — 只要加入农场就能看到。"},
   {h:"🚒 发现真实火警时", h2:"", b:"在「监测」分页，若附近有较严重火点，会出现 BOMBA 联系卡。请先亲自查看确认，确认属实后再拨打 999（或 BOMBA 直线 994）。<b>切勿明知没有火而谎报</b> — 谎报是违法行为。"},
@@ -738,6 +757,7 @@ const GUIDE = {
   {h:"🔥 What does this app do?", b:"It uses NASA satellites to detect fires near your farm and warn you early, giving you time to act. It <b>cannot</b> put out fires, and it is <b>not</b> live monitoring over your farm — satellites only pass a few times a day."},
   {h:"📝 Step 1: Register your farm", b:"Go to the <b>My farms</b> tab, fill in your name and mobile number, then add your farm using 'Use my location' or by typing coordinates. Set an alert radius (20–40 km recommended — because satellites have gaps, too small a radius leaves little time to react)."},
   {h:"🔔 Step 2: Get alerts (two ways)", b:"<b>Have Telegram:</b> go to <b>Alerts</b>, tap 'Connect Telegram', press Start. You'll get alerts automatically when a hotspot appears — even with the app closed.<br><br><b>No Telegram:</b> send your farm details to your nearest coordinator via WhatsApp; they'll watch it for you. The coordinator is a real person, so replies aren't immediate."},
+  {h:"🔑 Step 3: Add a NASA key (optional)", b:"This step is <b>optional</b> — you'll still get Telegram alerts without it. Adding it lets the <b>Monitor</b> tab show <b>live satellite hotspots</b> near your farm.<br><br>How: in <b>Alerts</b>, tap the 'Get a free NASA key' link, enter an email to receive a free key, then paste it back into the app and tap Save. Once saved, the key is hidden automatically (only the last few characters show) to protect your privacy."},
   {h:"🛰️ Important: satellites have gaps", b:"Hotspots are detected by satellites, and there is a gap between passes — a fire that just started may not show until the next pass. So set a wider radius, and <b>trust your own eyes and nose</b> — if you see smoke or smell burning, act immediately, don't wait for the app."},
   {h:"🌤️ Weather & fire risk", b:"The <b>Monitor</b> tab shows <b>wind, humidity, and days since rain</b>. Dry air (low humidity) or a long dry spell makes fires spread faster, so the app shows a 'Dry conditions, high fire risk' warning and raises the risk level of nearby hotspots. Weather is free and <b>needs no NASA key</b> — it appears as soon as you add a farm."},
   {h:"🚒 When there's a real fire", b:"On the <b>Monitor</b> tab, if a serious hotspot is nearby, a BOMBA contact card appears. Check and confirm it yourself first, then call 999 (or BOMBA direct, 994). <b>Never knowingly make a false report</b> — false reports are a criminal offence."},
@@ -757,6 +777,7 @@ const GUIDE = {
   {h:"🔥 Apa fungsi aplikasi ini?", b:"Ia menggunakan satelit NASA untuk mengesan kebakaran berhampiran ladang anda dan memberi amaran awal, supaya anda ada masa bertindak. Ia <b>tidak boleh</b> memadam api, dan ia <b>bukan</b> pemantauan langsung di atas ladang anda — satelit hanya melintas beberapa kali sehari."},
   {h:"📝 Langkah 1: Daftar ladang anda", b:"Pergi ke tab <b>Ladang saya</b>, isi nama dan nombor telefon, kemudian tambah ladang menggunakan 'Guna lokasi saya' atau taip koordinat. Tetapkan jejari amaran (20–40 km disyorkan — kerana satelit ada jurang masa, jejari terlalu kecil menyukarkan tindakan)."},
   {h:"🔔 Langkah 2: Terima amaran (dua cara)", b:"<b>Ada Telegram:</b> pergi ke <b>Amaran</b>, tekan 'Sambung Telegram', tekan Start. Anda akan terima amaran automatik apabila titik panas muncul — walaupun aplikasi ditutup.<br><br><b>Tiada Telegram:</b> hantar maklumat ladang kepada penyelaras terdekat melalui WhatsApp; mereka akan pantau untuk anda. Penyelaras ialah orang sebenar, jadi balasan tidak serta-merta."},
+  {h:"🔑 Langkah 3: Tambah kunci NASA (pilihan)", b:"Langkah ini <b>pilihan</b> — anda tetap terima amaran Telegram tanpanya. Menambahnya membolehkan tab <b>Pantau</b> menunjukkan <b>titik panas satelit langsung</b> berhampiran ladang anda.<br><br>Cara: di <b>Amaran</b>, tekan pautan 'Dapatkan kunci NASA percuma', masukkan emel untuk terima kunci percuma, kemudian tampal semula ke dalam aplikasi dan tekan Simpan. Setelah disimpan, kunci disembunyikan secara automatik (hanya beberapa aksara terakhir ditunjukkan) untuk melindungi privasi anda."},
   {h:"🛰️ Penting: satelit ada jurang masa", b:"Titik panas dikesan oleh satelit, dan ada jurang antara lintasan — kebakaran yang baru bermula mungkin tidak kelihatan sehingga lintasan berikutnya. Jadi tetapkan jejari lebih luas, dan <b>percaya mata dan hidung anda sendiri</b> — jika nampak asap atau bau terbakar, bertindak segera, jangan tunggu aplikasi."},
   {h:"🌤️ Cuaca & risiko kebakaran", b:"Tab <b>Pantau</b> memaparkan <b>angin, kelembapan, dan berapa hari tiada hujan</b>. Udara kering (kelembapan rendah) atau musim kering panjang menjadikan api merebak lebih cepat, jadi aplikasi memaparkan amaran 'Cuaca kering, risiko tinggi' dan menaikkan tahap risiko titik panas berdekatan. Data cuaca percuma dan <b>tidak perlukan kunci NASA</b> — ia muncul sebaik anda tambah ladang."},
   {h:"🚒 Apabila ada kebakaran sebenar", b:"Di tab <b>Pantau</b>, jika ada titik panas serius berdekatan, kad hubungan BOMBA akan muncul. Periksa dan sahkan sendiri dahulu, kemudian hubungi 999 (atau BOMBA terus, 994). <b>Jangan sekali-kali membuat laporan palsu dengan sengaja</b> — laporan palsu adalah kesalahan jenayah."},
@@ -776,6 +797,7 @@ const GUIDE = {
   {h:"🔥 இந்தச் செயலி என்ன செய்கிறது?", b:"இது உங்கள் பண்ணைக்கு அருகிலுள்ள தீயை NASA செயற்கைக்கோள்கள் மூலம் கண்டறிந்து முன்கூட்டியே எச்சரிக்கிறது, செயல்பட உங்களுக்கு நேரம் தருகிறது. இது தீயை <b>அணைக்க முடியாது</b>, உங்கள் பண்ணைக்கு மேல் <b>நேரடி கண்காணிப்பும் அல்ல</b> — செயற்கைக்கோள்கள் ஒரு நாளில் சில முறை மட்டுமே செல்கின்றன."},
   {h:"📝 படி 1: உங்கள் பண்ணையைப் பதிவு செய்யவும்", b:"<b>என் பண்ணைகள்</b> தாவலுக்குச் சென்று, பெயர் மற்றும் தொலைபேசி எண்ணை நிரப்பவும், பின்னர் 'என் இருப்பிடத்தைப் பயன்படுத்து' அல்லது ஆயத்தொலைவைத் தட்டச்சு செய்து பண்ணையைச் சேர்க்கவும். எச்சரிக்கை ஆரத்தை அமைக்கவும் (20–40 கி.மீ பரிந்துரைக்கப்படுகிறது — செயற்கைக்கோள்களுக்கு இடைவெளி உள்ளதால், மிகச் சிறிய ஆரம் செயல்பட நேரம் தராது)."},
   {h:"🔔 படி 2: எச்சரிக்கைகளைப் பெறவும் (இரண்டு வழிகள்)", b:"<b>Telegram உள்ளது:</b> <b>எச்சரிக்கைகள்</b> பகுதிக்குச் சென்று 'Telegram இணைக்கவும்' தட்டி, Start அழுத்தவும். தீப்புள்ளி தோன்றும்போது தானாக எச்சரிக்கை வரும் — செயலி மூடியிருந்தாலும்.<br><br><b>Telegram இல்லை:</b> உங்கள் பண்ணை விவரத்தை அருகிலுள்ள ஒருங்கிணைப்பாளருக்கு WhatsApp மூலம் அனுப்பவும்; அவர்கள் உங்களுக்காகக் கண்காணிப்பார்கள். ஒருங்கிணைப்பாளர் ஒரு நிஜ நபர், எனவே பதில் உடனடியாக இராது."},
+  {h:"🔑 படி 3: NASA விசையைச் சேர்க்கவும் (விருப்பத்தேர்வு)", b:"இந்தப் படி <b>விருப்பத்தேர்வு</b> — இல்லாவிட்டாலும் Telegram எச்சரிக்கைகள் வரும். சேர்த்தால், <b>கண்காணி</b> தாவல் உங்கள் பண்ணைக்கு அருகில் <b>நேரடி செயற்கைக்கோள் தீப்புள்ளிகளைக்</b> காட்டும்.<br><br>எப்படி: <b>எச்சரிக்கைகள்</b> பகுதியில், 'இலவச NASA விசையைப் பெறு' இணைப்பைத் தட்டி, மின்னஞ்சலை உள்ளிட்டு இலவச விசையைப் பெறவும், பின்னர் அதை செயலியில் ஒட்டி Save அழுத்தவும். சேமித்த பின், உங்கள் தனியுரிமையைப் பாதுகாக்க விசை தானாக மறைக்கப்படும் (கடைசி சில எழுத்துகள் மட்டும் தெரியும்)."},
   {h:"🛰️ முக்கியம்: செயற்கைக்கோள்களுக்கு இடைவெளி", b:"தீப்புள்ளிகளை செயற்கைக்கோள்கள் கண்டறிகின்றன, கடப்புகளுக்கு இடையே இடைவெளி உள்ளது — இப்போதுதான் தொடங்கிய தீ அடுத்த கடப்பு வரை தெரியாமல் இருக்கலாம். எனவே அகலமான ஆரத்தை அமைக்கவும், <b>உங்கள் கண்களையும் மூக்கையும் நம்பவும்</b> — புகை கண்டால் அல்லது எரியும் வாசனை வந்தால் உடனே செயல்படவும், செயலிக்காகக் காத்திருக்க வேண்டாம்."},
   {h:"🌤️ வானிலை & தீ ஆபத்து", b:"<b>கண்காணி</b> தாவல் <b>காற்று, ஈரப்பதம், எத்தனை நாட்கள் மழை இல்லை</b> என்பதைக் காட்டுகிறது. வறண்ட காற்று (குறைந்த ஈரப்பதம்) அல்லது நீண்ட வறட்சி தீ வேகமாகப் பரவச் செய்யும், எனவே செயலி 'வறண்ட வானிலை, அதிக தீ ஆபத்து' எச்சரிக்கையைக் காட்டி அருகிலுள்ள தீப்புள்ளிகளின் ஆபத்து நிலையை உயர்த்துகிறது. வானிலைத் தரவு இலவசம், <b>NASA விசை தேவையில்லை</b> — பண்ணையைச் சேர்த்தவுடன் தோன்றும்."},
   {h:"🚒 உண்மையான தீ ஏற்படும்போது", b:"<b>கண்காணி</b> தாவலில், அருகில் தீவிரமான தீப்புள்ளி இருந்தால் BOMBA தொடர்பு அட்டை தோன்றும். முதலில் நீங்களே சரிபார்த்து உறுதிசெய்து, பின்னர் 999 (அல்லது BOMBA நேரடி, 994) அழைக்கவும். <b>வேண்டுமென்றே பொய்யான அறிக்கை செய்ய வேண்டாம்</b> — பொய் அறிக்கை ஒரு குற்றம்."},
@@ -801,6 +823,14 @@ function lset(k,v){ localStorage.setItem(NS+k,JSON.stringify(v)); }
 
 let profile = lget("profile",{name:"",phone:""});
 let farms   = lget("farms",[]);
+let deletedFarms = lget("deletedFarms",[]);   // soft-deleted, restorable
+let editingId = null;                          // id of farm being edited (null = adding)
+
+// give every farm a stable id (older saved farms won't have one)
+function fid(){ return "f"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+let _farmsChanged=false;
+farms.forEach(f=>{ if(!f.id){ f.id=fid(); _farmsChanged=true; } });
+if(_farmsChanged) lset("farms",farms);
 
 // Normalize a Malaysian-style mobile number into international digits (e.g. 60193824740).
 // Accepts: 0193824740, 019-382 4740, +60 19-382 4740, 60193824740, 193824740, etc.
@@ -1118,9 +1148,107 @@ function renderChips(){
 }
 function renderFarmList(){
   const t=I[lang],el=document.getElementById("farmlist");
-  if(!farms.length){el.innerHTML=`<div class="empty"><div class="e-ico">🌾</div>${t.noFarms}</div>`;return;}
-  el.innerHTML=farms.map((f,i)=>`<div class="farmrow"><div class="fi"><div class="fn">${f.name}</div><div class="fc">${f.lat.toFixed(4)}, ${f.lon.toFixed(4)} · ${f.rad} ${t.km}</div></div><button class="del" data-i="${i}">✕</button></div>`).join("");
-  el.querySelectorAll(".del").forEach(b=>b.onclick=()=>{farms.splice(+b.dataset.i,1);if(active>=farms.length)active=Math.max(0,farms.length-1);lset("farms",farms);syncRoster();renderFarmList();renderChips();loadData();});
+  if(!farms.length){
+    el.innerHTML=`<div class="empty"><div class="e-ico">🌾</div>${t.noFarms}</div>`;
+  }else{
+    el.innerHTML=farms.map((f,i)=>
+      `<div class="farmrow"><div class="fi"><div class="fn">${f.name}</div>`+
+      `<div class="fc">${f.lat.toFixed(4)}, ${f.lon.toFixed(4)} · ${f.rad} ${t.km}</div></div>`+
+      `<div class="frow-btns">`+
+        `<button class="fedit" data-id="${f.id}" aria-label="${t.edit}">✎</button>`+
+        `<button class="del" data-id="${f.id}" aria-label="${t.del}">✕</button>`+
+      `</div></div>`).join("");
+    el.querySelectorAll(".fedit").forEach(b=>b.onclick=()=>startEditFarm(b.dataset.id));
+    el.querySelectorAll(".del").forEach(b=>b.onclick=()=>confirmDeleteFarm(b.dataset.id));
+  }
+  renderDeletedList();
+}
+function renderDeletedList(){
+  const t=I[lang], wrap=document.getElementById("deletedWrap");
+  if(!wrap) return;
+  if(!deletedFarms.length){ wrap.style.display="none"; wrap.innerHTML=""; return; }
+  wrap.style.display="block";
+  wrap.innerHTML=`<div class="sect">${t.recentlyDeleted}</div>`+
+    deletedFarms.map(f=>
+      `<div class="farmrow farmrow-del"><div class="fi"><div class="fn">${f.name}</div>`+
+      `<div class="fc">${f.lat.toFixed(4)}, ${f.lon.toFixed(4)} · ${f.rad} ${t.km}</div></div>`+
+      `<button class="frestore" data-id="${f.id}">${t.restore}</button></div>`).join("");
+  wrap.querySelectorAll(".frestore").forEach(b=>b.onclick=()=>restoreFarm(b.dataset.id));
+}
+function startEditFarm(id){
+  const f=farms.find(x=>x.id===id); if(!f) return;
+  editingId=id;
+  document.getElementById("i-fname").value=f.name;
+  document.getElementById("i-lat").value=f.lat;
+  document.getElementById("i-lon").value=f.lon;
+  document.getElementById("i-rad").value=f.rad;
+  const t=I[lang];
+  document.getElementById("addFarmBtn").textContent=t.saveEdit;
+  document.getElementById("t-addfarm").textContent=t.editfarm;
+  // scroll the form into view so the user sees the populated fields
+  document.getElementById("i-fname").scrollIntoView({behavior:"smooth",block:"center"});
+}
+function resetFarmForm(){
+  editingId=null;
+  document.getElementById("i-fname").value="";document.getElementById("i-lat").value="";
+  document.getElementById("i-lon").value="";document.getElementById("i-rad").value="";
+  const t=I[lang];
+  document.getElementById("addFarmBtn").textContent=t.addFarm;
+  document.getElementById("t-addfarm").textContent=t.addfarm;
+}
+// Reusable styled confirm dialog. Calls onYes() if the user confirms.
+let _confirmCb=null;
+function showConfirm(opts){
+  const t=I[lang];
+  document.getElementById("confirmIc").textContent=opts.icon||"🗑️";
+  document.getElementById("confirmQ").textContent=opts.q||"";
+  document.getElementById("confirmSub").textContent=opts.sub||"";
+  document.getElementById("confirmYes").textContent=opts.yes||t.del;
+  document.getElementById("confirmNo").textContent=opts.no||t.sosConfirmNo;
+  _confirmCb=opts.onYes||null;
+  document.getElementById("confirmModal").classList.remove("hide");
+}
+function closeConfirm(){
+  document.getElementById("confirmModal").classList.add("hide");
+  _confirmCb=null;
+}
+document.getElementById("confirmYes").onclick=()=>{ const cb=_confirmCb; closeConfirm(); if(cb)cb(); };
+document.getElementById("confirmNo").onclick=closeConfirm;
+document.getElementById("confirmModal").onclick=(e)=>{ if(e.target.id==="confirmModal") closeConfirm(); };
+
+function confirmDeleteFarm(id){
+  const f=farms.find(x=>x.id===id); if(!f) return;
+  const t=I[lang];
+  showConfirm({
+    icon:"🗑️",
+    q:t.delTitle.replace("{name}",f.name),
+    sub:t.delSub,
+    yes:t.del,
+    no:t.sosConfirmNo,
+    onYes:()=>{
+      // soft delete: move to deletedFarms
+      farms=farms.filter(x=>x.id!==id);
+      deletedFarms.unshift({...f, deletedAt:Date.now()});
+      if(deletedFarms.length>10) deletedFarms=deletedFarms.slice(0,10); // cap
+      if(active>=farms.length) active=Math.max(0,farms.length-1);
+      lset("farms",farms); lset("deletedFarms",deletedFarms);
+      syncRoster();                       // removes it from monitoring
+      if(editingId===id) resetFarmForm();
+      renderFarmList();renderChips();loadData();
+      toast(t.deleted);
+    }
+  });
+}
+function restoreFarm(id){
+  const f=deletedFarms.find(x=>x.id===id); if(!f) return;
+  const t=I[lang];
+  delete f.deletedAt;
+  deletedFarms=deletedFarms.filter(x=>x.id!==id);
+  farms.push(f);
+  lset("farms",farms); lset("deletedFarms",deletedFarms);
+  syncRoster();                       // resumes monitoring/alerts for it
+  renderFarmList();renderChips();loadData();
+  toast(t.restored);
 }
 
 //=================== geolocation ===================
@@ -1404,10 +1532,21 @@ document.getElementById("addFarmBtn").onclick=()=>{
   const lo=parseFloat(document.getElementById("i-lon").value);
   const rad=parseFloat(document.getElementById("i-rad").value)||30;
   if(!name||isNaN(la)||isNaN(lo)){toast(t.needfarm);return;}
-  farms.push({name,lat:la,lon:lo,rad});lset("farms",farms);syncRoster();
-  document.getElementById("i-fname").value="";document.getElementById("i-lat").value="";
-  document.getElementById("i-lon").value="";document.getElementById("i-rad").value="";
-  renderFarmList();renderChips();toast(t.added);
+  if(editingId){
+    // update existing farm in place
+    const f=farms.find(x=>x.id===editingId);
+    if(f){ f.name=name; f.lat=la; f.lon=lo; f.rad=rad; }
+    lset("farms",farms);syncRoster();
+    resetFarmForm();
+    renderFarmList();renderChips();loadData();
+    toast(t.updated);
+  }else{
+    // add new farm
+    farms.push({id:fid(),name,lat:la,lon:lo,rad});lset("farms",farms);syncRoster();
+    resetFarmForm();
+    renderFarmList();renderChips();loadData();
+    toast(t.added);
+  }
 };
 function maskKey(k){
   if(!k) return "";
