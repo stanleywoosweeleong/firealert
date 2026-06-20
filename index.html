@@ -477,7 +477,7 @@ const I = {
   lowSub:"远处有零星热点",medSub:"附近出现热点，留意风向",highSub:"火点逼近，建议巡查",critSub:"火点极近，立即检查！",
   dir:{N:"正北",NE:"东北",E:"正东",SE:"东南",S:"正南",SW:"西南",W:"正西",NW:"西北"},
   rk:{CRITICAL:"紧急",HIGH:"高",MEDIUM:"中",LOW:"低"},
-  err:"无法读取数据", errKey:"请到「警报设置」填入 NASA MAP_KEY",
+  err:"无法读取数据", errKey:"请到「警报设置」填入 NASA MAP_KEY", keyOkBig:"已登记 ✓", keyOkSub:"你已登记，火点出现时会收到 Telegram 通知。想在这里也看到实时火点，请到「警报设置」加入免费的 NASA 钥匙（可选）。",
   waAlert:(f,n,d,r)=>`🔥 火警通报 · ${f}\n\nNASA 卫星检测到 ${n} 个火点\n最近距离: ${d} 公里 (${r})\n\n来源: NASA VIIRS\n请尽快巡查农场周边。`,
   waSafe:(f)=>`✅ ${f} 周边目前无卫星火点。来源: NASA VIIRS。`,
   foot:"数据来源 NASA FIRMS (VIIRS) · 卫星每日多次过境，热点为近实时检测，仅供参考。务必以现场实况为准。",
@@ -539,7 +539,7 @@ const I = {
   lowSub:"Scattered hotspots far off",medSub:"Hotspots nearby — watch the wind",highSub:"Fire approaching — inspect",critSub:"Very close — inspect now!",
   dir:{N:"N",NE:"NE",E:"E",SE:"SE",S:"S",SW:"SW",W:"W",NW:"NW"},
   rk:{CRITICAL:"CRIT",HIGH:"HIGH",MEDIUM:"MED",LOW:"LOW"},
-  err:"Couldn't load data", errKey:"Add your NASA MAP_KEY under Alerts",
+  err:"Couldn't load data", errKey:"Add your NASA MAP_KEY under Alerts", keyOkBig:"Registered ✓", keyOkSub:"You are registered and will get Telegram alerts when a fire appears. To also see live hotspots here, add a free NASA key under Alerts (optional).",
   waAlert:(f,n,d,r)=>`🔥 FIRE ALERT · ${f}\n\nNASA detected ${n} hotspot(s)\nNearest: ${d} km (${r})\n\nSource: NASA VIIRS\nInspect the farm perimeter ASAP.`,
   waSafe:(f)=>`✅ ${f}: no satellite hotspots nearby. Source: NASA VIIRS.`,
   foot:"Data: NASA FIRMS (VIIRS) · satellites pass several times daily; hotspots are near-real-time and indicative only. Always confirm on the ground.",
@@ -601,7 +601,7 @@ const I = {
   lowSub:"Titik panas berselerak jauh",medSub:"Titik panas berdekatan — perhati angin",highSub:"Api menghampiri — periksa",critSub:"Sangat hampir — periksa sekarang!",
   dir:{N:"U",NE:"TL",E:"T",SE:"TG",S:"S",SW:"BD",W:"B",NW:"BL"},
   rk:{CRITICAL:"KRITIKAL",HIGH:"TINGGI",MEDIUM:"SEDERHANA",LOW:"RENDAH"},
-  err:"Gagal memuat data", errKey:"Masukkan NASA MAP_KEY di bawah Amaran",
+  err:"Gagal memuat data", errKey:"Masukkan NASA MAP_KEY di bawah Amaran", keyOkBig:"Berdaftar ✓", keyOkSub:"Anda telah berdaftar dan akan terima amaran Telegram apabila kebakaran muncul. Untuk lihat titik panas langsung di sini, tambah kunci NASA percuma di bawah Amaran (pilihan).",
   waAlert:(f,n,d,r)=>`🔥 AMARAN KEBAKARAN · ${f}\n\nNASA kesan ${n} titik panas\nTerdekat: ${d} km (${r})\n\nSumber: NASA VIIRS\nPeriksa kawasan ladang segera.`,
   waSafe:(f)=>`✅ ${f}: tiada titik panas satelit berdekatan. Sumber: NASA VIIRS.`,
   foot:"Data: NASA FIRMS (VIIRS) · satelit melintas beberapa kali sehari; titik panas hampir masa nyata dan sebagai panduan sahaja. Sentiasa sahkan di tempat.",
@@ -663,7 +663,7 @@ const I = {
   lowSub:"தொலைவில் சிதறிய தீப்புள்ளிகள்",medSub:"அருகில் தீப்புள்ளிகள் — காற்றைக் கவனி",highSub:"தீ நெருங்குகிறது — சரிபார்",critSub:"மிக அருகில் — இப்போதே சரிபார்!",
   dir:{N:"வ",NE:"வகி",E:"கி",SE:"தெகி",S:"தெ",SW:"தெமே",W:"மே",NW:"வமே"},
   rk:{CRITICAL:"மிகுந்த",HIGH:"அதிக",MEDIUM:"நடுத்தர",LOW:"குறைந்த"},
-  err:"தரவை ஏற்ற முடியவில்லை", errKey:"எச்சரிக்கைகள் பகுதியில் NASA MAP_KEY-ஐ உள்ளிடவும்",
+  err:"தரவை ஏற்ற முடியவில்லை", errKey:"எச்சரிக்கைகள் பகுதியில் NASA MAP_KEY-ஐ உள்ளிடவும்", keyOkBig:"பதிவு செய்யப்பட்டது ✓", keyOkSub:"நீங்கள் பதிவு செய்துள்ளீர்கள், தீ தோன்றும்போது Telegram எச்சரிக்கை பெறுவீர்கள். இங்கே நேரடி தீப்புள்ளிகளையும் காண, எச்சரிக்கைகள் பகுதியில் இலவச NASA விசையைச் சேர்க்கவும் (விருப்பத்தேர்வு).",
   waAlert:(f,n,d,r)=>`🔥 தீ எச்சரிக்கை · ${f}\n\nNASA ${n} தீப்புள்ளிகளைக் கண்டறிந்தது\nஅருகில்: ${d} கி.மீ (${r})\n\nஆதாரம்: NASA VIIRS\nபண்ணைப் பகுதியை உடனே சரிபார்க்கவும்.`,
   waSafe:(f)=>`✅ ${f}: அருகில் செயற்கைக்கோள் தீப்புள்ளிகள் இல்லை. ஆதாரம்: NASA VIIRS.`,
   foot:"தரவு: NASA FIRMS (VIIRS) · செயற்கைக்கோள்கள் ஒரு நாளில் பல முறை செல்கின்றன; தீப்புள்ளிகள் ஏறக்குறைய நேரடி, வழிகாட்டுதலுக்கு மட்டுமே. எப்போதும் நேரில் சரிபார்க்கவும்.",
@@ -850,8 +850,15 @@ async function loadData(){
   // load weather independently — works even without a NASA key, shows dry/wind warning
   loadWeather(farm);
   if(!key){
-    setBanner("med",t.checking,t.errKey);
-    document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🔑</div>${t.errKey}</div>`;
+    // No NASA key: the LIVE in-app hotspot view needs it, but automatic Telegram
+    // alerts (sent by the server-side cron) do NOT. Reassure registered users.
+    const registered = lget("tg_attempted",false) && profile.name && profile.phone;
+    if(registered){
+      setBanner("safe",t.keyOkBig,t.keyOkSub);
+    }else{
+      setBanner("med",t.checking,t.errKey);
+    }
+    document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🔑</div><div style="font-size:.85rem;line-height:1.5;color:var(--ink2)">${registered?t.keyOkSub:t.errKey}</div></div>`;
     document.getElementById("s2v").innerHTML=farm.rad+" <small>"+t.km+"</small>";
     return;
   }
@@ -961,13 +968,13 @@ function connectTelegram(){
   if(!profile.name||!profile.phone){toast(t.needprof);switchView("farms");return;}
   if(!farms.length){toast(t.needfarm);switchView("farms");return;}
   const phoneDigits=normalizePhone(profile.phone);
-  // 1) push full registration (profile + farms) to the Worker roster
+  // 1) push full registration (profile + farms + language) to the Worker roster
   if(CFG.REGISTER_URL){
     fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({phone:phoneDigits,name:profile.name,farms})}).catch(()=>{});
+      body:JSON.stringify({phone:phoneDigits,name:profile.name,farms,lang})}).catch(()=>{});
   }
-  // 2) open Telegram so the Start tap links the chat_id to this phone
-  const url=`https://t.me/${CFG.TG_BOT}?start=ph_${phoneDigits}`;
+  // 2) open Telegram so the Start tap links the chat_id to this phone (carry lang too)
+  const url=`https://t.me/${CFG.TG_BOT}?start=ph_${phoneDigits}_${lang}`;
   lset("tg_attempted",true);updateConnStatus();
   window.open(url,"_blank");
 }
