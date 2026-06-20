@@ -322,22 +322,22 @@
     <div class="panel">
       <h3 id="t-prof">农户资料</h3>
       <p class="hint" id="t-profhint">填写姓名与手机号码，方便接收警报。</p>
-      <div class="field"><label id="f-uname">姓名 Name</label><input id="i-uname"></div>
-      <div class="field"><label id="f-phone">手机号码 Mobile (含国码)</label><input id="i-phone" inputmode="tel"></div>
+      <div class="field"><label id="f-uname" for="i-uname">姓名 Name</label><input id="i-uname"></div>
+      <div class="field"><label id="f-phone" for="i-phone">手机号码 Mobile (含国码)</label><input id="i-phone" inputmode="tel"></div>
       <button class="save" id="saveProfBtn">保存资料</button>
     </div>
 
     <div class="panel">
       <h3 id="t-addfarm">加入农场</h3>
       <p class="hint" id="t-addhint">用「定位」自动取得 GPS，或手动输入坐标。可加入多个农场。</p>
-      <div class="field"><label id="f-fname">农场名称 Farm name</label><input id="i-fname"></div>
+      <div class="field"><label id="f-fname" for="i-fname">农场名称 Farm name</label><input id="i-fname"></div>
       <button class="btn-loc" id="locBtn">📍 <span id="t-loc">使用我的定位</span></button>
       <div class="or" id="t-or">或手动输入</div>
       <div class="two">
-        <div class="field"><label id="f-lat">纬度 Lat</label><input id="i-lat" inputmode="decimal"></div>
-        <div class="field"><label id="f-lon">经度 Lon</label><input id="i-lon" inputmode="decimal"></div>
+        <div class="field"><label id="f-lat" for="i-lat">纬度 Lat</label><input id="i-lat" inputmode="decimal"></div>
+        <div class="field"><label id="f-lon" for="i-lon">经度 Lon</label><input id="i-lon" inputmode="decimal"></div>
       </div>
-      <div class="field"><label id="f-rad">警报半径 Radius (km)</label><input id="i-rad" inputmode="decimal"></div>
+      <div class="field"><label id="f-rad" for="i-rad">警报半径 Radius (km)</label><input id="i-rad" inputmode="decimal"></div>
       <p class="radhint"><span class="hi">⏱️</span><span id="t-radhint"></span></p>
       <button class="save" id="addFarmBtn">＋ 加入农场</button>
     </div>
@@ -366,7 +366,7 @@
       <span class="badge-soft" id="t-wabadge">无 Telegram 可用</span>
       <h3 id="t-watitle">把农场发给协调员</h3>
       <p class="hint" id="t-wahint"></p>
-      <div class="field"><label id="f-coord">协调员 Coordinator</label>
+      <div class="field"><label id="f-coord" for="i-coord">协调员 Coordinator</label>
         <select id="i-coord" style="background:#faf9f6;border:1px solid var(--line);color:var(--ink);border-radius:10px;padding:13px;font-size:.95rem;font-family:inherit"></select>
       </div>
       <p class="coord-note" id="t-coordnote"></p>
@@ -377,7 +377,7 @@
     <div class="panel" style="margin-top:14px">
       <h3 id="t-keytitle">NASA 火点钥匙 Key</h3>
       <p class="hint" id="t-keyhint"></p>
-      <div class="field"><label id="f-key">NASA FIRMS MAP_KEY</label><input id="i-key"></div>
+      <div class="field"><label id="f-key" for="i-key">NASA FIRMS MAP_KEY</label><input id="i-key"></div>
       <button class="save" id="saveKeyBtn">保存 Key</button>
       <a id="getKeyLink" href="https://firms.modaps.eosdis.nasa.gov/api/area/" target="_blank" rel="noopener" style="display:block;text-align:center;margin-top:10px;color:var(--tg);font-size:.85rem;font-weight:700;text-decoration:none"></a>
     </div>
