@@ -149,7 +149,11 @@
   .empty .e-ico{font-size:2.4rem;margin-bottom:8px}
 
   .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
-  .btn{border:none;border-radius:14px;padding:15px;font-size:.92rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit}
+  .btn{border:none;border-radius:14px;padding:15px 12px;font-size:.92rem;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;font-family:inherit;white-space:nowrap;min-width:0}
+  .btn svg{width:18px;height:18px;flex:none}
+  .btn span{overflow:hidden;text-overflow:ellipsis}
+  /* share buttons: icon + brand name */
+  .actions .btn-wa svg,.actions .btn-tg svg{width:20px;height:20px}
   .btn-wa{background:var(--wa);color:#063}
   .btn-tg{background:var(--tg);color:#04304a}
   .btn svg{width:19px;height:19px}
@@ -311,8 +315,8 @@
     <div class="sect" id="hs-title">附近热点</div>
     <div id="hslist"></div>
     <div class="actions">
-      <button class="btn btn-wa" id="waBtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20zm4.6-6c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.6-1.2.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-1 2.3c0 1.3 1 2.6 1.1 2.8s1.9 3 4.7 4.2c1.7.7 2.3.8 3.1.7.5-.1 1.5-.6 1.7-1.2s.2-1.1.2-1.2-.2-.2-.4-.3z"/></svg><span id="t-wa">WhatsApp 转发</span></button>
-      <button class="btn btn-tg" id="tgShareBtn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.6 19c-.2 1-.9 1.3-1.8.8l-4.8-3.6-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.4 13 1.7 11.5c-1-.3-1-.9.2-1.4L20.6 2.8c.9-.3 1.6.2 1.3 1.5z"/></svg><span id="t-tgshare">Telegram 转发</span></button>
+      <button class="btn btn-wa" id="waBtn" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.5 15.2L2 22l4.9-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-2.9.8.8-2.8-.2-.3A8 8 0 1 1 12 20zm4.6-6c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.6.8-.8 1-.3.2-.5.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.6-1.2.1-.2 0-.3 0-.5l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-1 2.3c0 1.3 1 2.6 1.1 2.8s1.9 3 4.7 4.2c1.7.7 2.3.8 3.1.7.5-.1 1.5-.6 1.7-1.2s.2-1.1.2-1.2-.2-.2-.4-.3z"/></svg><span>WhatsApp</span></button>
+      <button class="btn btn-tg" id="tgShareBtn" aria-label="Telegram"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.9 4.3 18.6 19c-.2 1-.9 1.3-1.8.8l-4.8-3.6-2.3 2.2c-.3.3-.5.5-1 .5l.3-4.9 8.9-8c.4-.3-.1-.5-.6-.2L6.4 13 1.7 11.5c-1-.3-1-.9.2-1.4L20.6 2.8c.9-.3 1.6.2 1.3 1.5z"/></svg><span>Telegram</span></button>
       <button class="btn btn-ghost" id="refreshBtn"><span id="t-refresh">↻ 刷新数据</span></button>
     </div>
   </div>
@@ -436,7 +440,7 @@ const I = {
   bombacall:"② 确认属实 — 拨打 999", sos:"紧急？拨打 BOMBA 999", sosConfirmQ:"你是否已经亲眼看到火或烟？", sosConfirmLaw:"请只在确认真实火警时拨打。明知没有火而谎报属违法行为。", sosConfirmYes:"是的，立即拨打 999", sosConfirmNo:"取消",
   bombaalt:"或直拨 BOMBA：<a href=\"tel:994\">994</a> · 手机无 SIM 卡可拨 <a href=\"tel:112\">112</a>",
   bombalaw:"⚠️ 善意报告真实火警没有问题。但<b>明知没有火</b>而谎报，属违法行为（1998 通讯及多媒体法令第 233 条），最高可罚 RM50,000 或监禁一年。",
-  wa:"WhatsApp 转发", tgshare:"Telegram 转发", refresh:"↻ 刷新数据",
+  wa:"WhatsApp", tgshare:"Telegram", sharesect:"分享报告", refresh:"↻ 刷新数据",
   prof:"农户资料", profhint:"填写姓名与手机号码，方便接收警报。",
   uname:"姓名 Name", phone:"手机号码 Mobile", saveProf:"保存资料", badphone:"请输入有效的手机号码（如 0193824740）",
   ph_uname:"请输入您的姓名", ph_phone:"例如 0193824740", ph_fname:"请输入您的农场名称",
@@ -498,7 +502,7 @@ const I = {
   bombacall:"② Confirmed — call 999", sos:"Emergency? Call BOMBA 999", sosConfirmQ:"Have you seen the fire or smoke yourself?", sosConfirmLaw:"Only call if the fire is real. Knowingly making a false report is an offence.", sosConfirmYes:"Yes, call 999 now", sosConfirmNo:"Cancel",
   bombaalt:"Or call BOMBA direct: <a href=\"tel:994\">994</a> · no SIM? dial <a href=\"tel:112\">112</a>",
   bombalaw:"⚠️ Reporting a real fire in good faith is fine. But <b>knowingly making a false report</b> is an offence (Communications & Multimedia Act 1998, s.233) — up to RM50,000 fine or one year jail.",
-  wa:"Share to WhatsApp", tgshare:"Share to Telegram", refresh:"↻ Refresh",
+  wa:"WhatsApp", tgshare:"Telegram", sharesect:"Share report", refresh:"↻ Refresh",
   prof:"Farmer profile", profhint:"Enter your name and mobile number to receive alerts.",
   uname:"Name", phone:"Mobile number", saveProf:"Save profile", badphone:"Enter a valid mobile number (e.g. 0193824740)",
   ph_uname:"Enter your name", ph_phone:"e.g. 0193824740", ph_fname:"Enter your farm name",
@@ -560,7 +564,7 @@ const I = {
   bombacall:"② Disahkan — hubungi 999", sos:"Kecemasan? Hubungi BOMBA 999", sosConfirmQ:"Adakah anda nampak api atau asap sendiri?", sosConfirmLaw:"Hubungi hanya jika kebakaran benar. Membuat laporan palsu dengan sengaja adalah kesalahan.", sosConfirmYes:"Ya, hubungi 999 sekarang", sosConfirmNo:"Batal",
   bombaalt:"Atau hubungi BOMBA terus: <a href=\"tel:994\">994</a> · tiada SIM? dail <a href=\"tel:112\">112</a>",
   bombalaw:"⚠️ Melaporkan kebakaran sebenar dengan niat baik tiada masalah. Tetapi <b>membuat laporan palsu dengan sengaja</b> adalah kesalahan (Akta Komunikasi & Multimedia 1998, s.233) — denda sehingga RM50,000 atau penjara setahun.",
-  wa:"Kongsi ke WhatsApp", tgshare:"Kongsi ke Telegram", refresh:"↻ Muat semula",
+  wa:"WhatsApp", tgshare:"Telegram", sharesect:"Kongsi laporan", refresh:"↻ Muat semula",
   prof:"Profil petani", profhint:"Isikan nama dan nombor telefon untuk menerima amaran.",
   uname:"Nama", phone:"Nombor telefon", saveProf:"Simpan profil", badphone:"Masukkan nombor telefon sah (cth. 0193824740)",
   ph_uname:"Masukkan nama anda", ph_phone:"cth. 0193824740", ph_fname:"Masukkan nama ladang anda",
@@ -622,7 +626,7 @@ const I = {
   bombacall:"② உறுதி — 999 அழைக்கவும்", sos:"அவசரமா? BOMBA 999 அழைக்கவும்", sosConfirmQ:"நீங்களே தீ அல்லது புகையைப் பார்த்தீர்களா?", sosConfirmLaw:"தீ உண்மையாக இருந்தால் மட்டும் அழைக்கவும். வேண்டுமென்றே பொய் அறிக்கை செய்வது குற்றம்.", sosConfirmYes:"ஆம், இப்போது 999 அழைக்கவும்", sosConfirmNo:"ரத்து",
   bombaalt:"அல்லது BOMBA-வை நேரடியாக அழைக்கவும்: <a href=\"tel:994\">994</a> · SIM இல்லையா? <a href=\"tel:112\">112</a>",
   bombalaw:"⚠️ உண்மையான தீயை நல்லெண்ணத்துடன் தெரிவிப்பது சரி. ஆனால் <b>வேண்டுமென்றே பொய்யான அறிக்கை</b> செய்வது குற்றம் (தொடர்பு & பல்லூடக சட்டம் 1998, பிரிவு 233) — RM50,000 வரை அபராதம் அல்லது ஒரு வருடம் சிறை.",
-  wa:"WhatsApp-இல் பகிர்", tgshare:"Telegram-இல் பகிர்", refresh:"↻ புதுப்பி",
+  wa:"WhatsApp", tgshare:"Telegram", sharesect:"அறிக்கையைப் பகிர்", refresh:"↻ புதுப்பி",
   prof:"விவசாயி விவரம்", profhint:"எச்சரிக்கைகளைப் பெற உங்கள் பெயர் மற்றும் தொலைபேசி எண்ணை நிரப்பவும்.",
   uname:"பெயர்", phone:"தொலைபேசி எண்", saveProf:"விவரத்தைச் சேமி", badphone:"சரியான தொலைபேசி எண்ணை உள்ளிடவும் (எ.கா. 0193824740)",
   ph_uname:"உங்கள் பெயரை உள்ளிடவும்", ph_phone:"எ.கா. 0193824740", ph_fname:"உங்கள் பண்ணையின் பெயரை உள்ளிடவும்",
@@ -1088,7 +1092,7 @@ function applyLang(){
   S("t-bombatitle",t.bombatitle);document.getElementById("t-bombatext").innerHTML=t.bombatext;S("t-bombacall",t.bombacall);S("t-bombaverify",t.bombaverify);
   document.getElementById("t-bombaalt").innerHTML=t.bombaalt;
   document.getElementById("t-bombalaw").innerHTML=t.bombalaw;
-  S("t-wa",t.wa);S("t-tgshare",t.tgshare);S("t-refresh",t.refresh);
+  S("t-refresh",t.refresh);
   S("t-prof",t.prof);S("t-profhint",t.profhint);S("f-uname",t.uname);S("f-phone",t.phone);S("saveProfBtn",t.saveProf);
   S("t-addfarm",t.addfarm);S("t-addhint",t.addhint);S("f-fname",t.fname);S("t-loc",t.loc);S("t-or",t.or);
   S("f-lat",t.lat);S("f-lon",t.lon);S("f-rad",t.rad);S("addFarmBtn",t.addFarm);S("t-myfarms",t.myfarms);
@@ -1100,7 +1104,7 @@ function applyLang(){
   S("f-coord",t.coordLabel);document.getElementById("t-coordnote").innerHTML="📍 "+t.coordNote;document.getElementById("t-sleepnote").innerHTML=t.sleepNote;
   S("t-tgbadge",t.tgbadge);S("t-wabadge",t.wabadge);
   S("t-pastetitle",t.pastetitle);S("t-pastehint",t.pastehint);S("pasteAddBtn",t.pasteAdd);
-  S("f-key",t.key);S("saveKeyBtn",t.saveKey);S("t-keytitle",t.keytitle);S("t-keyhint",t.keyhint);S("getKeyLink",t.getKey);S("t-tgshare",t.tgshare);S("foot",t.foot);S("t-adv",t.adv);
+  S("f-key",t.key);S("saveKeyBtn",t.saveKey);S("t-keytitle",t.keytitle);S("t-keyhint",t.keyhint);S("getKeyLink",t.getKey);S("foot",t.foot);S("t-adv",t.adv);
   document.getElementById("adv-body").innerHTML = lang==="zh"
     ? `给管理员：把农场名单部署到 GitHub。机器人用户名设在代码顶部的 <code>CFG.TG_BOT</code>，协调员名单设在 <code>CFG.COORDINATORS</code>。完整部署步骤见随附的 README 与 bot 程序。`
     : `For the admin: deploy the roster to GitHub. Set the bot username in <code>CFG.TG_BOT</code> and the coordinator list in <code>CFG.COORDINATORS</code> at the top of the code. Full deploy steps are in the bundled README and bot script.`;
