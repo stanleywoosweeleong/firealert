@@ -1129,7 +1129,8 @@ async function loadData(){
   if(!key){
     // No NASA key: the LIVE in-app hotspot view needs it, but automatic Telegram
     // alerts (sent by the server-side cron) do NOT. Reassure registered users.
-    const registered = lget("tg_attempted",false) && profile.name && profile.phone;
+    const registered = (lget("tg_attempted",false)||lget("wa_registered",false))
+                       && profile.name && profile.phone;
     if(registered){
       setBanner("safe",t.keyOkBig,t.keyOkSub);
     }else{
@@ -1352,7 +1353,8 @@ function connectTelegram(){
 // server yet). Re-sends the FULL current farm list, so deletions propagate too.
 function syncRoster(){
   if(!CFG.REGISTER_URL) return;
-  const registered = lget("tg_attempted",false) && profile.name && profile.phone;
+  const registered = (lget("tg_attempted",false)||lget("wa_registered",false))
+                     && profile.name && profile.phone;
   if(!registered) return;
   const phoneDigits=normalizePhone(profile.phone);
   if(!phoneDigits) return;
@@ -1420,6 +1422,17 @@ function waSendFarm(){
   const sel=document.getElementById("i-coord");
   const wa=sel && sel.value ? sel.value : ((CFG.COORDINATORS&&CFG.COORDINATORS[0])?CFG.COORDINATORS[0].wa:"");
   if(!wa){toast(t.noCoord);return;}
+  // Register server-side too. Sending the coordinator a WhatsApp used to be a
+  // dead end: the farmer never entered roster.json, so the cron never watched
+  // their farms and the coordinator had to hand-edit the file. Now they land in
+  // the roster WITHOUT a chat_id, and the alerter routes their alerts to the
+  // admin as a one-tap wa.me link.
+  const phoneDigits=normalizePhone(profile.phone);
+  if(CFG.REGISTER_URL && phoneDigits){
+    fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({phone:phoneDigits,name:profile.name,farms,lang})}).catch(()=>{});
+    lset("wa_registered",true);
+  }
   const readable=farms.map(f=>`• ${f.name} — ${f.lat.toFixed(5)}, ${f.lon.toFixed(5)} · ${f.rad}km`).join("\n");
   const msg=t.waFarmMsg(profile.name,phoneIntl(profile.phone),readable,farmCode());
   window.open(`https://wa.me/${wa}?text=`+encodeURIComponent(msg),"_blank");
