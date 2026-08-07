@@ -1209,6 +1209,9 @@ function render(hits){
 // sat on "尚未更新" forever unless a fire happened to be burning --
 // i.e. it looked broken precisely when the news was good.
 function stampUpdated(){
+  // Every function in this file does its own `const t=I[lang]` -- there is no
+  // global `t`. Look it up here too rather than relying on an outer scope.
+  const t=I[lang];
   const now=new Date().toLocaleTimeString(lang==="zh"?"zh-CN":"en-GB",{hour:"2-digit",minute:"2-digit"});
   document.getElementById("updated").textContent=t.updated(now);
   window._fwUpdated=true;
