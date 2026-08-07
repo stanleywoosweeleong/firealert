@@ -1195,14 +1195,24 @@ function render(hits){
   // wind card
   renderWeatherCard();
 
-  if(!hits.length){list.innerHTML=`<div class="empty"><div class="e-ico">🌿</div><div style="font-weight:800;color:var(--ink2)">${t.noHs}</div><div style="font-size:.8rem;margin-top:4px">${t.noHsSub}</div></div>`;return;}
+  if(!hits.length){list.innerHTML=`<div class="empty"><div class="e-ico">🌿</div><div style="font-weight:800;color:var(--ink2)">${t.noHs}</div><div style="font-size:.8rem;margin-top:4px">${t.noHsSub}</div></div>`;stampUpdated();return;}
   list.innerHTML=hits.slice(0,12).map(h=>{
     const frpTxt = h.frp!=null ? `<span class="frp">· ${t.intensity}: ${fmtFrp(h.frp,t)}</span>` : "";
     const towardTag = h.toward ? `<div class="toward-tag">⚠️ ${t.towardFarm}</div>` : "";
     return `<div class="hs"><div class="dot" style="color:${RK_COLOR[h.rk]}"></div><div class="info"><div class="t">${h.d.toFixed(1)} ${t.km} · ${t.dir[h.br]} ${frpTxt}</div><div class="d">${h.date} ${fmtTime(h.time)} UTC · ${h.la.toFixed(3)}, ${h.lo.toFixed(3)}${h.sat?" · "+h.sat:""}</div>${towardTag}</div><div class="rk" style="background:${RK_COLOR[h.rk]}22;color:${RK_COLOR[h.rk]}">${t.rk[h.rk]}</div></div>`;
   }).join("");
+  stampUpdated();
+}
+
+// A successful load with ZERO hotspots is still a successful load. The empty
+// branch of render() used to `return` before the timestamp ran, so the footer
+// sat on "尚未更新" forever unless a fire happened to be burning --
+// i.e. it looked broken precisely when the news was good.
+function stampUpdated(){
   const now=new Date().toLocaleTimeString(lang==="zh"?"zh-CN":"en-GB",{hour:"2-digit",minute:"2-digit"});
-  document.getElementById("updated").textContent=t.updated(now);window._fwUpdated=true;
+  document.getElementById("updated").textContent=t.updated(now);
+  window._fwUpdated=true;
+  window._fwUpdatedAt=now;   // so a language switch can re-render it correctly
 }
 
 //=================== farm chips + list ===================
@@ -1500,7 +1510,10 @@ function applyLang(){
     ? `给管理员：把农场名单部署到 GitHub。机器人用户名设在代码顶部的 <code>CFG.TG_BOT</code>，协调员名单设在 <code>CFG.COORDINATORS</code>。完整部署步骤见随附的 README 与 bot 程序。`
     : `For the admin: deploy the roster to GitHub. Set the bot username in <code>CFG.TG_BOT</code> and the coordinator list in <code>CFG.COORDINATORS</code> at the top of the code. Full deploy steps are in the bundled README and bot script.`;
   updateConnStatus();
-  if(!window._fwUpdated)document.getElementById("updated").textContent=t.never;
+  // keep the footer in the newly selected language: re-render the stored time
+  // if we have one, otherwise show the "never" label
+  document.getElementById("updated").textContent =
+    window._fwUpdated ? t.updated(window._fwUpdatedAt || "") : t.never;
 }
 
 //=================== bind ===================
