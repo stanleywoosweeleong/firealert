@@ -1,6 +1,6 @@
 /* FireWatch service worker — offline app shell caching.
    Bump CACHE when you deploy a new index.html so users get the update. */
-const CACHE = "firewatch-v10";
+const CACHE = "firewatch-v6";   // bumped 2026-08-07 for build 2026-08-07g
 
 // Files that make up the offline app shell.
 const SHELL = [

@@ -464,6 +464,10 @@
 <script>
 //=================== CONFIG ===================
 // Set these to YOUR bot + admin once. Farmers never edit these.
+// Build marker. Shown in the footer so you can tell at a glance whether the
+// phone is running the file you just deployed or a stale cached copy.
+const BUILD = "2026-08-07g";
+
 const CFG = {
   TG_BOT: "FireAlertMalaysiaBot",          // <-- your Telegram bot username (no @)
   REGISTER_URL: "https://firewatch-bot.standphoto.workers.dev/register",                    // <-- your Worker URL, e.g. "https://firewatch-bot.xxx.workers.dev/register" (leave "" to skip)
@@ -1507,7 +1511,7 @@ function applyLang(){
   S("f-coord",t.coordLabel);document.getElementById("t-coordnote").innerHTML="📍 "+t.coordNote;document.getElementById("t-sleepnote").innerHTML=t.sleepNote;
   S("t-tgbadge",t.tgbadge);S("t-wabadge",t.wabadge);
   S("t-pastetitle",t.pastetitle);S("t-pastehint",t.pastehint);S("pasteAddBtn",t.pasteAdd);
-  S("f-key",t.key);S("saveKeyBtn",t.saveKey);S("t-keytitle",t.keytitle);S("t-keyhint",t.keyhint);S("getKeyLink",t.getKey);S("foot",t.foot);S("t-adv",t.adv);
+  S("f-key",t.key);S("saveKeyBtn",t.saveKey);S("t-keytitle",t.keytitle);S("t-keyhint",t.keyhint);S("getKeyLink",t.getKey);S("foot",t.foot+" · build "+BUILD);S("t-adv",t.adv);
   S("t-keySavedOk",t.keySavedOk);S("changeKeyBtn",t.changeKey);
   document.getElementById("adv-body").innerHTML = lang==="zh"
     ? `给管理员：把农场名单部署到 GitHub。机器人用户名设在代码顶部的 <code>CFG.TG_BOT</code>，协调员名单设在 <code>CFG.COORDINATORS</code>。完整部署步骤见随附的 README 与 bot 程序。`
