@@ -871,6 +871,85 @@ function bearingDeg(la1,lo1,la2,lo2){const p=Math.PI/180;
   return (Math.atan2(y,x)*180/Math.PI+360)%360;}
 function dir8(deg){return ["N","NE","E","SE","S","SW","W","NW"][Math.round(deg/45)%8];}
 function bearing(la1,lo1,la2,lo2){return dir8(bearingDeg(la1,lo1,la2,lo2));}
+
+/* ===== NASA FIRMS multi-satellite layer ====================================
+   We used to query VIIRS_SNPP_NRT alone. A valid CSV with ZERO rows is a
+   successful response, so whenever the aging S-NPP NRT feed had a gap the app
+   showed a green SAFE banner while fires were burning. That is how SUHU missed
+   a firespot. Fix: query every sensor, take the UNION, and fail loudly.
+   =========================================================================== */
+// NOAA-20 (JPSS-1) most reliable, S-NPP oldest/gappy, NOAA-21 (JPSS-2) newest.
+// MODIS_NRT (Terra/Aqua) is coarser (1km vs 375m) but overpasses ~10:30 local
+// instead of ~13:30 -- the only source here that sees a different time of day.
+const FIRMS_SRCS=["VIIRS_NOAA20_NRT","VIIRS_SNPP_NRT","VIIRS_NOAA21_NRT","MODIS_NRT"];
+const FIRMS_DAYS=2;         // 48h window absorbs overpass timing + NRT latency
+const FIRMS_MAX_AGE_H=30;   // ...but only show detections this fresh
+let lastPartial=false;      // true when >=1 sensor failed this load
+
+function firmsMins(t){t=String(t==null?"":t).padStart(4,"0");
+  return parseInt(t.slice(0,2),10)*60+parseInt(t.slice(2,4),10);}
+function firmsAgeH(date,time){
+  if(!date) return 0;
+  const t=String(time==null?"":time).padStart(4,"0");
+  const ms=Date.parse(date+"T"+t.slice(0,2)+":"+t.slice(2,4)+":00Z");
+  return isNaN(ms)?0:(Date.now()-ms)/3600000;}
+
+// Fetch ONE sensor. A body with no latitude column is an ERROR (bad key, rate
+// limit, HTML error page) -- never silently reinterpreted as "no fires".
+async function firmsFetchOne(key,src,box){
+  const url=`https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/${src}/${box}/${FIRMS_DAYS}`;
+  const txt=await fetch(url).then(r=>r.text());
+  const head=txt.slice(0,200);
+  if(!/latitude/i.test(head))
+    throw new Error(head.replace(/\s+/g," ").trim().slice(0,90)||"empty response");
+  const lines=txt.trim().split(/\r?\n/).filter(l=>l.length), hdr=lines[0].split(",");
+  const iLa=hdr.indexOf("latitude"),iLo=hdr.indexOf("longitude"),
+        iD=hdr.indexOf("acq_date"),iT=hdr.indexOf("acq_time"),
+        iFrp=hdr.indexOf("frp"),iConf=hdr.indexOf("confidence");
+  const sat=src.replace("VIIRS_","").replace("_NRT","");
+  const rows=[];
+  for(let i=1;i<lines.length;i++){
+    const c=lines[i].split(",");
+    const la=parseFloat(c[iLa]),lo=parseFloat(c[iLo]);
+    if(isNaN(la)||isNaN(lo))continue;
+    const frp=iFrp>=0?parseFloat(c[iFrp]):NaN;
+    rows.push({la,lo,date:iD>=0?(c[iD]||""):"",time:iT>=0?(c[iT]||""):"",
+      frp:isNaN(frp)?null:frp,conf:iConf>=0?(c[iConf]||"").trim():"",sat});
+  }
+  return rows;
+}
+
+// SUHU keeps the highest COUNT across sensors -- right for a regional number.
+// Here we list individual hotspots, so we need the UNION: a max would discard a
+// fire only NOAA-21 saw. Same date + within 45min + within 1km => one hotspot.
+function firmsMerge(all){
+  const out=[];
+  for(const h of all){
+    let dup=null;
+    for(const o of out){
+      if(o.date!==h.date)continue;
+      if(Math.abs(firmsMins(o.time)-firmsMins(h.time))>45)continue;
+      if(dist(o.la,o.lo,h.la,h.lo)<=1.0){dup=o;break;}
+    }
+    if(dup){ if(dup.sat.indexOf(h.sat)<0)dup.sat+="/"+h.sat;
+             if(h.frp!=null&&(dup.frp==null||h.frp>dup.frp))dup.frp=h.frp; }
+    else out.push(Object.assign({},h));
+  }
+  return out;
+}
+
+// Query every sensor in parallel. Throws ONLY if all of them fail, so one
+// bird's outage can no longer turn a burning perimeter into an all-clear.
+async function firmsFetchAll(key,box){
+  const settled=await Promise.allSettled(FIRMS_SRCS.map(s=>firmsFetchOne(key,s,box)));
+  const ok=[],failed=[];
+  settled.forEach((r,i)=>{ if(r.status==="fulfilled")ok.push(r.value);
+    else failed.push(FIRMS_SRCS[i]+": "+((r.reason&&r.reason.message)||"failed")); });
+  if(!ok.length) throw new Error(failed[0]||"FIRMS unavailable");
+  const rows=firmsMerge([].concat.apply([],ok))
+    .filter(h=>firmsAgeH(h.date,h.time)<=FIRMS_MAX_AGE_H);
+  return {rows, partial:failed.length>0, failNote:failed.join(" | ")};
+}
 // is a fire (at bearing brDeg from the farm) upwind, i.e. wind carries it toward the farm?
 // windFrom = direction wind blows FROM. Fire is a threat if it sits in the
 // direction the wind comes from, i.e. brDeg ~ windFrom (within +-50 deg).
@@ -974,27 +1053,21 @@ async function fetchFarmStatus(farm, key){
     try{
       const buf=(farm.rad+10)/111;
       const box=`${(farm.lon-buf).toFixed(3)},${(farm.lat-buf).toFixed(3)},${(farm.lon+buf).toFixed(3)},${(farm.lat+buf).toFixed(3)}`;
-      const txt=await fetch(`https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/VIIRS_SNPP_NRT/${box}/1`).then(r=>r.text());
-      if(!/invalid|error/i.test(txt.slice(0,60))){
-        out.ok=true;
-        const lines=txt.trim().split("\n"), hdr=lines[0].split(",");
-        const iLa=hdr.indexOf("latitude"),iLo=hdr.indexOf("longitude"),iFrp=hdr.indexOf("frp");
-        let worst="LOW", best=null;
-        for(let i=1;i<lines.length;i++){const c=lines[i].split(",");
-          const la=parseFloat(c[iLa]),lo=parseFloat(c[iLo]); if(isNaN(la)||isNaN(lo))continue;
-          const d=dist(farm.lat,farm.lon,la,lo);
-          if(d<=farm.rad){
-            const brDeg=bearingDeg(farm.lat,farm.lon,la,lo);
-            const frp=iFrp>=0?parseFloat(c[iFrp]):NaN;
-            const toward=out.wdir!=null?windToward(brDeg,out.wdir):false;
-            const rk=riskOf(d,frp,toward,out.hum,out.dsr);
-            if(["LOW","MEDIUM","HIGH","CRITICAL"].indexOf(rk)>["LOW","MEDIUM","HIGH","CRITICAL"].indexOf(worst)) worst=rk;
-            if(best===null||d<best) best=d;
-          }
+      const res=await firmsFetchAll(key,box);
+      out.ok=true; out.partial=res.partial;
+      let worst="LOW", best=null;
+      for(const h of res.rows){
+        const d=dist(farm.lat,farm.lon,h.la,h.lo);
+        if(d<=farm.rad){
+          const brDeg=bearingDeg(farm.lat,farm.lon,h.la,h.lo);
+          const toward=out.wdir!=null?windToward(brDeg,out.wdir):false;
+          const rk=riskOf(d,h.frp,toward,out.hum,out.dsr);
+          if(["LOW","MEDIUM","HIGH","CRITICAL"].indexOf(rk)>["LOW","MEDIUM","HIGH","CRITICAL"].indexOf(worst)) worst=rk;
+          if(best===null||d<best) best=d;
         }
-        out.rk=worst; out.nearest=best;
       }
-    }catch(e){}
+      out.rk=worst; out.nearest=best;
+    }catch(e){ out.err=String(e&&e.message||e).slice(0,90); }
   }
   return out;
 }
@@ -1068,31 +1141,24 @@ async function loadData(){
   }
   const buf=(farm.rad+10)/111;
   const box=`${(farm.lon-buf).toFixed(3)},${(farm.lat-buf).toFixed(3)},${(farm.lon+buf).toFixed(3)},${(farm.lat+buf).toFixed(3)}`;
-  const url=`https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/VIIRS_SNPP_NRT/${box}/1`;
   try{
-    const txt=await fetch(url).then(r=>r.text());
-    if(/invalid|error/i.test(txt.slice(0,60))) throw new Error(txt.slice(0,80));
+    const res=await firmsFetchAll(key,box);
+    lastPartial=res.partial;
 
     // weather already loaded via loadWeather(); reuse lastWind for risk + toward
     const wind=lastWind;
     const hum = wind?wind.hum:null;
     const dsr = wind?wind.dsr:null;
 
-    const lines=txt.trim().split("\n"), hdr=lines[0].split(",");
-    const iLa=hdr.indexOf("latitude"),iLo=hdr.indexOf("longitude"),iD=hdr.indexOf("acq_date"),iT=hdr.indexOf("acq_time");
-    const iFrp=hdr.indexOf("frp"),iConf=hdr.indexOf("confidence");
     const hits=[];
-    for(let i=1;i<lines.length;i++){const c=lines[i].split(",");
-      const la=parseFloat(c[iLa]),lo=parseFloat(c[iLo]);if(isNaN(la)||isNaN(lo))continue;
-      const d=dist(farm.lat,farm.lon,la,lo);
+    for(const h of res.rows){
+      const d=dist(farm.lat,farm.lon,h.la,h.lo);
       if(d<=farm.rad){
-        const brDeg=bearingDeg(farm.lat,farm.lon,la,lo);
-        const frp=iFrp>=0?parseFloat(c[iFrp]):NaN;
-        const conf=iConf>=0?(c[iConf]||"").trim():"";
+        const brDeg=bearingDeg(farm.lat,farm.lon,h.la,h.lo);
         const toward=wind?windToward(brDeg,wind.dir):false;
-        hits.push({la,lo,d,br:dir8(brDeg),date:c[iD]||"",time:c[iT]||"",
-          frp:isNaN(frp)?null:frp, conf, toward,
-          rk:riskOf(d,frp,toward,hum,dsr)});
+        hits.push({la:h.la,lo:h.lo,d,br:dir8(brDeg),date:h.date,time:h.time,
+          frp:h.frp, conf:h.conf, sat:h.sat, toward,
+          rk:riskOf(d,h.frp,toward,hum,dsr)});
       }}
     hits.sort((a,b)=>a.d-b.d);lastData=hits;render(hits);
   }catch(err){
@@ -1132,7 +1198,7 @@ function render(hits){
   list.innerHTML=hits.slice(0,12).map(h=>{
     const frpTxt = h.frp!=null ? `<span class="frp">· ${t.intensity}: ${fmtFrp(h.frp,t)}</span>` : "";
     const towardTag = h.toward ? `<div class="toward-tag">⚠️ ${t.towardFarm}</div>` : "";
-    return `<div class="hs"><div class="dot" style="color:${RK_COLOR[h.rk]}"></div><div class="info"><div class="t">${h.d.toFixed(1)} ${t.km} · ${t.dir[h.br]} ${frpTxt}</div><div class="d">${h.date} ${fmtTime(h.time)} UTC · ${h.la.toFixed(3)}, ${h.lo.toFixed(3)}</div>${towardTag}</div><div class="rk" style="background:${RK_COLOR[h.rk]}22;color:${RK_COLOR[h.rk]}">${t.rk[h.rk]}</div></div>`;
+    return `<div class="hs"><div class="dot" style="color:${RK_COLOR[h.rk]}"></div><div class="info"><div class="t">${h.d.toFixed(1)} ${t.km} · ${t.dir[h.br]} ${frpTxt}</div><div class="d">${h.date} ${fmtTime(h.time)} UTC · ${h.la.toFixed(3)}, ${h.lo.toFixed(3)}${h.sat?" · "+h.sat:""}</div>${towardTag}</div><div class="rk" style="background:${RK_COLOR[h.rk]}22;color:${RK_COLOR[h.rk]}">${t.rk[h.rk]}</div></div>`;
   }).join("");
   const now=new Date().toLocaleTimeString(lang==="zh"?"zh-CN":"en-GB",{hour:"2-digit",minute:"2-digit"});
   document.getElementById("updated").textContent=t.updated(now);window._fwUpdated=true;
