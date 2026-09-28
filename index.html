@@ -386,9 +386,6 @@
   <!-- ============ ALERTS ============ -->
   <div class="view" id="v-alerts">
     <div class="status no" id="connStatus"><span class="ic"></span><span id="connTxt">尚未连接 Telegram</span></div>
-    <p id="registrationNote" style="font-size:.85rem;color:var(--ink2)"></p>
-    <button class="btn" id="syncRegistrationBtn" type="button">Sync &amp; check status</button>
-    <button class="btn" id="accessCodeBtn" type="button">Update access code</button>
 
     <div class="panel primary">
       <span class="badge" id="t-tgbadge">推荐 · 自动</span>
@@ -469,7 +466,7 @@
 // Set these to YOUR bot + admin once. Farmers never edit these.
 // Build marker. Shown in the footer so you can tell at a glance whether the
 // phone is running the file you just deployed or a stale cached copy.
-const BUILD = "2026-09-28-security-1";
+const BUILD = "2026-08-07g";
 
 const CFG = {
   TG_BOT: "FireAlertMalaysiaBot",          // <-- your Telegram bot username (no @)
@@ -836,8 +833,7 @@ let editingId = null;                          // id of farm being edited (null 
 // give every farm a stable id (older saved farms won't have one)
 function fid(){ return "f"+Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 let _farmsChanged=false;
-const existingFarmIds=new Set();
-farms.forEach(f=>{ if(!/^[\w-]{1,32}$/.test(f.id||'')||existingFarmIds.has(f.id)){ f.id=fid(); _farmsChanged=true; } existingFarmIds.add(f.id); });
+farms.forEach(f=>{ if(!f.id){ f.id=fid(); _farmsChanged=true; } });
 if(_farmsChanged) lset("farms",farms);
 
 // Normalize a Malaysian-style mobile number into international digits (e.g. 60193824740).
@@ -891,25 +887,22 @@ function bearing(la1,lo1,la2,lo2){return dir8(bearingDeg(la1,lo1,la2,lo2));}
 // instead of ~13:30 -- the only source here that sees a different time of day.
 const FIRMS_SRCS=["VIIRS_NOAA20_NRT","VIIRS_SNPP_NRT","VIIRS_NOAA21_NRT","MODIS_NRT"];
 const FIRMS_DAYS=2;         // 48h window absorbs overpass timing + NRT latency
-const FIRMS_MAX_AGE_H=26;   // ...but only show detections this fresh
+const FIRMS_MAX_AGE_H=30;   // ...but only show detections this fresh
 let lastPartial=false;      // true when >=1 sensor failed this load
 
 function firmsMins(t){t=String(t==null?"":t).padStart(4,"0");
   return parseInt(t.slice(0,2),10)*60+parseInt(t.slice(2,4),10);}
 function firmsAgeH(date,time){
- if(!/^\d{1,4}$/.test(String(time??'')))return Infinity;
- const t=String(time??'').padStart(4,'0');
- if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{4}$/.test(t))return Infinity;
- const iso=date+'T'+t.slice(0,2)+':'+t.slice(2,4)+':00Z',ms=Date.parse(iso);
- if(!Number.isFinite(ms)||new Date(ms).toISOString().slice(0,16)!==iso.slice(0,16))return Infinity;
- return (Date.now()-ms)/3600000;
-}
+  if(!date) return 0;
+  const t=String(time==null?"":time).padStart(4,"0");
+  const ms=Date.parse(date+"T"+t.slice(0,2)+":"+t.slice(2,4)+":00Z");
+  return isNaN(ms)?0:(Date.now()-ms)/3600000;}
 
 // Fetch ONE sensor. A body with no latitude column is an ERROR (bad key, rate
 // limit, HTML error page) -- never silently reinterpreted as "no fires".
 async function firmsFetchOne(key,src,box){
   const url=`https://firms.modaps.eosdis.nasa.gov/api/area/csv/${key}/${src}/${box}/${FIRMS_DAYS}`;
-  const txt=await timedFetch(url).then(r=>r.text());
+  const txt=await fetch(url).then(r=>r.text());
   const head=txt.slice(0,200);
   if(!/latitude/i.test(head))
     throw new Error(head.replace(/\s+/g," ").trim().slice(0,90)||"empty response");
@@ -917,17 +910,15 @@ async function firmsFetchOne(key,src,box){
   const iLa=hdr.indexOf("latitude"),iLo=hdr.indexOf("longitude"),
         iD=hdr.indexOf("acq_date"),iT=hdr.indexOf("acq_time"),
         iFrp=hdr.indexOf("frp"),iConf=hdr.indexOf("confidence");
-  if([iLa,iLo,iD,iT,iFrp].some(i=>i<0))throw Error('Invalid FIRMS CSV schema');
   const sat=src.replace("VIIRS_","").replace("_NRT","");
   const rows=[];
   for(let i=1;i<lines.length;i++){
     const c=lines[i].split(",");
     const la=parseFloat(c[iLa]),lo=parseFloat(c[iLo]);
-    if(!Number.isFinite(la)||!Number.isFinite(lo)||Math.abs(la)>90||Math.abs(lo)>180)throw Error('Invalid FIRMS coordinates');
-    const age=firmsAgeH(c[iD],c[iT]);if(!Number.isFinite(age)||age<-.25)throw Error('Invalid FIRMS timestamp');
+    if(isNaN(la)||isNaN(lo))continue;
     const frp=iFrp>=0?parseFloat(c[iFrp]):NaN;
     rows.push({la,lo,date:iD>=0?(c[iD]||""):"",time:iT>=0?(c[iT]||""):"",
-      frp:!Number.isFinite(frp)||frp<0?null:frp,conf:iConf>=0?(c[iConf]||"").trim():"",sat});
+      frp:isNaN(frp)?null:frp,conf:iConf>=0?(c[iConf]||"").trim():"",sat});
   }
   return rows;
 }
@@ -960,14 +951,13 @@ async function firmsFetchAll(key,box){
     else failed.push(FIRMS_SRCS[i]+": "+((r.reason&&r.reason.message)||"failed")); });
   if(!ok.length) throw new Error(failed[0]||"FIRMS unavailable");
   const rows=firmsMerge([].concat.apply([],ok))
-    .filter(h=>{const age=firmsAgeH(h.date,h.time);return age>=-.25&&age<=FIRMS_MAX_AGE_H;});
+    .filter(h=>firmsAgeH(h.date,h.time)<=FIRMS_MAX_AGE_H);
   return {rows, partial:failed.length>0, failNote:failed.join(" | ")};
 }
 // is a fire (at bearing brDeg from the farm) upwind, i.e. wind carries it toward the farm?
 // windFrom = direction wind blows FROM. Fire is a threat if it sits in the
 // direction the wind comes from, i.e. brDeg ~ windFrom (within +-50 deg).
 function windToward(brDeg,windFrom){
-  if(windFrom==null||!Number.isFinite(windFrom))return false;
   // angular difference between the fire's bearing and the wind's origin direction
   let diff=Math.abs(((brDeg-windFrom+540)%360)-180);  // 0 = perfectly upwind
   return diff<=50;  // fire sits within 50 deg of "directly upwind" -> wind carries it toward farm
@@ -987,63 +977,6 @@ function riskOf(d,frp,toward,hum,dsr){
 }
 const RK_COLOR={CRITICAL:"var(--crit)",HIGH:"var(--high)",MEDIUM:"var(--med)",LOW:"var(--low)"};
 
-
-// Security and freshness helpers shared by all UI paths.
-function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-async function timedFetch(url,options={}){
-  const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),20000);
-  try {const r=await fetch(url,{...options,signal:controller.signal}); if(!r.ok){const e=Error(`HTTP ${r.status}`);e.status=r.status;throw e;} const body=await r.arrayBuffer();return new Response(body,{status:r.status,headers:r.headers});}
-  finally {clearTimeout(timer);}
-}
-const STATE_TEXT={
- en:{unknown:'Monitoring unavailable',partial:'Partial satellite coverage',none:'No recent satellite detections',pending:'Registration pending',saved:'Farms synced; Telegram not linked',linked:'Farms synced; Telegram linked',failed:'Sync failed — retry under Alerts',code:'Enter the access code issued by your FireWatch operator',noKey:'Live view needs a NASA key. Registration status is shown under Alerts; this screen does not confirm server monitoring.',weather:'Weather unavailable or stale'},
- zh:{unknown:'监测数据不可用',partial:'卫星数据不完整',none:'未发现近期卫星火点',pending:'登记尚未确认',saved:'农场已同步，Telegram 尚未连接',linked:'农场已同步，Telegram 已连接',failed:'同步失败，请到通知页重试',code:'请输入管理员提供的 FireWatch 登记码',noKey:'实时地图需要 NASA 密钥。请在通知页查看登记状态；此页面不能确认服务器监测正常。',weather:'天气数据不可用或已过期'},
- ms:{unknown:'Pemantauan tidak tersedia',partial:'Liputan satelit separa',none:'Tiada pengesanan satelit terkini',pending:'Pendaftaran belum disahkan',saved:'Ladang disegerakkan; Telegram belum dipaut',linked:'Ladang disegerakkan; Telegram dipaut',failed:'Penyegerakan gagal — cuba di Amaran',code:'Masukkan kod akses daripada pengendali FireWatch',noKey:'Paparan langsung memerlukan kunci NASA. Semak status di Amaran; paparan ini tidak mengesahkan pemantauan pelayan.',weather:'Cuaca tidak tersedia atau lapuk'},
- ta:{unknown:'கண்காணிப்பு கிடைக்கவில்லை',partial:'பகுதி செயற்கைக்கோள் தரவு',none:'சமீபத்திய செயற்கைக்கோள் தீ கண்டறிதல்கள் இல்லை',pending:'பதிவு உறுதிப்படுத்தப்படவில்லை',saved:'பண்ணைகள் ஒத்திசைக்கப்பட்டன; Telegram இணைக்கப்படவில்லை',linked:'பண்ணைகள் ஒத்திசைக்கப்பட்டன; Telegram இணைக்கப்பட்டது',failed:'ஒத்திசைவு தோல்வி — மீண்டும் முயற்சிக்கவும்',code:'FireWatch நிர்வாகி வழங்கிய அணுகல் குறியீட்டை உள்ளிடவும்',noKey:'நேரடி காட்சிக்கு NASA விசை தேவை. அறிவிப்புகளில் பதிவு நிலையைப் பார்க்கவும்; இது சேவையக கண்காணிப்பை உறுதிப்படுத்தாது.',weather:'வானிலை கிடைக்கவில்லை அல்லது காலாவதியானது'}
-};
-function st(){return STATE_TEXT[lang]||STATE_TEXT.en;}
-const SETUP_TEXT={
- en:{sync:'Sync & check status',code:'Update access code',note:'Ask your operator for a private access code. Saving farms on this phone does not confirm server monitoring. WhatsApp relay requires a person to forward each alert.',step:'Enter your access code, open Telegram and press Start. Return here to check the connection.',done:'Check the status above. Satellite observations and message delivery can be delayed.',help:'Monitoring limits',body:'A registered farm can receive alerts only when the scheduled check, satellite data and delivery channel work. No detections does not prove there is no fire. Partial coverage and unavailable weather are shown explicitly. Contact your operator if registration cannot be confirmed.'},
- zh:{sync:'同步并检查状态',code:'更新登记码',note:'请向管理员索取私人登记码。农场保存在手机上不代表服务器监测已正常运行。WhatsApp 通知需要协调员手动转发。',step:'输入登记码，打开 Telegram 并按 Start。返回此页检查连接。',done:'请检查上方状态。卫星观测和消息送达可能有延迟。',help:'监测限制',body:'自动通知依赖定时检查、卫星数据和消息通道正常运行。没有检测到火点不代表没有火灾。数据不完整或天气不可用时会明确标示。无法确认登记时请联系管理员。'},
- ms:{sync:'Segerak & semak status',code:'Kemas kini kod akses',note:'Minta kod akses peribadi daripada pengendali. Menyimpan ladang pada telefon tidak mengesahkan pemantauan pelayan. Amaran WhatsApp perlu dimajukan oleh penyelaras.',step:'Masukkan kod akses, buka Telegram dan tekan Start. Kembali untuk menyemak sambungan.',done:'Semak status di atas. Pemerhatian satelit dan penghantaran mesej boleh lewat.',help:'Had pemantauan',body:'Amaran bergantung pada semakan berjadual, data satelit dan saluran penghantaran. Tiada pengesanan tidak membuktikan tiada kebakaran. Liputan separa dan cuaca tidak tersedia dinyatakan. Hubungi pengendali jika pendaftaran tidak dapat disahkan.'},
- ta:{sync:'ஒத்திசைத்து நிலையைச் சரிபார்க்கவும்',code:'அணுகல் குறியீட்டை மாற்றவும்',note:'நிர்வாகியிடம் தனிப்பட்ட அணுகல் குறியீட்டைக் கேட்கவும். தொலைபேசியில் சேமிப்பது சேவையக கண்காணிப்பை உறுதிப்படுத்தாது. WhatsApp எச்சரிக்கைகளை ஒருவர் அனுப்ப வேண்டும்.',step:'அணுகல் குறியீட்டை உள்ளிட்டு Telegram-இல் Start அழுத்தவும். திரும்பி வந்து இணைப்பைச் சரிபார்க்கவும்.',done:'மேலுள்ள நிலையைச் சரிபார்க்கவும். செயற்கைக்கோள் தரவும் செய்திகளும் தாமதமாகலாம்.',help:'கண்காணிப்பு வரம்புகள்',body:'எச்சரிக்கைகளுக்கு திட்டமிட்ட சோதனை, செயற்கைக்கோள் தரவு மற்றும் செய்தி சேவை தேவை. கண்டறிதல் இல்லாதது தீ இல்லை என்பதற்கான ஆதாரம் அல்ல. பகுதி தரவும் கிடைக்காத வானிலையும் காட்டப்படும். பதிவு உறுதியாகாவிட்டால் நிர்வாகியைத் தொடர்பு கொள்ளவும்.'}
-};
-function farmValid(f){return f.name&&f.name.length<=60&&[f.lat,f.lon,f.rad].every(Number.isFinite)&&Math.abs(f.lat)<=90&&Math.abs(f.lon)<=180&&f.rad>=1&&f.rad<=100;}
-function farmBox(farm){const b=(farm.rad+10)/111,lb=Math.min(180,b/Math.max(.01,Math.cos(farm.lat*Math.PI/180)));let w=farm.lon-lb,e=farm.lon+lb;if(w< -180||e>180){w=-180;e=180;}return [w,Math.max(-90,farm.lat-b),e,Math.min(90,farm.lat+b)].map(v=>v.toFixed(3)).join(',');}
-function dryDays(daily,today){
- const dates=daily?.time||[],rain=daily?.precipitation_sum||[]; if(dates.length!==rain.length)return null;
- const values=new Map(dates.map((d,i)=>[d,rain[i]])); let count=0;
- for(let n=1;n<=7;n++){const day=new Date(Date.parse(today+'T00:00:00Z')-n*86400000).toISOString().slice(0,10),v=values.get(day);
-  if(typeof v!=='number'||!Number.isFinite(v)||v<0)return null;if(v>=1)return count;count++;}return count;
-}
-async function weatherFor(farm){
- try{
-  const url=`https://api.open-meteo.com/v1/forecast?latitude=${farm.lat}&longitude=${farm.lon}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,relative_humidity_2m&daily=precipitation_sum&past_days=7&forecast_days=1&wind_speed_unit=kmh&timezone=GMT`;
-  const data=await timedFetch(url).then(r=>r.json()),c=data.current;
-  const age=(Date.now()-Date.parse(c?.time+'Z'))/3600000;
-  if(!Number.isFinite(age)||age<-.25||age>2)return null;
-  const number=(k,min,max)=>typeof c[k]==='number'&&Number.isFinite(c[k])&&c[k]>=min&&c[k]<=max?c[k]:null;
-  return {spd:number('wind_speed_10m',0,500),dir:number('wind_direction_10m',0,360),gust:number('wind_gusts_10m',0,500),hum:number('relative_humidity_2m',0,100),dsr:dryDays(data.daily,c.time.slice(0,10)),time:c.time};
- }catch{return null;}
-}
-let loadGeneration=0,registrationStatus=null,syncQueue=Promise.resolve(),monitorRequestedAt=0;
-function accessCode(ask=false){const phone=normalizePhone(profile.phone);let code=lget('access_'+phone,'');if(!code&&ask){code=(prompt(st().code)||'').trim();if(code)lset('access_'+phone,code);}return code;}
-async function registrationRequest(path,body){
- const code=lget('access_'+body.phone,'');if(!code)throw Error(st().pending);
- const r=await timedFetch(CFG.REGISTER_URL.replace(/\/register\/?$/,'')+path,{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+code},body:JSON.stringify(body)});
- const data=await r.json();if(data.ok!==true)throw Error(data.error||st().failed);return data;
-}
-function statusChanged(data){registrationStatus=data?{...data,phone:normalizePhone(profile.phone),at:Date.now()}:null;updateConnStatus();}
-async function refreshRegistrationStatus(){
- if(!accessCode())return;
- const phone=normalizePhone(profile.phone),snapshot=JSON.stringify(farms);
- try{const data=await registrationRequest('/status',{phone});
-  if(phone!==normalizePhone(profile.phone)||snapshot!==JSON.stringify(farms))return;
-  const shape=fs=>JSON.stringify(fs.map(f=>[f.id,f.name,f.lat,f.lon,f.rad]));
-  if(shape(data.farms)!==shape(farms))statusChanged(null);else statusChanged(data);
- }catch{if(phone===normalizePhone(profile.phone))statusChanged(null);}
-}
-
 //=================== toast ===================
 let toastT;
 function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");
@@ -1051,8 +984,30 @@ function toast(msg){const el=document.getElementById("toast");el.textContent=msg
 
 //=================== fetch ===================
 // fetch weather independently (no NASA key needed — Open-Meteo is free/keyless)
-async function loadWeather(farm){return weatherFor(farm);}
-
+async function loadWeather(farm){
+  const windUrl=`https://api.open-meteo.com/v1/forecast?latitude=${farm.lat}&longitude=${farm.lon}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,relative_humidity_2m&daily=precipitation_sum&past_days=7&forecast_days=1&windspeed_unit=kmh&timezone=auto`;
+  try{
+    const windRes=await fetch(windUrl).then(r=>r.json());
+    let wind=null;
+    if(windRes && windRes.current){
+      wind={
+        spd:windRes.current.wind_speed_10m,
+        dir:windRes.current.wind_direction_10m,
+        gust:windRes.current.wind_gusts_10m,
+        hum:windRes.current.relative_humidity_2m
+      };
+      let dsr=null;
+      if(windRes.daily && Array.isArray(windRes.daily.precipitation_sum)){
+        const arr=windRes.daily.precipitation_sum; dsr=0;
+        for(let k=arr.length-1;k>=0;k--){ if(arr[k]!=null && arr[k]>=1){break;} dsr++; }
+        if(dsr>arr.length-1) dsr=arr.length-1;
+      }
+      wind.dsr=dsr;
+    }
+    lastWind=wind;
+  }catch(e){ /* weather optional; leave lastWind as-is */ }
+  renderWeatherCard();
+}
 function renderWeatherCard(){
   const t=I[lang];
   const wc=document.getElementById("windCard");
@@ -1062,12 +1017,11 @@ function renderWeatherCard(){
     // show which farm this weather is for
     const fn=document.getElementById("windFarm");
     if(fn) fn.textContent = (farms[active] && farms[active].name) ? farms[active].name : "";
-    const blowTo=lastWind.dir==null?0:(lastWind.dir+180)%360;
-    document.getElementById("windArrow").style.visibility=lastWind.dir==null?'hidden':'visible';
+    const blowTo=(lastWind.dir+180)%360;
     document.getElementById("windArrow").style.transform=`rotate(${blowTo}deg)`;
     const gust=lastWind.gust!=null?` · ${t.gustLbl} ${Math.round(lastWind.gust)}`:"";
     document.getElementById("windV").innerHTML=
-      `${lastWind.spd==null?'—':Math.round(lastWind.spd)} <small>km/h</small> · ${t.windFrom} ${lastWind.dir==null?'—':t.dir[dir8(lastWind.dir)]}${gust?` <small>${gust}</small>`:""}`;
+      `${Math.round(lastWind.spd)} <small>km/h</small> · ${t.windFrom} ${t.dir[dir8(lastWind.dir)]}${gust?` <small>${gust}</small>`:""}`;
     document.getElementById("t-windk").textContent=t.windk;
     const parts=[];
     if(lastWind.hum!=null) parts.push(`${t.humLbl} ${Math.round(lastWind.hum)}%`);
@@ -1083,12 +1037,26 @@ function renderWeatherCard(){
 // fetch a single farm's fire + weather summary (for the all-farms overview)
 async function fetchFarmStatus(farm, key){
   const out={name:farm.name, rad:farm.rad, rk:"LOW", nearest:null, hum:null, dsr:null, dry:false, ok:false, noKey:!key};
-  const wind=await weatherFor(farm);
-  if(wind){out.hum=wind.hum;out.wdir=wind.dir;out.dsr=wind.dsr;out.dry=(wind.hum!=null&&wind.hum<40)||(wind.dsr!=null&&wind.dsr>=5);}
+  // weather (no key needed)
+  try{
+    const wu=`https://api.open-meteo.com/v1/forecast?latitude=${farm.lat}&longitude=${farm.lon}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,relative_humidity_2m&daily=precipitation_sum&past_days=7&forecast_days=1&windspeed_unit=kmh&timezone=auto`;
+    const wd=await fetch(wu).then(r=>r.json());
+    if(wd&&wd.current){
+      out.hum=wd.current.relative_humidity_2m;
+      out.wdir=wd.current.wind_direction_10m;
+      if(wd.daily&&Array.isArray(wd.daily.precipitation_sum)){
+        const arr=wd.daily.precipitation_sum; let dsr=0;
+        for(let k=arr.length-1;k>=0;k--){ if(arr[k]!=null&&arr[k]>=1){break;} dsr++; }
+        out.dsr=Math.min(dsr,arr.length-1);
+      }
+      out.dry=(out.hum!=null&&out.hum<40)||(out.dsr!=null&&out.dsr>=5);
+    }
+  }catch(e){}
   // fire (needs key)
   if(key){
     try{
-      const box=farmBox(farm);
+      const buf=(farm.rad+10)/111;
+      const box=`${(farm.lon-buf).toFixed(3)},${(farm.lat-buf).toFixed(3)},${(farm.lon+buf).toFixed(3)},${(farm.lat+buf).toFixed(3)}`;
       const res=await firmsFetchAll(key,box);
       out.ok=true; out.partial=res.partial;
       let worst="LOW", best=null;
@@ -1108,8 +1076,7 @@ async function fetchFarmStatus(farm, key){
   return out;
 }
 
-async function loadAllFarmsStatus(generation=loadGeneration){
-  const snapshot=farms.map(f=>({...f}));
+async function loadAllFarmsStatus(){
   const ov=document.getElementById("overview");
   if(!ov) return;
   if(farms.length<2){ ov.style.display="none"; return; }   // only show for 2+ farms
@@ -1118,25 +1085,23 @@ async function loadAllFarmsStatus(generation=loadGeneration){
   document.getElementById("t-overviewH").textContent=t.overviewH;
   const list=document.getElementById("overviewList");
   // initial skeleton
-  list.innerHTML=farms.map((f,i)=>`<button class="ovrow ${i===active?'sel':''}" data-i="${i}"><span class="ov-dot" style="background:var(--ink3)"></span><span class="ov-mid"><span class="ov-name">${esc(f.name||t.someFarm)}</span><span class="ov-sub">${t.checking}</span></span><span class="ov-arrow">›</span></button>`).join("");
+  list.innerHTML=farms.map((f,i)=>`<button class="ovrow ${i===active?'sel':''}" data-i="${i}"><span class="ov-dot" style="background:var(--ink3)"></span><span class="ov-mid"><span class="ov-name">${f.name||t.someFarm}</span><span class="ov-sub">${t.checking}</span></span><span class="ov-arrow">›</span></button>`).join("");
   bindOverviewRows();
   // fetch all in parallel
-  const results=await Promise.all(snapshot.map(f=>fetchFarmStatus(f,key)));
-  if(generation!==loadGeneration)return;
+  const results=await Promise.all(farms.map(f=>fetchFarmStatus(f,key)));
   list.innerHTML=results.map((s,i)=>{
     const color=RK_COLOR[s.rk]||"var(--low)";
     const rkLabel=t.rk[s.rk]||s.rk;
     const subBits=[];
     if(s.nearest!=null) subBits.push(`${s.nearest.toFixed(1)} ${t.km}`);
-    else if(key) subBits.push(s.ok?st().none:st().unknown);
-    if(s.partial)subBits.push(st().partial);
+    else if(key) subBits.push(t.ovSafe);
     else subBits.push(t.ovNoKey);
     if(s.hum!=null) subBits.push(`${t.humLbl} ${Math.round(s.hum)}%`);
     if(s.dry) subBits.push(`<span class="dry">⚠️ ${t.dryWarn}</span>`);
     const showRk = key && s.ok;
     return `<button class="ovrow ${i===active?'sel':''}" data-i="${i}">`+
       `<span class="ov-dot" style="background:${showRk?color:'var(--ink3)'}"></span>`+
-      `<span class="ov-mid"><span class="ov-name">${esc(s.name||t.someFarm)}</span>`+
+      `<span class="ov-mid"><span class="ov-name">${s.name||t.someFarm}</span>`+
       `<span class="ov-sub">${subBits.join(" · ")}</span></span>`+
       (showRk?`<span class="ov-rk" style="background:${color}22;color:${color}">${rkLabel}</span>`:"")+
       `<span class="ov-arrow">›</span></button>`;
@@ -1151,46 +1116,61 @@ function bindOverviewRows(){
 }
 
 async function loadData(){
- monitorRequestedAt=Date.now();
- const generation=++loadGeneration,t=I[lang],key=lget("key","");
- lastWind=null;lastData=[];lastPartial=false;
- document.getElementById('bombaCard').style.display='none';
- document.getElementById('updated').textContent='—';
- if(!farms.length){
-  setBanner('med',st().pending,esc(t.noFarms));document.getElementById('hslist').textContent=t.noFarms;
-  document.getElementById('windCard').style.display='none';document.getElementById('overview').style.display='none';
-  document.getElementById('s1v').textContent='—';document.getElementById('s2v').textContent='—';return;
- }
- const farm={...farms[active]};
- setBanner('med',t.checking,esc(t.reading));
- document.getElementById('hslist').textContent=t.checking;
- document.getElementById('s1v').textContent='—';document.getElementById('s2v').textContent=farm.rad+' '+t.km;
- document.getElementById('windCard').style.display='none';
- loadAllFarmsStatus(generation);
- const weather=weatherFor(farm);
- if(!key){
-  const wind=await weather;if(generation!==loadGeneration)return;lastWind=wind;renderWeatherCard();
-  setBanner('med',st().unknown,esc(st().noKey));document.getElementById('hslist').textContent=st().noKey;return;
- }
- try{
-  const [res,wind]=await Promise.all([firmsFetchAll(key,farmBox(farm)),weather]);
-  if(generation!==loadGeneration)return;
-  lastWind=wind;lastPartial=res.partial;
-  const hits=[];
-  for(const h of res.rows){const d=dist(farm.lat,farm.lon,h.la,h.lo);if(d>farm.rad)continue;
-   const brDeg=bearingDeg(farm.lat,farm.lon,h.la,h.lo),toward=windToward(brDeg,wind?.dir);
-   hits.push({...h,d,br:dir8(brDeg),toward,rk:riskOf(d,h.frp,toward,wind?.hum,wind?.dsr)});
+  const t=I[lang], key=lget("key","");
+  if(!farms.length){
+    setBanner("safe",t.safeBig,t.noFarms);
+    document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🌾</div>${t.noFarms}</div>`;
+    document.getElementById("s1v").textContent="—";document.getElementById("s2v").textContent="—";
+    const wc=document.getElementById("windCard");if(wc)wc.style.display="none";
+    const ov=document.getElementById("overview");if(ov)ov.style.display="none";
+    return;
   }
-  hits.sort((a,b)=>a.d-b.d);lastData=hits;render(hits);
-  if(!hits.length)setBanner(res.partial?'med':'safe',res.partial?st().partial:st().none,esc(st().none));
-  if(res.partial||!wind)document.getElementById('b-sub').textContent=[res.partial?st().partial:'',!wind?st().weather:''].filter(Boolean).join(' · ');
- }catch{
-  if(generation!==loadGeneration)return;
-  lastWind=await weather;if(generation!==loadGeneration)return;renderWeatherCard();
-  setBanner('med',st().unknown,esc(t.err));document.getElementById('hslist').textContent=t.err;
- }
-}
+  const farm=farms[active];
+  setBanner("safe",t.checking,"<span class='spin'></span>"+t.reading);
+  loadAllFarmsStatus();   // refresh the all-farms overview (shows for 2+ farms)
+  // load weather independently — works even without a NASA key, shows dry/wind warning
+  loadWeather(farm);
+  if(!key){
+    // No NASA key: the LIVE in-app hotspot view needs it, but automatic Telegram
+    // alerts (sent by the server-side cron) do NOT. Reassure registered users.
+    const registered = (lget("tg_attempted",false)||lget("wa_registered",false))
+                       && profile.name && profile.phone;
+    if(registered){
+      setBanner("safe",t.keyOkBig,t.keyOkSub);
+    }else{
+      setBanner("med",t.checking,t.errKey);
+    }
+    document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🔑</div><div style="font-size:.85rem;line-height:1.5;color:var(--ink2)">${registered?t.keyOkSub:t.errKey}</div></div>`;
+    document.getElementById("s2v").innerHTML=farm.rad+" <small>"+t.km+"</small>";
+    return;
+  }
+  const buf=(farm.rad+10)/111;
+  const box=`${(farm.lon-buf).toFixed(3)},${(farm.lat-buf).toFixed(3)},${(farm.lon+buf).toFixed(3)},${(farm.lat+buf).toFixed(3)}`;
+  try{
+    const res=await firmsFetchAll(key,box);
+    lastPartial=res.partial;
 
+    // weather already loaded via loadWeather(); reuse lastWind for risk + toward
+    const wind=lastWind;
+    const hum = wind?wind.hum:null;
+    const dsr = wind?wind.dsr:null;
+
+    const hits=[];
+    for(const h of res.rows){
+      const d=dist(farm.lat,farm.lon,h.la,h.lo);
+      if(d<=farm.rad){
+        const brDeg=bearingDeg(farm.lat,farm.lon,h.la,h.lo);
+        const toward=wind?windToward(brDeg,wind.dir):false;
+        hits.push({la:h.la,lo:h.lo,d,br:dir8(brDeg),date:h.date,time:h.time,
+          frp:h.frp, conf:h.conf, sat:h.sat, toward,
+          rk:riskOf(d,h.frp,toward,hum,dsr)});
+      }}
+    hits.sort((a,b)=>a.d-b.d);lastData=hits;render(hits);
+  }catch(err){
+    setBanner("med",t.err,String(err.message||err).slice(0,90));
+    document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">📡</div>${t.err}</div>`;
+  }
+}
 function setBanner(cls,big,sub){const b=document.getElementById("banner");
   b.className="banner b-"+cls;document.getElementById("b-lbl").textContent=I[lang].riskLbl;document.getElementById("b-big").textContent=big;document.getElementById("b-sub").innerHTML=sub;}
 function fmtTime(tm){tm=String(tm).padStart(4,"0");return tm.slice(0,2)+":"+tm.slice(2);}
@@ -1256,7 +1236,7 @@ function renderFarmList(){
     el.innerHTML=`<div class="empty"><div class="e-ico">🌾</div>${t.noFarms}</div>`;
   }else{
     el.innerHTML=farms.map((f,i)=>
-      `<div class="farmrow"><div class="fi"><div class="fn">${esc(f.name)}</div>`+
+      `<div class="farmrow"><div class="fi"><div class="fn">${f.name}</div>`+
       `<div class="fc">${f.lat.toFixed(4)}, ${f.lon.toFixed(4)} · ${f.rad} ${t.km}</div></div>`+
       `<div class="frow-btns">`+
         `<button class="fedit" data-id="${f.id}" aria-label="${t.edit}">✎</button>`+
@@ -1274,7 +1254,7 @@ function renderDeletedList(){
   wrap.style.display="block";
   wrap.innerHTML=`<div class="sect">${t.recentlyDeleted}</div>`+
     deletedFarms.map(f=>
-      `<div class="farmrow farmrow-del"><div class="fi"><div class="fn">${esc(f.name)}</div>`+
+      `<div class="farmrow farmrow-del"><div class="fi"><div class="fn">${f.name}</div>`+
       `<div class="fc">${f.lat.toFixed(4)}, ${f.lon.toFixed(4)} · ${f.rad} ${t.km}</div></div>`+
       `<button class="frestore" data-id="${f.id}">${t.restore}</button></div>`).join("");
   wrap.querySelectorAll(".frestore").forEach(b=>b.onclick=()=>restoreFarm(b.dataset.id));
@@ -1370,46 +1350,42 @@ function useLocation(){
 
 //=================== telegram connect ===================
 // deep link: t.me/<bot>?start=<payload>. Payload encodes phone so the bot links chat id -> farmer.
-async function connectTelegram(){
- const t=I[lang];if(!profile.name||!profile.phone||!farms.length){toast(t.needfarm);return;}
- // Explicit retry lets a user replace a revoked or mistyped code.
- if(!accessCode(true))return;
- const popup=window.open('about:blank','_blank');
- try{
-  await syncRoster(true);
-  const data=await registrationRequest('/link',{phone:normalizePhone(profile.phone)});
-  const url=`https://t.me/${CFG.TG_BOT}?start=${encodeURIComponent(data.start)}`;
-  if(popup)popup.location.href=url;else window.location.href=url;
- }catch(e){if(popup)popup.close();statusChanged(null);toast(st().failed);if(e.status===401)lset('access_'+normalizePhone(profile.phone),'');}
+function connectTelegram(){
+  const t=I[lang];
+  if(!profile.name||!profile.phone){toast(t.needprof);switchView("farms");return;}
+  if(!farms.length){toast(t.needfarm);switchView("farms");return;}
+  const phoneDigits=normalizePhone(profile.phone);
+  // 1) push full registration (profile + farms + language) to the Worker roster
+  if(CFG.REGISTER_URL){
+    fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({phone:phoneDigits,name:profile.name,farms,lang})}).catch(()=>{});
+  }
+  // 2) open Telegram so the Start tap links the chat_id to this phone (carry lang too)
+  const url=`https://t.me/${CFG.TG_BOT}?start=ph_${phoneDigits}_${lang}`;
+  lset("tg_attempted",true);updateConnStatus();
+  window.open(url,"_blank");
 }
-function syncRoster(required=false){
- const snapshot={phone:normalizePhone(profile.phone),name:profile.name,farms:farms.map(f=>({...f})),lang};
- if(!snapshot.phone||!accessCode()){statusChanged(null);return required?Promise.reject(Error(st().pending)):Promise.resolve();}
- statusChanged(null);
- const task=syncQueue.catch(()=>{}).then(async()=>{
-  const data=await registrationRequest('/register',snapshot);
-  if(normalizePhone(profile.phone)===snapshot.phone && JSON.stringify(farms)===JSON.stringify(snapshot.farms))statusChanged({...data,registered:true});
-  return data;
- });
- syncQueue=task;
- if(required)return task;
- return task.catch(()=>{statusChanged(null);toast(st().failed);});
+// Keep the server roster in sync after the user adds/deletes a farm.
+// Only runs if the user has already registered (otherwise there's nothing on the
+// server yet). Re-sends the FULL current farm list, so deletions propagate too.
+function syncRoster(){
+  if(!CFG.REGISTER_URL) return;
+  const registered = (lget("tg_attempted",false)||lget("wa_registered",false))
+                     && profile.name && profile.phone;
+  if(!registered) return;
+  const phoneDigits=normalizePhone(profile.phone);
+  if(!phoneDigits) return;
+  fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({phone:phoneDigits,name:profile.name,farms,lang})}).catch(()=>{});
 }
 function updateConnStatus(){
- const data=registrationStatus,valid=data&&data.phone===normalizePhone(profile.phone)&&Date.now()-data.at<300000;
- const el=document.getElementById('connStatus');el.className='status '+(valid&&data.registered?'ok':'no');
- document.getElementById('connTxt').textContent=valid&&data.registered?(data.connected?st().linked:st().saved):st().pending;
- const setup=SETUP_TEXT[lang]||SETUP_TEXT.en;
- document.getElementById('registrationNote').textContent=setup.note;
- document.getElementById('syncRegistrationBtn').textContent=setup.sync;
- document.getElementById('accessCodeBtn').textContent=setup.code;
- document.getElementById('st2').textContent=setup.step;
- document.getElementById('st3').textContent=setup.done;
+  const t=I[lang],el=document.getElementById("connStatus");
+  const connected=lget("tg_connected",false);
+  el.className="status "+(connected?"ok":"no");
+  document.getElementById("connTxt").textContent=connected?t.connOk:t.connNo;
 }
-window.addEventListener('focus',()=>{refreshRegistrationStatus();loadData();});
-setInterval(()=>{updateConnStatus();if(document.visibilityState==='visible'&&Date.now()-monitorRequestedAt>=15*60000)loadData();},60000);
 
-
+//=================== whatsapp ===================
 function parseFarmCode(raw){
   // accepts the whole pasted WhatsApp message or just the FW1|... line
   const t=I[lang];
@@ -1420,14 +1396,14 @@ function parseFarmCode(raw){
   let added=0;
   segs.forEach(s=>{
     const p=s.split(",");
-    const la=p[0]?.trim()?Number(p[0]):NaN, lo=p[1]?.trim()?Number(p[1]):NaN, rad=p[2]?.trim()?Number(p[2]):30;
-    if(farms.length>=20||!farmValid({name:who||t.someFarm,lat:la,lon:lo,rad}))return;
+    const la=parseFloat(p[0]), lo=parseFloat(p[1]), rad=parseFloat(p[2])||30;
+    if(isNaN(la)||isNaN(lo))return;
     const label=who?`${who}`:t.someFarm;
-    farms.push({id:fid(),name:label,lat:la,lon:lo,rad});
+    farms.push({name:label,lat:la,lon:lo,rad});
     added++;
   });
   if(!added){toast(t.pasteErr);return;}
-  lset("farms",farms);syncRoster();renderFarmList();renderChips();loadData();
+  lset("farms",farms);renderFarmList();renderChips();
   document.getElementById("i-paste").value="";
   toast(t.pasteOk.replace("{n}",added));
 }
@@ -1456,7 +1432,7 @@ function populateCoordinators(){
   const note=document.getElementById("t-coordnote");
   if(note) note.style.display = (ref && coords.length>1) ? "flex" : "none";
 }
-async function waSendFarm(){
+function waSendFarm(){
   const t=I[lang];
   if(!profile.name||!profile.phone){toast(t.needprof);switchView("farms");return;}
   if(!farms.length){toast(t.needfarm);switchView("farms");return;}
@@ -1469,12 +1445,14 @@ async function waSendFarm(){
   // the roster WITHOUT a chat_id, and the alerter routes their alerts to the
   // admin as a one-tap wa.me link.
   const phoneDigits=normalizePhone(profile.phone);
-  if(!accessCode(true))return;
-  const popup=window.open('about:blank','_blank');
-  try{await syncRoster(true);}catch{if(popup)popup.close();statusChanged(null);toast(st().failed);lset('access_'+phoneDigits,'');return;}
+  if(CFG.REGISTER_URL && phoneDigits){
+    fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({phone:phoneDigits,name:profile.name,farms,lang})}).catch(()=>{});
+    lset("wa_registered",true);
+  }
   const readable=farms.map(f=>`• ${f.name} — ${f.lat.toFixed(5)}, ${f.lon.toFixed(5)} · ${f.rad}km`).join("\n");
   const msg=t.waFarmMsg(profile.name,phoneIntl(profile.phone),readable,farmCode());
-  if(popup)popup.location.href=`https://wa.me/${wa}?text=`+encodeURIComponent(msg);else window.location.href=`https://wa.me/${wa}?text=`+encodeURIComponent(msg);
+  window.open(`https://wa.me/${wa}?text=`+encodeURIComponent(msg),"_blank");
 }
 function waShare(){
   const t=I[lang];if(!farms.length){toast(t.noFarms);return;}
@@ -1576,7 +1554,7 @@ document.getElementById("langBtn").onclick=()=>{
   // subsequent taps: cycle to the next language
   lang=LANG_CYCLE[(LANG_CYCLE.indexOf(lang)+1)%LANG_CYCLE.length];
   localStorage.setItem("fw_lang",lang);
-  applyLang();renderChips();renderFarmList();populateCoordinators();loadData();refreshRegistrationStatus();
+  applyLang();renderChips();renderFarmList();populateCoordinators();loadData();
   if(!document.getElementById("helpOverlay").classList.contains("hide")) renderGuide();
   // keep showing the NEXT option while actively cycling
   const nextL=LANG_CYCLE[(LANG_CYCLE.indexOf(lang)+1)%LANG_CYCLE.length];
@@ -1584,12 +1562,7 @@ document.getElementById("langBtn").onclick=()=>{
   langResetIdle();
 };
 function renderGuide(){
-  const setup=SETUP_TEXT[lang]||SETUP_TEXT.en;
-  const g={title:(GUIDE[lang]||GUIDE.en).title,secs:[
-    {h:I[lang].st1.replace(/<[^>]*>/g,''),b:setup.note},
-    {h:setup.sync,b:setup.step},
-    {h:setup.help,b:setup.body}
-  ]};
+  const g=GUIDE[lang]||GUIDE.en;
   document.getElementById("t-guideTitle").textContent=g.title;
   let faqN=0;
   document.getElementById("helpContent").innerHTML=g.secs.map(s=>{
@@ -1637,15 +1610,6 @@ document.getElementById("waBtn").onclick=waShare;
 document.getElementById("tgShareBtn").onclick=tgShare;
 document.getElementById("locBtn").onclick=useLocation;
 document.getElementById("connectTgBtn").onclick=connectTelegram;
-document.getElementById('syncRegistrationBtn').onclick=async()=>{
- if(!profile.name||!profile.phone||!accessCode(true))return;
- try{await syncRoster(true);await refreshRegistrationStatus();toast(document.getElementById('connTxt').textContent);}
- catch(e){statusChanged(null);toast(st().failed);if(e.status===401)lset('access_'+normalizePhone(profile.phone),'');}
-};
-document.getElementById('accessCodeBtn').onclick=()=>{
- const phone=normalizePhone(profile.phone);if(!phone){toast(I[lang].needprof);return;}
- const code=prompt(st().code);if(code!==null){lset('access_'+phone,code.trim());statusChanged(null);refreshRegistrationStatus();}
-};
 document.getElementById("waConnectBtn").onclick=waSendFarm;
 document.getElementById("pasteAddBtn").onclick=()=>parseFarmCode(document.getElementById("i-paste").value);
 
@@ -1658,16 +1622,15 @@ document.getElementById("saveProfBtn").onclick=()=>{
   if(intl.length<10||intl.length>14){toast(t.badphone);return;}
   profile.phone=phoneIntl(rawPhone);
   document.getElementById("i-phone").value=profile.phone;
-  lset("profile",profile);statusChanged(null);toast(t.saved);
+  lset("profile",profile);toast(t.saved);
 };
 document.getElementById("addFarmBtn").onclick=()=>{
   const t=I[lang];
   const name=document.getElementById("i-fname").value.trim();
   const la=parseFloat(document.getElementById("i-lat").value);
   const lo=parseFloat(document.getElementById("i-lon").value);
-  const radiusText=document.getElementById("i-rad").value.trim();
-  const rad=radiusText===''?30:Number(radiusText);
-  if(!farmValid({name,lat:la,lon:lo,rad})||(!editingId&&farms.length>=20)){toast(t.needfarm);return;}
+  const rad=parseFloat(document.getElementById("i-rad").value)||30;
+  if(!name||isNaN(la)||isNaN(lo)){toast(t.needfarm);return;}
   if(editingId){
     // update existing farm in place
     const f=farms.find(x=>x.id===editingId);
@@ -1728,7 +1691,7 @@ document.getElementById("i-uname").value=profile.name;
 document.getElementById("i-phone").value=profile.phone;
 renderKeyState();   // show masked saved-key (or blank input) — never the raw key
 
-applyLang();renderChips();renderFarmList();populateCoordinators();loadData();refreshRegistrationStatus();
+applyLang();renderChips();renderFarmList();populateCoordinators();loadData();
 
 // first-launch language gate
 (function(){
@@ -1738,7 +1701,7 @@ applyLang();renderChips();renderFarmList();populateCoordinators();loadData();ref
     btn.onclick=()=>{
       lang=btn.dataset.l;
       localStorage.setItem("fw_lang",lang);
-      applyLang();renderChips();renderFarmList();populateCoordinators();loadData();refreshRegistrationStatus();
+      applyLang();renderChips();renderFarmList();populateCoordinators();loadData();
       gate.classList.add("hide");
     };
   });
