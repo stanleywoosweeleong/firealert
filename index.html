@@ -89,6 +89,7 @@
   .banner .sub{font-size:.82rem;opacity:.85}
   .banner .pulse{display:none}
   .b-safe{background:#eaf6ec;border-color:#cfe8d4;color:#1f5e30}
+  .b-idle{background:#f1f2f4;border-color:#dcdfe4;color:#2b313b}
   .b-low{background:#eef6e8;border-color:#d6e8c6;color:#3a6a1f}
   .b-med{background:#fdf3e0;border-color:#f1dcae;color:#8a5e08}
   .b-high{background:#fdede3;border-color:#f5cfb6;color:#a64516}
@@ -466,7 +467,7 @@
 // Set these to YOUR bot + admin once. Farmers never edit these.
 // Build marker. Shown in the footer so you can tell at a glance whether the
 // phone is running the file you just deployed or a stale cached copy.
-const BUILD = "2026-08-07g";
+const BUILD = "2026-09-28a";
 
 const CFG = {
   TG_BOT: "FireAlertMalaysiaBot",          // <-- your Telegram bot username (no @)
@@ -541,9 +542,9 @@ const I = {
   lowSub:"远处有零星热点",medSub:"附近出现热点，留意风向",highSub:"火点逼近，建议巡查",critSub:"火点极近，立即检查！",
   dir:{N:"正北",NE:"东北",E:"正东",SE:"东南",S:"正南",SW:"西南",W:"正西",NW:"西北"},
   rk:{CRITICAL:"紧急",HIGH:"高",MEDIUM:"中",LOW:"低"},
-  err:"无法读取数据", errKey:"请到「警报设置」填入 NASA MAP_KEY", keyOkBig:"已登记 ✓", keyOkSub:"你已登记，火点出现时会收到 Telegram 通知。想在这里也看到实时火点，请到「警报设置」加入免费的 NASA 钥匙（可选）。",
+  err:"无法读取数据", errKey:"请到「警报设置」填入 NASA MAP_KEY", regFailBig:"登记未确认", regFailSub:"服务器还没有确认你的登记，所以自动火警通知可能收不到。请检查网络，然后到「警报设置」再按一次连接 Telegram（或 WhatsApp 登记）。", regWaitSub:"正在向服务器确认登记…", regOkToast:"服务器已确认登记 ✓", regFailToast:"登记失败，请检查网络后再试", ovErr:"⚠️ 读取失败，状态未知", partial:(n,m)=>`只有 ${n}/${m} 颗卫星有回应，结果可能不完整`, shareUnknown:"这个农场还没有成功读取卫星数据，不能分享「安全」。", keyOkBig:"已登记 ✓", keyOkSub:"你已登记，火点出现时会收到 Telegram 通知。想在这里也看到实时火点，请到「警报设置」加入免费的 NASA 钥匙（可选）。",
   waAlert:(f,n,d,r)=>`🔥 火警通报 · ${f}\n\nNASA 卫星检测到 ${n} 个火点\n最近距离: ${d} 公里 (${r})\n\n来源: NASA VIIRS\n请尽快巡查农场周边。`,
-  waSafe:(f)=>`✅ ${f} 周边目前无卫星火点。来源: NASA VIIRS。`,
+  waSafe:(f)=>`✅ ${f} 周边目前无卫星火点。来源: NASA FIRMS。`,
   foot:"NASA FIRMS · 仅供参考，以现场为准",
   adv:"⚙️ 进阶 · 给管理员的设置", helpLbl:"帮助"
  },
@@ -603,9 +604,9 @@ const I = {
   lowSub:"Scattered hotspots far off",medSub:"Hotspots nearby — watch the wind",highSub:"Fire approaching — inspect",critSub:"Very close — inspect now!",
   dir:{N:"N",NE:"NE",E:"E",SE:"SE",S:"S",SW:"SW",W:"W",NW:"NW"},
   rk:{CRITICAL:"CRIT",HIGH:"HIGH",MEDIUM:"MED",LOW:"LOW"},
-  err:"Couldn't load data", errKey:"Add your NASA MAP_KEY under Alerts", keyOkBig:"Registered ✓", keyOkSub:"You are registered and will get Telegram alerts when a fire appears. To also see live hotspots here, add a free NASA key under Alerts (optional).",
+  err:"Couldn't load data", errKey:"Add your NASA MAP_KEY under Alerts", regFailBig:"Registration not confirmed", regFailSub:"The server has not confirmed your registration, so automatic fire alerts may not reach you. Check your connection, then tap Connect Telegram (or WhatsApp registration) again under Alerts.", regWaitSub:"Confirming your registration with the server…", regOkToast:"Registration confirmed ✓", regFailToast:"Registration failed — check your connection and try again", ovErr:"⚠️ check failed — status unknown", partial:(n,m)=>`Only ${n} of ${m} satellites answered — results may be incomplete`, shareUnknown:"This farm's satellite data has not loaded successfully, so it can't be shared as safe.", keyOkBig:"Registered ✓", keyOkSub:"You are registered and will get Telegram alerts when a fire appears. To also see live hotspots here, add a free NASA key under Alerts (optional).",
   waAlert:(f,n,d,r)=>`🔥 FIRE ALERT · ${f}\n\nNASA detected ${n} hotspot(s)\nNearest: ${d} km (${r})\n\nSource: NASA VIIRS\nInspect the farm perimeter ASAP.`,
-  waSafe:(f)=>`✅ ${f}: no satellite hotspots nearby. Source: NASA VIIRS.`,
+  waSafe:(f)=>`✅ ${f}: no satellite hotspots nearby. Source: NASA FIRMS.`,
   foot:"NASA FIRMS · indicative only, verify on the ground",
   adv:"⚙️ Advanced · admin setup", helpLbl:"Help"
  },
@@ -665,9 +666,9 @@ const I = {
   lowSub:"Titik panas berselerak jauh",medSub:"Titik panas berdekatan — perhati angin",highSub:"Api menghampiri — periksa",critSub:"Sangat hampir — periksa sekarang!",
   dir:{N:"U",NE:"TL",E:"T",SE:"TG",S:"S",SW:"BD",W:"B",NW:"BL"},
   rk:{CRITICAL:"KRITIKAL",HIGH:"TINGGI",MEDIUM:"SEDERHANA",LOW:"RENDAH"},
-  err:"Gagal memuat data", errKey:"Masukkan NASA MAP_KEY di bawah Amaran", keyOkBig:"Berdaftar ✓", keyOkSub:"Anda telah berdaftar dan akan terima amaran Telegram apabila kebakaran muncul. Untuk lihat titik panas langsung di sini, tambah kunci NASA percuma di bawah Amaran (pilihan).",
+  err:"Gagal memuat data", errKey:"Masukkan NASA MAP_KEY di bawah Amaran", regFailBig:"Pendaftaran belum disahkan", regFailSub:"Pelayan belum mengesahkan pendaftaran anda, jadi amaran kebakaran automatik mungkin tidak sampai. Semak sambungan internet, kemudian tekan Sambung Telegram (atau daftar WhatsApp) sekali lagi di bawah Amaran.", regWaitSub:"Mengesahkan pendaftaran dengan pelayan…", regOkToast:"Pendaftaran disahkan ✓", regFailToast:"Pendaftaran gagal — semak sambungan dan cuba lagi", ovErr:"⚠️ gagal disemak — status tidak diketahui", partial:(n,m)=>`Hanya ${n} daripada ${m} satelit menjawab — keputusan mungkin tidak lengkap`, shareUnknown:"Data satelit ladang ini belum berjaya dimuat, jadi tidak boleh dikongsi sebagai selamat.", keyOkBig:"Berdaftar ✓", keyOkSub:"Anda telah berdaftar dan akan terima amaran Telegram apabila kebakaran muncul. Untuk lihat titik panas langsung di sini, tambah kunci NASA percuma di bawah Amaran (pilihan).",
   waAlert:(f,n,d,r)=>`🔥 AMARAN KEBAKARAN · ${f}\n\nNASA kesan ${n} titik panas\nTerdekat: ${d} km (${r})\n\nSumber: NASA VIIRS\nPeriksa kawasan ladang segera.`,
-  waSafe:(f)=>`✅ ${f}: tiada titik panas satelit berdekatan. Sumber: NASA VIIRS.`,
+  waSafe:(f)=>`✅ ${f}: tiada titik panas satelit berdekatan. Sumber: NASA FIRMS.`,
   foot:"NASA FIRMS · panduan sahaja, sahkan di tempat",
   adv:"⚙️ Lanjutan · tetapan admin", helpLbl:"Bantuan"
  },
@@ -727,9 +728,9 @@ const I = {
   lowSub:"தொலைவில் சிதறிய தீப்புள்ளிகள்",medSub:"அருகில் தீப்புள்ளிகள் — காற்றைக் கவனி",highSub:"தீ நெருங்குகிறது — சரிபார்",critSub:"மிக அருகில் — இப்போதே சரிபார்!",
   dir:{N:"வ",NE:"வகி",E:"கி",SE:"தெகி",S:"தெ",SW:"தெமே",W:"மே",NW:"வமே"},
   rk:{CRITICAL:"மிகுந்த",HIGH:"அதிக",MEDIUM:"நடுத்தர",LOW:"குறைந்த"},
-  err:"தரவை ஏற்ற முடியவில்லை", errKey:"எச்சரிக்கைகள் பகுதியில் NASA MAP_KEY-ஐ உள்ளிடவும்", keyOkBig:"பதிவு செய்யப்பட்டது ✓", keyOkSub:"நீங்கள் பதிவு செய்துள்ளீர்கள், தீ தோன்றும்போது Telegram எச்சரிக்கை பெறுவீர்கள். இங்கே நேரடி தீப்புள்ளிகளையும் காண, எச்சரிக்கைகள் பகுதியில் இலவச NASA விசையைச் சேர்க்கவும் (விருப்பத்தேர்வு).",
+  err:"தரவை ஏற்ற முடியவில்லை", errKey:"எச்சரிக்கைகள் பகுதியில் NASA MAP_KEY-ஐ உள்ளிடவும்", regFailBig:"பதிவு உறுதிப்படுத்தப்படவில்லை", regFailSub:"சர்வர் உங்கள் பதிவை இன்னும் உறுதிப்படுத்தவில்லை, எனவே தானியங்கி தீ எச்சரிக்கைகள் வராமல் போகலாம். இணைப்பைச் சரிபார்த்து, எச்சரிக்கைகள் பகுதியில் மீண்டும் Telegram இணைக்கவும் (அல்லது WhatsApp பதிவு).", regWaitSub:"சர்வருடன் பதிவை உறுதிப்படுத்துகிறது…", regOkToast:"பதிவு உறுதிப்படுத்தப்பட்டது ✓", regFailToast:"பதிவு தோல்வி — இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்", ovErr:"⚠️ சரிபார்ப்பு தோல்வி — நிலை தெரியவில்லை", partial:(n,m)=>`${m} செயற்கைக்கோள்களில் ${n} மட்டுமே பதிலளித்தன — முடிவுகள் முழுமையற்றதாக இருக்கலாம்`, shareUnknown:"இந்த பண்ணையின் செயற்கைக்கோள் தரவு இன்னும் ஏற்றப்படவில்லை, எனவே பாதுகாப்பானது எனப் பகிர முடியாது.", keyOkBig:"பதிவு செய்யப்பட்டது ✓", keyOkSub:"நீங்கள் பதிவு செய்துள்ளீர்கள், தீ தோன்றும்போது Telegram எச்சரிக்கை பெறுவீர்கள். இங்கே நேரடி தீப்புள்ளிகளையும் காண, எச்சரிக்கைகள் பகுதியில் இலவச NASA விசையைச் சேர்க்கவும் (விருப்பத்தேர்வு).",
   waAlert:(f,n,d,r)=>`🔥 தீ எச்சரிக்கை · ${f}\n\nNASA ${n} தீப்புள்ளிகளைக் கண்டறிந்தது\nஅருகில்: ${d} கி.மீ (${r})\n\nஆதாரம்: NASA VIIRS\nபண்ணைப் பகுதியை உடனே சரிபார்க்கவும்.`,
-  waSafe:(f)=>`✅ ${f}: அருகில் செயற்கைக்கோள் தீப்புள்ளிகள் இல்லை. ஆதாரம்: NASA VIIRS.`,
+  waSafe:(f)=>`✅ ${f}: அருகில் செயற்கைக்கோள் தீப்புள்ளிகள் இல்லை. ஆதாரம்: NASA FIRMS.`,
   foot:"NASA FIRMS · வழிகாட்டுதல் மட்டுமே, நேரில் சரிபார்க்கவும்",
   adv:"⚙️ மேம்பட்ட · நிர்வாக அமைப்பு", helpLbl:"உதவி"
  }
@@ -892,11 +893,13 @@ let lastPartial=false;      // true when >=1 sensor failed this load
 
 function firmsMins(t){t=String(t==null?"":t).padStart(4,"0");
   return parseInt(t.slice(0,2),10)*60+parseInt(t.slice(2,4),10);}
+// Unreadable date/time -> NaN (unknown), NOT 0. Returning 0 meant "brand new",
+// so a broken row passed the freshness filter as if it had just been detected.
 function firmsAgeH(date,time){
-  if(!date) return 0;
-  const t=String(time==null?"":time).padStart(4,"0");
-  const ms=Date.parse(date+"T"+t.slice(0,2)+":"+t.slice(2,4)+":00Z");
-  return isNaN(ms)?0:(Date.now()-ms)/3600000;}
+  const t=String(time==null?"":time).trim().padStart(4,"0");
+  if(!date || !/^\d{4}-\d{2}-\d{2}$/.test(String(date).trim()) || !/^\d{4}$/.test(t)) return NaN;
+  const ms=Date.parse(String(date).trim()+"T"+t.slice(0,2)+":"+t.slice(2,4)+":00Z");
+  return isNaN(ms)?NaN:(Date.now()-ms)/3600000;}
 
 // Fetch ONE sensor. A body with no latitude column is an ERROR (bad key, rate
 // limit, HTML error page) -- never silently reinterpreted as "no fires".
@@ -951,8 +954,8 @@ async function firmsFetchAll(key,box){
     else failed.push(FIRMS_SRCS[i]+": "+((r.reason&&r.reason.message)||"failed")); });
   if(!ok.length) throw new Error(failed[0]||"FIRMS unavailable");
   const rows=firmsMerge([].concat.apply([],ok))
-    .filter(h=>firmsAgeH(h.date,h.time)<=FIRMS_MAX_AGE_H);
-  return {rows, partial:failed.length>0, failNote:failed.join(" | ")};
+    .filter(h=>{const a=firmsAgeH(h.date,h.time); return a>=-1 && a<=FIRMS_MAX_AGE_H;});
+  return {rows, partial:failed.length>0, okCount:ok.length, failNote:failed.join(" | ")};
 }
 // is a fire (at bearing brDeg from the farm) upwind, i.e. wind carries it toward the farm?
 // windFrom = direction wind blows FROM. Fire is a threat if it sits in the
@@ -984,7 +987,10 @@ function toast(msg){const el=document.getElementById("toast");el.textContent=msg
 
 //=================== fetch ===================
 // fetch weather independently (no NASA key needed — Open-Meteo is free/keyless)
-async function loadWeather(farm){
+// Returns this farm's weather (or null). Only updates the shared lastWind /
+// weather card if this request is still the current one -- a slow answer for
+// the PREVIOUS farm must not overwrite the farm now on screen.
+async function loadWeather(farm,seq){
   const windUrl=`https://api.open-meteo.com/v1/forecast?latitude=${farm.lat}&longitude=${farm.lon}&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,relative_humidity_2m&daily=precipitation_sum&past_days=7&forecast_days=1&windspeed_unit=kmh&timezone=auto`;
   try{
     const windRes=await fetch(windUrl).then(r=>r.json());
@@ -1004,9 +1010,13 @@ async function loadWeather(farm){
       }
       wind.dsr=dsr;
     }
-    lastWind=wind;
-  }catch(e){ /* weather optional; leave lastWind as-is */ }
-  renderWeatherCard();
+    if(seq===undefined||seq===loadSeq){ lastWind=wind; renderWeatherCard(); }
+    return wind;
+  }catch(e){
+    // weather is optional -- but never leave the previous farm's weather showing
+    if(seq===undefined||seq===loadSeq){ lastWind=null; renderWeatherCard(); }
+    return null;
+  }
 }
 function renderWeatherCard(){
   const t=I[lang];
@@ -1058,7 +1068,7 @@ async function fetchFarmStatus(farm, key){
       const buf=(farm.rad+10)/111;
       const box=`${(farm.lon-buf).toFixed(3)},${(farm.lat-buf).toFixed(3)},${(farm.lon+buf).toFixed(3)},${(farm.lat+buf).toFixed(3)}`;
       const res=await firmsFetchAll(key,box);
-      out.ok=true; out.partial=res.partial;
+      out.ok=true; out.partial=res.partial; out.okCount=res.okCount;
       let worst="LOW", best=null;
       for(const h of res.rows){
         const d=dist(farm.lat,farm.lon,h.la,h.lo);
@@ -1076,7 +1086,9 @@ async function fetchFarmStatus(farm, key){
   return out;
 }
 
+let ovSeq=0;
 async function loadAllFarmsStatus(){
+  const mySeq=++ovSeq;
   const ov=document.getElementById("overview");
   if(!ov) return;
   if(farms.length<2){ ov.style.display="none"; return; }   // only show for 2+ farms
@@ -1089,13 +1101,17 @@ async function loadAllFarmsStatus(){
   bindOverviewRows();
   // fetch all in parallel
   const results=await Promise.all(farms.map(f=>fetchFarmStatus(f,key)));
+  if(mySeq!==ovSeq) return;   // a newer refresh started meanwhile -- discard
   list.innerHTML=results.map((s,i)=>{
     const color=RK_COLOR[s.rk]||"var(--low)";
     const rkLabel=t.rk[s.rk]||s.rk;
     const subBits=[];
+    // A failed satellite check used to fall through to "Safe" here.
     if(s.nearest!=null) subBits.push(`${s.nearest.toFixed(1)} ${t.km}`);
-    else if(key) subBits.push(t.ovSafe);
+    else if(key && s.ok) subBits.push(t.ovSafe);
+    else if(key) subBits.push(`<span class="dry">${t.ovErr}</span>`);
     else subBits.push(t.ovNoKey);
+    if(key && s.ok && s.partial) subBits.push(`<span class="dry">⚠️ ${s.okCount}/${FIRMS_SRCS.length}</span>`);
     if(s.hum!=null) subBits.push(`${t.humLbl} ${Math.round(s.hum)}%`);
     if(s.dry) subBits.push(`<span class="dry">⚠️ ${t.dryWarn}</span>`);
     const showRk = key && s.ok;
@@ -1115,8 +1131,15 @@ function bindOverviewRows(){
   });
 }
 
+// Each load gets an id. If the user switches farm while satellite/weather
+// requests are in flight, the older answers are discarded instead of being
+// drawn under the new farm's name (they used to mix: old farm's fires, new
+// farm's name/radius, whichever farm's weather came back last).
+let loadSeq=0;
 async function loadData(){
+  const seq=++loadSeq;
   const t=I[lang], key=lget("key","");
+  lastData=null;   // unknown until THIS farm's check succeeds (see waShare)
   if(!farms.length){
     setBanner("safe",t.safeBig,t.noFarms);
     document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🌾</div>${t.noFarms}</div>`;
@@ -1126,32 +1149,34 @@ async function loadData(){
     return;
   }
   const farm=farms[active];
-  setBanner("safe",t.checking,"<span class='spin'></span>"+t.reading);
+  // neutral grey while checking -- green must only ever mean "checked and clear"
+  setBanner("idle",t.checking,"<span class='spin'></span>"+t.reading);
   loadAllFarmsStatus();   // refresh the all-farms overview (shows for 2+ farms)
   // load weather independently — works even without a NASA key, shows dry/wind warning
-  loadWeather(farm);
+  const wxP=loadWeather(farm,seq);
   if(!key){
     // No NASA key: the LIVE in-app hotspot view needs it, but automatic Telegram
-    // alerts (sent by the server-side cron) do NOT. Reassure registered users.
-    const registered = (lget("tg_attempted",false)||lget("wa_registered",false))
-                       && profile.name && profile.phone;
-    if(registered){
-      setBanner("safe",t.keyOkBig,t.keyOkSub);
-    }else{
-      setBanner("med",t.checking,t.errKey);
-    }
-    document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🔑</div><div style="font-size:.85rem;line-height:1.5;color:var(--ink2)">${registered?t.keyOkSub:t.errKey}</div></div>`;
+    // alerts (sent by the server-side cron) do NOT. Only say "Registered" when
+    // the SERVER confirmed it -- tapping the button is not the same thing.
+    const st=regStatus();
+    let big,sub,cls;
+    if(st==="ok"){ cls="safe"; big=t.keyOkBig; sub=t.keyOkSub; }
+    else if(st==="pending"){ cls="idle"; big=t.checking; sub=t.regWaitSub; }
+    else if(st==="fail"){ cls="med"; big=t.regFailBig; sub=t.regFailSub; }
+    else { cls="med"; big=t.checking; sub=t.errKey; }
+    setBanner(cls,big,sub);
+    document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🔑</div><div style="font-size:.85rem;line-height:1.5;color:var(--ink2)">${sub}</div></div>`;
     document.getElementById("s2v").innerHTML=farm.rad+" <small>"+t.km+"</small>";
     return;
   }
   const buf=(farm.rad+10)/111;
   const box=`${(farm.lon-buf).toFixed(3)},${(farm.lat-buf).toFixed(3)},${(farm.lon+buf).toFixed(3)},${(farm.lat+buf).toFixed(3)}`;
   try{
-    const res=await firmsFetchAll(key,box);
+    // wait for THIS farm's weather too -- risk and "blowing toward" used to read
+    // whatever lastWind held, which could still be the previous farm's
+    const [res,wind]=await Promise.all([firmsFetchAll(key,box),wxP]);
+    if(seq!==loadSeq) return;          // user switched farm meanwhile -- discard
     lastPartial=res.partial;
-
-    // weather already loaded via loadWeather(); reuse lastWind for risk + toward
-    const wind=lastWind;
     const hum = wind?wind.hum:null;
     const dsr = wind?wind.dsr:null;
 
@@ -1165,8 +1190,10 @@ async function loadData(){
           frp:h.frp, conf:h.conf, sat:h.sat, toward,
           rk:riskOf(d,h.frp,toward,hum,dsr)});
       }}
-    hits.sort((a,b)=>a.d-b.d);lastData=hits;render(hits);
+    hits.sort((a,b)=>a.d-b.d);lastData=hits;render(hits,farm,res);
   }catch(err){
+    if(seq!==loadSeq) return;
+    lastData=null;
     setBanner("med",t.err,String(err.message||err).slice(0,90));
     document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">📡</div>${t.err}</div>`;
   }
@@ -1180,15 +1207,18 @@ function fmtFrp(frp,t){
   return `${word} (${Math.round(frp)}MW)`;
 }
 
-function render(hits){
-  const t=I[lang],farm=farms[active];
+function render(hits,farm,res){
+  const t=I[lang]; farm=farm||farms[active];
   document.getElementById("s1v").innerHTML=hits.length+" <small>"+(lang==="zh"?"个":"")+"</small>";
   document.getElementById("s2v").innerHTML=farm.rad+" <small>"+t.km+"</small>";
   let worst="SAFE";
   if(hits.length){const o=["LOW","MEDIUM","HIGH","CRITICAL"];
     worst=hits.reduce((w,h)=>o.indexOf(h.rk)>o.indexOf(w)?h.rk:w,"LOW");}
   const map={SAFE:["safe",t.safeBig,t.safeSub],LOW:["low",t.lowBig,t.lowSub],MEDIUM:["med",t.medBig,t.medSub],HIGH:["high",t.highBig,t.highSub],CRITICAL:["crit",t.critBig,t.critSub]};
-  const[cls,big,sub]=map[worst];setBanner(cls,big,sub);
+  const[cls,big,sub]=map[worst];
+  // some satellites failed: say so on the banner itself, not only in a log
+  const partialNote=(res&&res.partial)?`<br><span class="dry">⚠️ ${t.partial(res.okCount,FIRMS_SRCS.length)}</span>`:"";
+  setBanner(cls,big,sub+partialNote);
   document.getElementById("b-lbl").textContent=t.riskLbl;
   const list=document.getElementById("hslist");
   // Bomba card — only for genuinely serious fires (HIGH or CRITICAL), and reset to "verify first" stage
@@ -1348,6 +1378,39 @@ function useLocation(){
   },()=>{btn.innerHTML=old;toast(t.locerr);},{enableHighAccuracy:true,timeout:10000});
 }
 
+//=================== server registration ===================
+// The old code POSTed to the Worker with .catch(()=>{}) -- fire and forget --
+// then set tg_attempted / wa_registered straight away. The Monitor screen then
+// showed "Registered ✓" whether or not the request ever arrived. Now the flag
+// only turns "ok" when the Worker answers with success.
+function regStatus(){
+  const st=lget("reg_state",null);
+  if(st) return st;
+  // registered with an older build: never confirmed, so don't claim it
+  if((lget("tg_attempted",false)||lget("wa_registered",false)) && profile.name && profile.phone) return "fail";
+  return null;
+}
+function registerServer(quiet){
+  const phoneDigits=normalizePhone(profile.phone);
+  if(!CFG.REGISTER_URL||!phoneDigits) return Promise.resolve(false);
+  lset("reg_state","pending");
+  const body=JSON.stringify({phone:phoneDigits,name:profile.name,farms,lang});
+  return fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body})
+    .then(async r=>{
+      let ok=r.ok;
+      try{ const j=await r.clone().json(); if(j && j.ok===false) ok=false; }catch(e){}
+      return ok;
+    })
+    .catch(()=>false)
+    .then(ok=>{
+      lset("reg_state",ok?"ok":"fail");
+      if(ok) lset("reg_at",Date.now());
+      if(!ok||!quiet) toast(ok?I[lang].regOkToast:I[lang].regFailToast);
+      if(!lget("key","")) loadData();   // no-key banner shows registration state
+      return ok;
+    });
+}
+
 //=================== telegram connect ===================
 // deep link: t.me/<bot>?start=<payload>. Payload encodes phone so the bot links chat id -> farmer.
 function connectTelegram(){
@@ -1355,11 +1418,10 @@ function connectTelegram(){
   if(!profile.name||!profile.phone){toast(t.needprof);switchView("farms");return;}
   if(!farms.length){toast(t.needfarm);switchView("farms");return;}
   const phoneDigits=normalizePhone(profile.phone);
-  // 1) push full registration (profile + farms + language) to the Worker roster
-  if(CFG.REGISTER_URL){
-    fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({phone:phoneDigits,name:profile.name,farms,lang})}).catch(()=>{});
-  }
+  // 1) push full registration (profile + farms + language) to the Worker roster.
+  //    Not awaited: window.open below must run inside the tap or the browser
+  //    blocks it. The result updates reg_state (and the banner) when it lands.
+  registerServer(false);
   // 2) open Telegram so the Start tap links the chat_id to this phone (carry lang too)
   const url=`https://t.me/${CFG.TG_BOT}?start=ph_${phoneDigits}_${lang}`;
   lset("tg_attempted",true);updateConnStatus();
@@ -1375,8 +1437,7 @@ function syncRoster(){
   if(!registered) return;
   const phoneDigits=normalizePhone(profile.phone);
   if(!phoneDigits) return;
-  fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({phone:phoneDigits,name:profile.name,farms,lang})}).catch(()=>{});
+  registerServer(true);   // quiet unless it FAILS -- a failed sync must be seen
 }
 function updateConnStatus(){
   const t=I[lang],el=document.getElementById("connStatus");
@@ -1446,8 +1507,7 @@ function waSendFarm(){
   // admin as a one-tap wa.me link.
   const phoneDigits=normalizePhone(profile.phone);
   if(CFG.REGISTER_URL && phoneDigits){
-    fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({phone:phoneDigits,name:profile.name,farms,lang})}).catch(()=>{});
+    registerServer(false);
     lset("wa_registered",true);
   }
   const readable=farms.map(f=>`• ${f.name} — ${f.lat.toFixed(5)}, ${f.lon.toFixed(5)} · ${f.rad}km`).join("\n");
@@ -1456,6 +1516,9 @@ function waSendFarm(){
 }
 function waShare(){
   const t=I[lang];if(!farms.length){toast(t.noFarms);return;}
+  // lastData is null when this farm has NOT been checked successfully (no key,
+  // failed load, or still loading). That used to be shared as "no hotspots".
+  if(lastData===null){toast(t.shareUnknown);return;}
   const farm=farms[active];let msg;
   if(lastData&&lastData.length){const n=lastData[0];msg=t.waAlert(farm.name,lastData.length,n.d.toFixed(1),t.dir[n.br]);}
   else msg=t.waSafe(farm.name);
@@ -1463,6 +1526,9 @@ function waShare(){
 }
 function tgShare(){
   const t=I[lang];if(!farms.length){toast(t.noFarms);return;}
+  // lastData is null when this farm has NOT been checked successfully (no key,
+  // failed load, or still loading). That used to be shared as "no hotspots".
+  if(lastData===null){toast(t.shareUnknown);return;}
   const farm=farms[active];let msg;
   if(lastData&&lastData.length){const n=lastData[0];msg=t.waAlert(farm.name,lastData.length,n.d.toFixed(1),t.dir[n.br]);}
   else msg=t.waSafe(farm.name);
