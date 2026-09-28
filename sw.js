@@ -1,6 +1,6 @@
 /* FireWatch service worker — offline app shell caching.
    Bump CACHE when you deploy a new index.html so users get the update. */
-const CACHE = "firewatch-v6";   // bumped 2026-08-07 for build 2026-08-07g
+const CACHE = "firewatch-v7-secure-registration";
 
 // Files that make up the offline app shell.
 const SHELL = [
@@ -16,7 +16,7 @@ const SHELL = [
 self.addEventListener("install", (e) => {
   self.skipWaiting();
   e.waitUntil(
-    caches.open(CACHE).then((c) => c.addAll(SHELL).catch(() => {}))
+    caches.open(CACHE).then((c) => c.addAll(SHELL))
   );
 });
 
@@ -24,7 +24,7 @@ self.addEventListener("install", (e) => {
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k.startsWith("firewatch-") && k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -43,6 +43,8 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   const url = req.url;
 
+  if (req.method !== "GET" || new URL(url).origin !== self.location.origin) return;
+
   if (isLiveData(url)) return; // don't intercept; goes straight to network
 
   // Navigation (opening the app): network-first, fall back to cached shell.
@@ -50,12 +52,13 @@ self.addEventListener("fetch", (e) => {
     e.respondWith(
       fetch(req)
         .then((r) => {
+          if (!r.ok) throw new Error("App shell unavailable");
           const copy = r.clone();
           caches.open(CACHE).then((c) => c.put(req, copy).catch(() => {}));
           return r;
         })
         .catch(() =>
-          caches.match(req).then((m) => m || caches.match("./index.html") || caches.match("./"))
+          caches.match(req).then(async (m) => m || await caches.match("./index.html") || await caches.match("./") || new Response("FireWatch is offline", { status: 503 }))
         )
     );
     return;
@@ -68,6 +71,7 @@ self.addEventListener("fetch", (e) => {
         m ||
         fetch(req)
           .then((r) => {
+            if (!r.ok) return r;
             const copy = r.clone();
             caches.open(CACHE).then((c) => c.put(req, copy).catch(() => {}));
             return r;
