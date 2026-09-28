@@ -467,7 +467,7 @@
 // Set these to YOUR bot + admin once. Farmers never edit these.
 // Build marker. Shown in the footer so you can tell at a glance whether the
 // phone is running the file you just deployed or a stale cached copy.
-const BUILD = "2026-09-28a";
+const BUILD = "2026-09-28c";
 
 const CFG = {
   TG_BOT: "FireAlertMalaysiaBot",          // <-- your Telegram bot username (no @)
@@ -542,7 +542,7 @@ const I = {
   lowSub:"远处有零星热点",medSub:"附近出现热点，留意风向",highSub:"火点逼近，建议巡查",critSub:"火点极近，立即检查！",
   dir:{N:"正北",NE:"东北",E:"正东",SE:"东南",S:"正南",SW:"西南",W:"正西",NW:"西北"},
   rk:{CRITICAL:"紧急",HIGH:"高",MEDIUM:"中",LOW:"低"},
-  err:"无法读取数据", errKey:"请到「警报设置」填入 NASA MAP_KEY", regFailBig:"登记未确认", regFailSub:"服务器还没有确认你的登记，所以自动火警通知可能收不到。请检查网络，然后到「警报设置」再按一次连接 Telegram（或 WhatsApp 登记）。", regWaitSub:"正在向服务器确认登记…", regOkToast:"服务器已确认登记 ✓", regFailToast:"登记失败，请检查网络后再试", ovErr:"⚠️ 读取失败，状态未知", partial:(n,m)=>`只有 ${n}/${m} 颗卫星有回应，结果可能不完整`, shareUnknown:"这个农场还没有成功读取卫星数据，不能分享「安全」。", keyOkBig:"已登记 ✓", keyOkSub:"你已登记，火点出现时会收到 Telegram 通知。想在这里也看到实时火点，请到「警报设置」加入免费的 NASA 钥匙（可选）。",
+  err:"无法读取数据", errKey:"请到「警报设置」填入 NASA MAP_KEY", regFailBig:"登记未确认", regFailSub:"服务器还没有确认你的登记，所以自动火警通知可能收不到。请检查网络，然后到「警报设置」再按一次连接 Telegram（或 WhatsApp 登记）。", regWaitSub:"正在向服务器确认登记…", regLockedSub:"这个手机号已在另一部手机登记，为了安全暂时锁住。请在已连接的 Telegram 里给机器人发送 /reset，然后在 30 分钟内再点一次「连接 Telegram」。", regLockedToast:"这个号码已锁定，请在 Telegram 发送 /reset", regOkToast:"服务器已确认登记 ✓", regFailToast:"登记失败，请检查网络后再试", ovErr:"⚠️ 读取失败，状态未知", partial:(n,m)=>`只有 ${n}/${m} 颗卫星有回应，结果可能不完整`, shareUnknown:"这个农场还没有成功读取卫星数据，不能分享「安全」。", keyOkBig:"已登记 ✓", keyOkSub:"你已登记，火点出现时会收到 Telegram 通知。想在这里也看到实时火点，请到「警报设置」加入免费的 NASA 钥匙（可选）。",
   waAlert:(f,n,d,r)=>`🔥 火警通报 · ${f}\n\nNASA 卫星检测到 ${n} 个火点\n最近距离: ${d} 公里 (${r})\n\n来源: NASA VIIRS\n请尽快巡查农场周边。`,
   waSafe:(f)=>`✅ ${f} 周边目前无卫星火点。来源: NASA FIRMS。`,
   foot:"NASA FIRMS · 仅供参考，以现场为准",
@@ -604,7 +604,7 @@ const I = {
   lowSub:"Scattered hotspots far off",medSub:"Hotspots nearby — watch the wind",highSub:"Fire approaching — inspect",critSub:"Very close — inspect now!",
   dir:{N:"N",NE:"NE",E:"E",SE:"SE",S:"S",SW:"SW",W:"W",NW:"NW"},
   rk:{CRITICAL:"CRIT",HIGH:"HIGH",MEDIUM:"MED",LOW:"LOW"},
-  err:"Couldn't load data", errKey:"Add your NASA MAP_KEY under Alerts", regFailBig:"Registration not confirmed", regFailSub:"The server has not confirmed your registration, so automatic fire alerts may not reach you. Check your connection, then tap Connect Telegram (or WhatsApp registration) again under Alerts.", regWaitSub:"Confirming your registration with the server…", regOkToast:"Registration confirmed ✓", regFailToast:"Registration failed — check your connection and try again", ovErr:"⚠️ check failed — status unknown", partial:(n,m)=>`Only ${n} of ${m} satellites answered — results may be incomplete`, shareUnknown:"This farm's satellite data has not loaded successfully, so it can't be shared as safe.", keyOkBig:"Registered ✓", keyOkSub:"You are registered and will get Telegram alerts when a fire appears. To also see live hotspots here, add a free NASA key under Alerts (optional).",
+  err:"Couldn't load data", errKey:"Add your NASA MAP_KEY under Alerts", regFailBig:"Registration not confirmed", regFailSub:"The server has not confirmed your registration, so automatic fire alerts may not reach you. Check your connection, then tap Connect Telegram (or WhatsApp registration) again under Alerts.", regWaitSub:"Confirming your registration with the server…", regLockedSub:"This phone number is registered from another phone, so it is locked for safety. Send /reset to the bot from your linked Telegram, then tap Connect Telegram again within 30 minutes.", regLockedToast:"Number locked — send /reset in Telegram", regOkToast:"Registration confirmed ✓", regFailToast:"Registration failed — check your connection and try again", ovErr:"⚠️ check failed — status unknown", partial:(n,m)=>`Only ${n} of ${m} satellites answered — results may be incomplete`, shareUnknown:"This farm's satellite data has not loaded successfully, so it can't be shared as safe.", keyOkBig:"Registered ✓", keyOkSub:"You are registered and will get Telegram alerts when a fire appears. To also see live hotspots here, add a free NASA key under Alerts (optional).",
   waAlert:(f,n,d,r)=>`🔥 FIRE ALERT · ${f}\n\nNASA detected ${n} hotspot(s)\nNearest: ${d} km (${r})\n\nSource: NASA VIIRS\nInspect the farm perimeter ASAP.`,
   waSafe:(f)=>`✅ ${f}: no satellite hotspots nearby. Source: NASA FIRMS.`,
   foot:"NASA FIRMS · indicative only, verify on the ground",
@@ -666,7 +666,7 @@ const I = {
   lowSub:"Titik panas berselerak jauh",medSub:"Titik panas berdekatan — perhati angin",highSub:"Api menghampiri — periksa",critSub:"Sangat hampir — periksa sekarang!",
   dir:{N:"U",NE:"TL",E:"T",SE:"TG",S:"S",SW:"BD",W:"B",NW:"BL"},
   rk:{CRITICAL:"KRITIKAL",HIGH:"TINGGI",MEDIUM:"SEDERHANA",LOW:"RENDAH"},
-  err:"Gagal memuat data", errKey:"Masukkan NASA MAP_KEY di bawah Amaran", regFailBig:"Pendaftaran belum disahkan", regFailSub:"Pelayan belum mengesahkan pendaftaran anda, jadi amaran kebakaran automatik mungkin tidak sampai. Semak sambungan internet, kemudian tekan Sambung Telegram (atau daftar WhatsApp) sekali lagi di bawah Amaran.", regWaitSub:"Mengesahkan pendaftaran dengan pelayan…", regOkToast:"Pendaftaran disahkan ✓", regFailToast:"Pendaftaran gagal — semak sambungan dan cuba lagi", ovErr:"⚠️ gagal disemak — status tidak diketahui", partial:(n,m)=>`Hanya ${n} daripada ${m} satelit menjawab — keputusan mungkin tidak lengkap`, shareUnknown:"Data satelit ladang ini belum berjaya dimuat, jadi tidak boleh dikongsi sebagai selamat.", keyOkBig:"Berdaftar ✓", keyOkSub:"Anda telah berdaftar dan akan terima amaran Telegram apabila kebakaran muncul. Untuk lihat titik panas langsung di sini, tambah kunci NASA percuma di bawah Amaran (pilihan).",
+  err:"Gagal memuat data", errKey:"Masukkan NASA MAP_KEY di bawah Amaran", regFailBig:"Pendaftaran belum disahkan", regFailSub:"Pelayan belum mengesahkan pendaftaran anda, jadi amaran kebakaran automatik mungkin tidak sampai. Semak sambungan internet, kemudian tekan Sambung Telegram (atau daftar WhatsApp) sekali lagi di bawah Amaran.", regWaitSub:"Mengesahkan pendaftaran dengan pelayan…", regLockedSub:"Nombor telefon ini didaftarkan dari telefon lain, jadi ia dikunci untuk keselamatan. Hantar /reset kepada bot dari Telegram yang disambung, kemudian tekan Sambung Telegram sekali lagi dalam 30 minit.", regLockedToast:"Nombor dikunci — hantar /reset di Telegram", regOkToast:"Pendaftaran disahkan ✓", regFailToast:"Pendaftaran gagal — semak sambungan dan cuba lagi", ovErr:"⚠️ gagal disemak — status tidak diketahui", partial:(n,m)=>`Hanya ${n} daripada ${m} satelit menjawab — keputusan mungkin tidak lengkap`, shareUnknown:"Data satelit ladang ini belum berjaya dimuat, jadi tidak boleh dikongsi sebagai selamat.", keyOkBig:"Berdaftar ✓", keyOkSub:"Anda telah berdaftar dan akan terima amaran Telegram apabila kebakaran muncul. Untuk lihat titik panas langsung di sini, tambah kunci NASA percuma di bawah Amaran (pilihan).",
   waAlert:(f,n,d,r)=>`🔥 AMARAN KEBAKARAN · ${f}\n\nNASA kesan ${n} titik panas\nTerdekat: ${d} km (${r})\n\nSumber: NASA VIIRS\nPeriksa kawasan ladang segera.`,
   waSafe:(f)=>`✅ ${f}: tiada titik panas satelit berdekatan. Sumber: NASA FIRMS.`,
   foot:"NASA FIRMS · panduan sahaja, sahkan di tempat",
@@ -728,7 +728,7 @@ const I = {
   lowSub:"தொலைவில் சிதறிய தீப்புள்ளிகள்",medSub:"அருகில் தீப்புள்ளிகள் — காற்றைக் கவனி",highSub:"தீ நெருங்குகிறது — சரிபார்",critSub:"மிக அருகில் — இப்போதே சரிபார்!",
   dir:{N:"வ",NE:"வகி",E:"கி",SE:"தெகி",S:"தெ",SW:"தெமே",W:"மே",NW:"வமே"},
   rk:{CRITICAL:"மிகுந்த",HIGH:"அதிக",MEDIUM:"நடுத்தர",LOW:"குறைந்த"},
-  err:"தரவை ஏற்ற முடியவில்லை", errKey:"எச்சரிக்கைகள் பகுதியில் NASA MAP_KEY-ஐ உள்ளிடவும்", regFailBig:"பதிவு உறுதிப்படுத்தப்படவில்லை", regFailSub:"சர்வர் உங்கள் பதிவை இன்னும் உறுதிப்படுத்தவில்லை, எனவே தானியங்கி தீ எச்சரிக்கைகள் வராமல் போகலாம். இணைப்பைச் சரிபார்த்து, எச்சரிக்கைகள் பகுதியில் மீண்டும் Telegram இணைக்கவும் (அல்லது WhatsApp பதிவு).", regWaitSub:"சர்வருடன் பதிவை உறுதிப்படுத்துகிறது…", regOkToast:"பதிவு உறுதிப்படுத்தப்பட்டது ✓", regFailToast:"பதிவு தோல்வி — இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்", ovErr:"⚠️ சரிபார்ப்பு தோல்வி — நிலை தெரியவில்லை", partial:(n,m)=>`${m} செயற்கைக்கோள்களில் ${n} மட்டுமே பதிலளித்தன — முடிவுகள் முழுமையற்றதாக இருக்கலாம்`, shareUnknown:"இந்த பண்ணையின் செயற்கைக்கோள் தரவு இன்னும் ஏற்றப்படவில்லை, எனவே பாதுகாப்பானது எனப் பகிர முடியாது.", keyOkBig:"பதிவு செய்யப்பட்டது ✓", keyOkSub:"நீங்கள் பதிவு செய்துள்ளீர்கள், தீ தோன்றும்போது Telegram எச்சரிக்கை பெறுவீர்கள். இங்கே நேரடி தீப்புள்ளிகளையும் காண, எச்சரிக்கைகள் பகுதியில் இலவச NASA விசையைச் சேர்க்கவும் (விருப்பத்தேர்வு).",
+  err:"தரவை ஏற்ற முடியவில்லை", errKey:"எச்சரிக்கைகள் பகுதியில் NASA MAP_KEY-ஐ உள்ளிடவும்", regFailBig:"பதிவு உறுதிப்படுத்தப்படவில்லை", regFailSub:"சர்வர் உங்கள் பதிவை இன்னும் உறுதிப்படுத்தவில்லை, எனவே தானியங்கி தீ எச்சரிக்கைகள் வராமல் போகலாம். இணைப்பைச் சரிபார்த்து, எச்சரிக்கைகள் பகுதியில் மீண்டும் Telegram இணைக்கவும் (அல்லது WhatsApp பதிவு).", regWaitSub:"சர்வருடன் பதிவை உறுதிப்படுத்துகிறது…", regLockedSub:"இந்த எண் வேறு தொலைபேசியில் பதிவு செய்யப்பட்டுள்ளதால் பாதுகாப்புக்காகப் பூட்டப்பட்டுள்ளது. இணைக்கப்பட்ட Telegram-இல் பாட்டுக்கு /reset அனுப்பி, 30 நிமிடங்களுக்குள் மீண்டும் Telegram இணைக்கவும்.", regLockedToast:"எண் பூட்டப்பட்டது — Telegram-இல் /reset அனுப்பவும்", regOkToast:"பதிவு உறுதிப்படுத்தப்பட்டது ✓", regFailToast:"பதிவு தோல்வி — இணைப்பைச் சரிபார்த்து மீண்டும் முயற்சிக்கவும்", ovErr:"⚠️ சரிபார்ப்பு தோல்வி — நிலை தெரியவில்லை", partial:(n,m)=>`${m} செயற்கைக்கோள்களில் ${n} மட்டுமே பதிலளித்தன — முடிவுகள் முழுமையற்றதாக இருக்கலாம்`, shareUnknown:"இந்த பண்ணையின் செயற்கைக்கோள் தரவு இன்னும் ஏற்றப்படவில்லை, எனவே பாதுகாப்பானது எனப் பகிர முடியாது.", keyOkBig:"பதிவு செய்யப்பட்டது ✓", keyOkSub:"நீங்கள் பதிவு செய்துள்ளீர்கள், தீ தோன்றும்போது Telegram எச்சரிக்கை பெறுவீர்கள். இங்கே நேரடி தீப்புள்ளிகளையும் காண, எச்சரிக்கைகள் பகுதியில் இலவச NASA விசையைச் சேர்க்கவும் (விருப்பத்தேர்வு).",
   waAlert:(f,n,d,r)=>`🔥 தீ எச்சரிக்கை · ${f}\n\nNASA ${n} தீப்புள்ளிகளைக் கண்டறிந்தது\nஅருகில்: ${d} கி.மீ (${r})\n\nஆதாரம்: NASA VIIRS\nபண்ணைப் பகுதியை உடனே சரிபார்க்கவும்.`,
   waSafe:(f)=>`✅ ${f}: அருகில் செயற்கைக்கோள் தீப்புள்ளிகள் இல்லை. ஆதாரம்: NASA FIRMS.`,
   foot:"NASA FIRMS · வழிகாட்டுதல் மட்டுமே, நேரில் சரிபார்க்கவும்",
@@ -1163,6 +1163,7 @@ async function loadData(){
     if(st==="ok"){ cls="safe"; big=t.keyOkBig; sub=t.keyOkSub; }
     else if(st==="pending"){ cls="idle"; big=t.checking; sub=t.regWaitSub; }
     else if(st==="fail"){ cls="med"; big=t.regFailBig; sub=t.regFailSub; }
+    else if(st==="locked"){ cls="med"; big=t.regFailBig; sub=t.regLockedSub; }
     else { cls="med"; big=t.checking; sub=t.errKey; }
     setBanner(cls,big,sub);
     document.getElementById("hslist").innerHTML=`<div class="empty"><div class="e-ico">🔑</div><div style="font-size:.85rem;line-height:1.5;color:var(--ink2)">${sub}</div></div>`;
@@ -1394,18 +1395,33 @@ function registerServer(quiet){
   const phoneDigits=normalizePhone(profile.phone);
   if(!CFG.REGISTER_URL||!phoneDigits) return Promise.resolve(false);
   lset("reg_state","pending");
-  const body=JSON.stringify({phone:phoneDigits,name:profile.name,farms,lang});
+  // edit key: issued by the server on first registration and required for
+  // later changes, so nobody who merely knows the phone number can rewrite
+  // (or blank) this farmer's farm list.
+  // The key is made HERE, before sending, and saved first. It used to come
+  // back in the server's reply -- but on iPhone the app is paused the instant
+  // Telegram opens, the reply was lost, and the next tap was locked out.
+  let key=lget("edit_key","");
+  if(!key || key.length<32){
+    const b=new Uint8Array(24); crypto.getRandomValues(b);
+    key=Array.from(b,x=>x.toString(16).padStart(2,"0")).join("");
+    lset("edit_key",key);
+  }
+  const body=JSON.stringify({phone:phoneDigits,name:profile.name,farms,lang,key});
   return fetch(CFG.REGISTER_URL,{method:"POST",headers:{"Content-Type":"application/json"},body})
     .then(async r=>{
-      let ok=r.ok;
-      try{ const j=await r.clone().json(); if(j && j.ok===false) ok=false; }catch(e){}
-      return ok;
+      let ok=r.ok, j=null;
+      try{ j=await r.json(); if(j && j.ok===false) ok=false; }catch(e){}
+      if(ok && j && j.key) lset("edit_key",j.key);
+      if(r.status===403 && j && j.error==="locked") return "locked";
+      return ok?"ok":"fail";
     })
-    .catch(()=>false)
-    .then(ok=>{
-      lset("reg_state",ok?"ok":"fail");
+    .catch(()=>"fail")
+    .then(st=>{
+      const ok=st==="ok";
+      lset("reg_state",st);
       if(ok) lset("reg_at",Date.now());
-      if(!ok||!quiet) toast(ok?I[lang].regOkToast:I[lang].regFailToast);
+      if(!ok||!quiet) toast(ok?I[lang].regOkToast:(st==="locked"?I[lang].regLockedToast:I[lang].regFailToast));
       if(!lget("key","")) loadData();   // no-key banner shows registration state
       return ok;
     });
